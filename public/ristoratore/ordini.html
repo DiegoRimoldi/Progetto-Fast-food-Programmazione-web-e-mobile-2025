@@ -53,6 +53,15 @@
   </style>
 </head>
 <body>
+  <script>
+    (function() {
+      var token = localStorage.getItem("token");
+      var role = localStorage.getItem("role");
+      if (!token || role !== "ristoratore") {
+        window.location.href = "../login.html";
+      }
+    })();
+  </script>
 
 <div class="sidebar">
   <div class="sidebar-header">
@@ -90,22 +99,22 @@
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
-    
+
       if (!token) {
         window.location.href = "../logout.html";
         return;
       }
-    
+
       options.headers = options.headers || {};
       options.headers["Authorization"] = "Bearer " + token;
-    
+
       try {
         let response = await fetch(url, options);
-    
+
         if (response.status === 401) { // token scaduto o invalido
             window.location.href = "../logout.html";
           }
-    
+
         return response;
       } catch (error) {
         console.error("Errore nella richiesta API:", error);
@@ -117,12 +126,21 @@
     try {
       var response = await fetchConControlloToken(apiBase + "/orders");
 
+      if (!response || !response.ok) {
+        throw new Error("Impossibile recuperare gli ordini.");
+      }
       var orders = await response.json();
       var activeOrders = document.getElementById("activeOrders");
       var historyOrders = document.getElementById("historyOrders");
 
       activeOrders.innerHTML = "";
       historyOrders.innerHTML = "";
+
+      if (!Array.isArray(orders) || orders.length === 0) {
+        activeOrders.innerHTML = "<p class=\"text-muted\">Nessun ordine attivo.</p>";
+        historyOrders.innerHTML = "<p class=\"text-muted\">Nessun ordine nello storico.</p>";
+        return;
+      }
 
       orders.forEach(order => {
         var orderDiv = document.createElement("div");
@@ -131,13 +149,13 @@
           <br>
           <p><strong>Ordine #${order._id}</strong></p>
           <p>Cliente: ${order.cliente_nome || "Sconosciuto"}</p>
-          <p>Totale: €${order.totale.toFixed(2)}</p>
-          <p>Data ordine: ${order.data_ordine}</p>
-          <p>Tempo di attesa: ${order.tempo_attesa} min</p>
-          <p>Metodo di consegna: ${order.metodo_consegna}</p>
+          <p>Totale: €${Number(order.totale || 0).toFixed(2)}</p>
+          <p>Data ordine: ${order.data_ordine || "N/D"}</p>
+          <p>Tempo di attesa: ${order.tempo_attesa ?? "N/D"} min</p>
+          <p>Metodo di consegna: ${order.metodo_consegna || "N/D"}</p>
           <p><b>Piatti:</b></p>
           <ul>
-            ${order.meals.map(meal => `<li>${meal.nome} - Quantità: ${meal.quantita}</li>`).join("")}
+            ${(order.meals || []).map(meal => `<li>${meal.nome} - Quantità: ${meal.quantita}</li>`).join("") || "<li>Nessun piatto disponibile</li>"}
           </ul>
           <p>Stato: <strong>${order.stato}</strong></p>
           <br>
@@ -147,7 +165,7 @@
           var updateBtn = document.createElement("button");
           updateBtn.className = "btn btn-warning";
           updateBtn.innerText = "Avanza Stato";
-          updateBtn.onclick = () => cambiaStatoOrdine(order._id, order.stato);
+          updateBtn.onclick = () => cambiaStatoOrdine(order._id);
           orderDiv.appendChild(updateBtn);
         }
 
@@ -163,7 +181,7 @@
     }
   }
 
-  async function cambiaStatoOrdine(orderId, statoAttuale) {
+  async function cambiaStatoOrdine(orderId) {
     try {
       var response = await fetchConControlloToken(`${apiBase}/orders/${orderId}`, {
         method: "PUT",

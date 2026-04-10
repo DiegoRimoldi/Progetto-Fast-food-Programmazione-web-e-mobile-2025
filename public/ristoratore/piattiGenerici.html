@@ -100,7 +100,7 @@
       }
     })();
   </script>
-  
+
   <div class="sidebar">
     <div class="sidebar-header">
       <img src="../assets/logo.png" alt="FastFood Logo">
@@ -116,10 +116,10 @@
     <a href="../logout.html" class="nav-link">Logout</a>
 
   </div>
-  
+
   <div class="main-content">
     <h2>Piatti Generici</h2>
-    
+
     <div class="filter-section">
       <div class="mb-3">
         <input type="text" id="filterName" class="form-control" placeholder="Filtra per nome">
@@ -139,18 +139,18 @@
         <button id="applyFilter" class="btn btn-warning">Cerca</button>
       </div>
     </div>
-    
+
     <div id="genericMealsContainer" class="row g-4"></div>
-    
+
     <div id="paginationControls" class="pagination-controls"></div>
   </div>
-  
+
   <script>
     var apiBase = "http://localhost:3000";
     var token = localStorage.getItem("token");
     var userId = localStorage.getItem("userId");
-  
-    var mioRistorante = null; 
+
+    var mioRistorante = null;
     var filteredMeals = [];
     var genericMealsData = [];
     var currentPage = 1;
@@ -158,29 +158,29 @@
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
-    
+
       if (!token) {
         window.location.href = "../logout.html";
         return;
       }
-    
+
       options.headers = options.headers || {};
       options.headers["Authorization"] = "Bearer " + token;
-    
+
       try {
         let response = await fetch(url, options);
-    
+
         if (response.status === 401) { // token scaduto o invalido
             window.location.href = "../logout.html";
           }
-    
+
         return response;
       } catch (error) {
         console.error("Errore nella richiesta API:", error);
         return null;
       }
     }
-  
+
     async function caricaRistorante() {
       try {
         var response = await fetchConControlloToken(apiBase + "/restaurants", {
@@ -188,7 +188,7 @@
         });
         var restaurants = await response.json();
         mioRistorante = restaurants.find(r => r.ristoratore_id && r.ristoratore_id.toString() === userId);
-        
+
         if (!mioRistorante) {
           alert("Non hai ancora creato un ristorante. Vai alla pagina Gestisci Ristorante per crearlo.");
           window.location.href = "gestioneRistorante.html";
@@ -197,7 +197,7 @@
         console.error("Errore nel caricamento del ristorante:", err);
       }
     }
-  
+
     var genericMealsData = [];
 
     async function caricaPiattiGenerici() {
@@ -205,8 +205,8 @@
         var response = await fetchConControlloToken(apiBase + "/meals");
         var meals = await response.json();
 
-        genericMealsData = meals.filter(m => m.ristorante_id === null); 
-        filteredMeals = [...genericMealsData]; 
+        genericMealsData = meals.filter(m => !m.ristorante_id);
+        filteredMeals = [...genericMealsData];
 
         displayGenericMealsPage(1);
       } catch (err) {
@@ -227,7 +227,7 @@
         var response = await fetchConControlloToken(`${apiBase}/meals`);
         var meals = await response.json();
 
-        var piattiGenerici = meals.filter(m => m.ristorante_id === null);
+        var piattiGenerici = meals.filter(m => !m.ristorante_id);
         var categorieUniche = [...new Set(piattiGenerici.map(m => m.strCategory).filter(Boolean))];
 
         categorieUniche.forEach(cat => {
@@ -249,11 +249,11 @@
       var startIndex = (page - 1) * itemsPerPage;
       var endIndex = startIndex + itemsPerPage;
       var pageItems = filteredMeals.slice(startIndex, endIndex);
-  
+
       if (pageItems.length === 0) {
         container.innerHTML = '<p class="text-muted">Nessun piatto trovato.</p>';
       }
-  
+
       pageItems.forEach(p => {
         var col = document.createElement("div");
         col.className = "col-md-6";
@@ -268,28 +268,28 @@
                         </div>`;
         container.appendChild(col);
       });
-  
+
       updatePaginationControls();
     }
-  
+
     async function aggiungiPiattoAlMenu(idMeal) {
       if (!mioRistorante) {
         alert("Ristorante non trovato.");
         return;
       }
-  
+
       if (mioRistorante.menu && mioRistorante.menu.includes(idMeal)) {
         alert("Questo piatto è già presente nel menu.");
         return;
       }
-  
+
       var nuovoMenu = mioRistorante.menu ? [...mioRistorante.menu, idMeal] : [idMeal];
-  
+
       var payload = {
         menu: nuovoMenu,
         updatedAt: new Date()
       };
-  
+
       try {
         var updateRes = await fetchConControlloToken(apiBase + "/restaurants/" + mioRistorante._id, {
           method: "PUT",
@@ -299,12 +299,12 @@
           },
           body: JSON.stringify(payload)
         });
-  
+
         if (!updateRes.ok) {
           var errorText = await updateRes.text();
           throw new Error("HTTP " + updateRes.status + " - " + errorText);
         }
-  
+
         mioRistorante.menu = nuovoMenu;
         alert("Piatto aggiunto al menu con successo!");
       } catch (err) {
@@ -312,12 +312,12 @@
         alert(err.message);
       }
     }
-  
+
     function updatePaginationControls() {
       var controls = document.getElementById("paginationControls");
-      var totalPages = Math.ceil(filteredMeals.length / itemsPerPage);
+      var totalPages = Math.max(1, Math.ceil(filteredMeals.length / itemsPerPage));
       controls.innerHTML = `Pagina: <input type='number' id='pagePicker' min='1' max='${totalPages}' value='${currentPage}' step='1' /> di ${totalPages}`;
-  
+
       document.getElementById("pagePicker").onchange = function() {
         var page = parseInt(this.value);
         if (page < 1) { page = 1; this.value = 1; }
@@ -325,32 +325,33 @@
         displayGenericMealsPage(page);
       };
     }
-  
+
     function applicaFiltri() {
       var nomeFiltro = document.getElementById("filterName").value.trim().toLowerCase();
       var categoriaFiltro = document.getElementById("filterCategory").value.trim().toLowerCase();
       var prezzoMin = parseFloat(document.getElementById("filterPriceMin").value) || 0;
       var prezzoMax = parseFloat(document.getElementById("filterPriceMax").value) || Number.MAX_VALUE;
-  
+
       filteredMeals = genericMealsData.filter(function(p) {
         var nomeMatch = nomeFiltro === "" || (p.strMeal && p.strMeal.toLowerCase().includes(nomeFiltro));
         var categoriaMatch = categoriaFiltro === "" || (p.strCategory && p.strCategory.toLowerCase() === categoriaFiltro);
-        var prezzoMatch = (p.prezzo >= prezzoMin && p.prezzo <= prezzoMax);
+        var prezzo = Number(p.prezzo || 0);
+        var prezzoMatch = (prezzo >= prezzoMin && prezzo <= prezzoMax);
         return nomeMatch && categoriaMatch && prezzoMatch;
       });
-  
+
       displayGenericMealsPage(1);
     }
-  
+
     document.getElementById("applyFilter").addEventListener("click", applicaFiltri);
-  
+
     (async function init() {
       await caricaRistorante();
       await caricaPiattiGenerici();
       await caricaCategorie();
     })();
   </script>
-  
-  
+
+
 </body>
 </html>

@@ -108,22 +108,22 @@
 
   async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
-    
+
       if (!token) {
         window.location.href = "../logout.html";
         return;
       }
-    
+
       options.headers = options.headers || {};
       options.headers["Authorization"] = "Bearer " + token;
-    
+
       try {
         let response = await fetch(url, options);
-    
+
         if (response.status === 401) { // token scaduto o invalido
             window.location.href = "../logout.html";
           }
-    
+
         return response;
       } catch (error) {
         console.error("Errore nella richiesta API:", error);
@@ -137,9 +137,10 @@
       if (!response || !response.ok) return;
 
       var stats = await response.json();
+      var contentArea = document.getElementById("contentArea");
 
       if (stats.totalOrders === 0) {
-        contentArea.innerHTML = 
+        contentArea.innerHTML =
             '<div class="d-flex flex-column justify-content-center align-items-center" style="min-height:300px;">' +
               '<p class="fs-4 text-muted mb-3">Non hai ancora completato ordini</p>' +
               '<a href="ordini.html" class="btn btn-warning">Vai alla pagina ordini</a>' +
@@ -149,14 +150,14 @@
         document.getElementById("totalRevenue").innerText = stats.totalRevenue?.toFixed(2) ?? "N/A";
 
         var stateContainer = document.getElementById("ordersByState");
-        stateContainer.innerHTML = Object.entries(stats.ordersByState)
+        stateContainer.innerHTML = Object.entries(stats.ordersByState || {})
           .map(([stato, count]) => `<p>${stato}: ${count}</p>`).join("");
 
         var mealsContainer = document.getElementById("topMeals");
-        mealsContainer.innerHTML = stats.topMeals.map(([nome, quantita]) => `<p>${nome}, Ordinato ${quantita} Volte</p>`).join("");
+        mealsContainer.innerHTML = (stats.topMeals || []).map(([nome, quantita]) => `<p>${nome}, Ordinato ${quantita} Volte</p>`).join("");
 
         var trendContainer = document.getElementById("ordersTrend");
-        trendContainer.innerHTML = Object.entries(stats.ordersTrend)
+        trendContainer.innerHTML = Object.entries(stats.ordersTrend || {})
           .map(([date, count]) => `<p>${date}: ${count} ordini</p>`).join("");
       }
     } catch (err) {

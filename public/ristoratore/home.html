@@ -103,22 +103,22 @@
 
   async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
-    
+
       if (!token) {
         window.location.href = "../logout.html";
         return;
       }
-    
+
       options.headers = options.headers || {};
       options.headers["Authorization"] = "Bearer " + token;
-    
+
       try {
         let response = await fetch(url, options);
-    
+
         if (response.status === 401) { // token scaduto o invalido
             window.location.href = "../logout.html";
           }
-    
+
         return response;
       } catch (error) {
         console.error("Errore nella richiesta API:", error);
@@ -131,13 +131,18 @@
       var response = await fetchConControlloToken(apiBase + "/restaurants", {
         headers: { "Authorization": "Bearer " + token }
       });
+      if (!response || !response.ok) {
+        throw new Error("Impossibile recuperare i ristoranti.");
+      }
       var restaurants = await response.json();
-      
-      var mioRistorante = restaurants.find(r => r.ristoratore_id === userId || r.ristoratore_id.toString() === userId);
+
+      var mioRistorante = restaurants.find(function(r) {
+        return r.ristoratore_id && (r.ristoratore_id === userId || r.ristoratore_id.toString() === userId);
+      });
       var contentArea = document.getElementById("contentArea");
 
       if (!mioRistorante) {
-        contentArea.innerHTML = 
+        contentArea.innerHTML =
             '<div class="d-flex flex-column justify-content-center align-items-center" style="min-height:300px;">' +
               '<p class="fs-4 text-muted mb-3">Non hai ancora creato un ristorante</p>' +
               '<a href="creaRistorante.html" class="btn btn-warning">Crea Ristorante</a>' +
@@ -175,7 +180,9 @@
       if (!response.ok) throw new Error("Errore nel recupero degli ordini.");
 
       var orders = await response.json();
-      var ordiniFiltrati = orders.filter(o => o.ristorante_id.toString() === ristoranteId.toString() && o.stato !== "consegnato");
+      var ordiniFiltrati = orders.filter(function(o) {
+        return o.ristorante_id && o.ristorante_id.toString() === ristoranteId.toString() && o.stato !== "consegnato";
+      });
 
       var ordersContainer = document.getElementById("ordersInProgress");
       ordersContainer.innerHTML = "";
