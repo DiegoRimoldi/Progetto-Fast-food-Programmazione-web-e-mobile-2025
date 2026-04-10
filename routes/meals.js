@@ -231,7 +231,12 @@ mealsRouter.delete("/:id", authenticateUser, authorizeRistoratore, async (req, r
       return res.status(403).json({ error: "Impossibile eliminare piatti generali" });
     }
 
-    if (!user || user.role !== "ristoratore" || meal.ristorante_id.toString() !== user._id.toString()) {
+    const restaurant = await db.collection("restaurants").findOne({ ristoratore_id: new ObjectId(user._id) });
+    if (!restaurant) {
+      return res.status(404).json({ error: "Ristorante non trovato" });
+    }
+
+    if (!user || user.role !== "ristoratore" || meal.ristorante_id.toString() !== restaurant._id.toString()) {
       return res.status(403).json({ error: "Accesso negato: non proprietario del piatto" });
     }
 

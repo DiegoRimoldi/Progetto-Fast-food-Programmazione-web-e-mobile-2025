@@ -5,11 +5,11 @@
 
 # Getting Started
 
-Per avviare l’applicazione, navigare nella directory `fastfood`, ed installare i `node_modules` necessari eseguendo il comando `npm install`
+Per avviare l’applicazione, navigare nella root del repository ed installare i `node_modules` necessari eseguendo il comando `npm install`
 
-Successivamente, è possibile avviare il backend mediante il comando `npx nodemon index.js.`
+Successivamente, è possibile avviare il backend mediante il comando `npm run dev` (oppure `npm start`).
 
-E’ possibile raggiungere la pagina iniziale, aprendo il file `index.html`
+La pagina iniziale è servita da Express in `public/` ed è raggiungibile avviando il backend e aprendo l'URL `http://localhost:3000`.
 
 # Struttura della directory
 

@@ -13,7 +13,7 @@
   "paths": {
     "/": {
       "get": {
-        "description": "API Test",
+        "description": "",
         "responses": {
           "200": {
             "description": "OK"
@@ -23,7 +23,7 @@
     },
     "/users/register": {
       "post": {
-        "description": "Registrazione utente (cliente o ristoratore)",
+        "description": "",
         "parameters": [
           {
             "name": "body",
@@ -77,7 +77,7 @@
     },
     "/users/login": {
       "post": {
-        "description": "Login",
+        "description": "",
         "parameters": [
           {
             "name": "body",
@@ -113,7 +113,7 @@
     },
     "/users/me": {
       "get": {
-        "description": "Restituisce informazioni relative all'utente autenticato",
+        "description": "",
         "responses": {
           "200": {
             "description": "OK"
@@ -127,7 +127,7 @@
         }
       },
       "put": {
-        "description": "Modifica dati profilo utente autenticato (passsword esclusa)",
+        "description": "",
         "parameters": [
           {
             "name": "body",
@@ -163,7 +163,7 @@
     },
     "/users/me/password": {
       "put": {
-        "description": "Modifica password utente autenticato",
+        "description": "",
         "parameters": [
           {
             "name": "body",
@@ -199,7 +199,7 @@
     },
     "/users/{id}": {
       "delete": {
-        "description": "Elimina utente autenticato: Se l'utente è un cliente, vengono eliminati anche il carrello e tutti gli ordini ancora attivi (quelli già consegnati, rimangono nel DB per statistiche ristorante). Se l'utente è un ristoratore, vengono eliminati anche il suo ristorante, e tutti gli ordini di quel ristorante.",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -226,7 +226,7 @@
     },
     "/meals/": {
       "get": {
-        "description": "Restituisce tutti i piatti, con filtri opzionali",
+        "description": "",
         "parameters": [
           {
             "name": "strCategory",
@@ -272,7 +272,7 @@
         }
       },
       "post": {
-        "description": "Aggiunta piatto personalizzato (Richiede autenticazione utente ristoratore)",
+        "description": "",
         "parameters": [
           {
             "name": "body",
@@ -329,7 +329,7 @@
     },
     "/meals/{id}": {
       "get": {
-        "description": "Dettagli singolo piatto, identificato per _id ",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -354,7 +354,7 @@
         }
       },
       "put": {
-        "description": "Modifica piatto personalizzato (Richiede autenticazione utente ristoratore)",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -382,7 +382,7 @@
         }
       },
       "delete": {
-        "description": "Elimina piatto personalizzato (Richiede autenticazione utente ristoratore)",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -412,7 +412,7 @@
     },
     "/restaurants/search": {
       "get": {
-        "description": "Ricerca ristoranti per nome e indirizzo (parziale, case insensitive). Query params: - q: stringa da cercare nel nome - address: stringa da cercare nell'indirizzo",
+        "description": "",
         "parameters": [
           {
             "name": "q",
@@ -437,7 +437,7 @@
     },
     "/restaurants/": {
       "get": {
-        "description": "Lista ristoranti registrati",
+        "description": "",
         "responses": {
           "200": {
             "description": "OK"
@@ -448,7 +448,7 @@
         }
       },
       "post": {
-        "description": "Crea un nuovo ristorante (Richiede autenticazione ristoratore)",
+        "description": "",
         "parameters": [
           {
             "name": "body",
@@ -490,7 +490,7 @@
     },
     "/restaurants/statistics": {
       "get": {
-        "description": "Statistiche ristorante (Richiede autenticazione ristoratore)",
+        "description": "",
         "responses": {
           "200": {
             "description": "OK"
@@ -506,7 +506,7 @@
     },
     "/restaurants/{restaurantId}": {
       "get": {
-        "description": "Informazioni di uno specifico ristorante, menu incluso",
+        "description": "",
         "parameters": [
           {
             "name": "restaurantId",
@@ -531,7 +531,7 @@
         }
       },
       "put": {
-        "description": "Modifica dati ristorante (Richiede autenticazione ristoratore)",
+        "description": "",
         "parameters": [
           {
             "name": "restaurantId",
@@ -583,7 +583,7 @@
         }
       },
       "delete": {
-        "description": "Elimina ristorante, tutti gli ordini e tutti i piatti personalizzati associati (Richiede autenticazione ristoratore)",
+        "description": "",
         "parameters": [
           {
             "name": "restaurantId",
@@ -610,7 +610,7 @@
     },
     "/orders/": {
       "post": {
-        "description": "Crea nuovo ordine per l'utente autenticato",
+        "description": "",
         "parameters": [
           {
             "name": "body",
@@ -644,7 +644,7 @@
         }
       },
       "get": {
-        "description": "Lista ordini (Cliente solo propri, Ristoratore solo quelli relativi al suo ristorante)",
+        "description": "",
         "responses": {
           "200": {
             "description": "OK"
@@ -663,7 +663,7 @@
     },
     "/orders/{id}": {
       "put": {
-        "description": "Dettagli singolo ordine (Cliente solo propri, Ristoratore solo quelli relativi al suo ristorante)",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -721,7 +721,7 @@
     },
     "/orders/{id}/consegna": {
       "put": {
-        "description": "Conferma consegna da parte del cliente (per ordini con consegna a domicilio)",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -751,7 +751,7 @@
     },
     "/carts/me": {
       "get": {
-        "description": "Carrello dell'utente autenticato",
+        "description": "",
         "responses": {
           "200": {
             "description": "OK"
@@ -765,7 +765,7 @@
         }
       },
       "delete": {
-        "description": "Elimina tutto il carrello dell'utente autenticato",
+        "description": "",
         "responses": {
           "200": {
             "description": "OK"
@@ -778,7 +778,7 @@
     },
     "/carts/add": {
       "put": {
-        "description": "Aggiunge un piatto al carrello dell'utente autenticato, creando il carrello se non esistente",
+        "description": "",
         "parameters": [
           {
             "name": "body",
@@ -820,7 +820,7 @@
     },
     "/carts/remove": {
       "put": {
-        "description": "Rimuovi un piatto dal carrello dell'utente autenticato, eliminando il carrello se rimane vuoto",
+        "description": "",
         "parameters": [
           {
             "name": "body",

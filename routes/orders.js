@@ -187,7 +187,22 @@ ordersRouter.get("/:id", authenticateUser, async (req, res) => {
 
     if (!order) return res.status(404).json({ error: "Ordine non trovato" });
 
-    if ((user.role === "cliente" && order.cliente_id.toString() !== user._id) &&(user.role === "ristoratore" && order.ristorante_id.toString() !== user._id)) {
+    if (user.role === "cliente" && order.cliente_id.toString() !== user._id) {
+      return res.status(403).json({ error: "Accesso negato all'ordine" });
+    }
+
+    if (user.role === "ristoratore") {
+      const ristorante = await db.collection("restaurants").findOne({ ristoratore_id: new ObjectId(user._id) });
+      if (!ristorante) {
+        return res.status(404).json({ error: "Ristorante non trovato" });
+      }
+
+      if (order.ristorante_id.toString() !== ristorante._id.toString()) {
+        return res.status(403).json({ error: "Accesso negato all'ordine" });
+      }
+    }
+
+    if (!["cliente", "ristoratore"].includes(user.role)) {
       return res.status(403).json({ error: "Accesso negato all'ordine" });
     }
 
