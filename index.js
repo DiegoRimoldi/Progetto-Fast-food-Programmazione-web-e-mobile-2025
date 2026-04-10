@@ -27,7 +27,7 @@ async function startServer() {
   try {
     const client = new MongoClient(config.MONGODB_URI);
     await client.connect();
-    app.locals.db = client.db("fastfood");
+    app.locals.db = client.db("Fast-Food");
 
     app.get("/", (req, res) => {
       res.send("Server Attivo");
