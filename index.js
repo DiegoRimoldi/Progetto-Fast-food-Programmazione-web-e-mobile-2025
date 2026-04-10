@@ -6,22 +6,23 @@ import mealsRouter from "./routes/meals.js";
 import restaurantsRouter from "./routes/restaurants.js";
 import ordersRouter from "./routes/orders.js";
 import cartsRouter from "./routes/carts.js";
-import cors from "cors"
-import swaggerUi from 'swagger-ui-express'
-import fs from 'fs';
+import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const swaggerDocument = JSON.parse(fs.readFileSync('./Documents/swagger.json', 'utf-8'));
+const swaggerDocument = JSON.parse(fs.readFileSync("./Documents/swagger.json", "utf-8"));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
 app.use(express.json());
+app.use(cors());
+app.use(express.static(path.join(__dirname, "public")));
 
-app.use(cors())
-
-app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-
-let db;
+app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 async function startServer() {
   try {
@@ -30,7 +31,7 @@ async function startServer() {
     app.locals.db = client.db("Fast-Food");
 
     app.get("/", (req, res) => {
-      res.send("Server Attivo");
+      res.sendFile(path.join(__dirname, "public", "index.html"));
     });
 
     app.use("/users", usersRouter);
