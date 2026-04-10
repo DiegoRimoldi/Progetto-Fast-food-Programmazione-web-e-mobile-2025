@@ -81,7 +81,7 @@
     <a href="../logout.html" class="nav-link">Logout</a>
 
   </div>
-  
+
   <div class="main-content">
     <h2>Aggiungi Piatto Personalizzato</h2>
       <form id="piattoPersonalizzato">
@@ -129,27 +129,27 @@
     var apiBase = "http://localhost:3000";
     var token = localStorage.getItem("token");
     var userId = localStorage.getItem("userId");
-    
+
     var mioRistorante = null;
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
-    
+
       if (!token) {
         window.location.href = "../logout.html";
         return;
       }
-    
+
       options.headers = options.headers || {};
       options.headers["Authorization"] = "Bearer " + token;
-    
+
       try {
         let response = await fetch(url, options);
-    
+
         if (response.status === 401) { // token scaduto o invalido
             window.location.href = "../logout.html";
           }
-    
+
         return response;
       } catch (error) {
         console.error("Errore nella richiesta API:", error);
@@ -162,6 +162,9 @@
         var response = await fetchConControlloToken(apiBase + "/restaurants", {
           headers: { "Authorization": "Bearer " + token }
         });
+        if (!response || !response.ok) {
+          throw new Error("Impossibile recuperare i ristoranti.");
+        }
         var restaurants = await response.json();
         mioRistorante = restaurants.find(r => r.ristoratore_id && r.ristoratore_id.toString() === userId);
         if (!mioRistorante) {

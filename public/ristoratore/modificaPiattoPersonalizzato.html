@@ -81,7 +81,7 @@
     <a href="../logout.html" class="nav-link">Logout</a>
 
   </div>
-  
+
 
   <div class="main-content" id="intestazione">
     <h2>Modifica Piatto Personalizzato</h2>
@@ -137,27 +137,27 @@
     var apiBase = "http://localhost:3000";
     var token = localStorage.getItem("token");
     var userId = localStorage.getItem("userId");
-    
+
     var mioRistorante = null;
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
-    
+
       if (!token) {
         window.location.href = "../logout.html";
         return;
       }
-    
+
       options.headers = options.headers || {};
       options.headers["Authorization"] = "Bearer " + token;
-    
+
       try {
         let response = await fetch(url, options);
-    
+
         if (response.status === 401) { // token scaduto o invalido
             window.location.href = "../logout.html";
           }
-    
+
         return response;
       } catch (error) {
         console.error("Errore nella richiesta API:", error);
@@ -172,7 +172,7 @@
         });
         var restaurants = await response.json();
         mioRistorante = restaurants.find(r => r.ristoratore_id && r.ristoratore_id.toString() === userId);
-        
+
         if (!mioRistorante) {
             alert("Non hai ancora creato un ristorante. Vai alla pagina Gestisci Ristorante per crearlo.");
             window.location.href = "gestioneRistorante.html";
@@ -187,7 +187,9 @@
         });
         var tuttiPiatti = await piattiResponse.json();
 
-        var piattiPersonalizzati = tuttiPiatti.filter(p => p.ristorante_id === mioRistorante._id);
+        var piattiPersonalizzati = tuttiPiatti.filter(function(p) {
+            return p.ristorante_id && p.ristorante_id.toString() === mioRistorante._id.toString();
+        });
 
         if (piattiPersonalizzati.length === 0) {
             var msg = document.createElement("h3")
@@ -216,6 +218,9 @@ document.getElementById("listaPiatti").addEventListener("change", async function
         var piattoResponse = await fetchConControlloToken(`${apiBase}/meals/${idMeal}`, {
             headers: { "Authorization": "Bearer " + token }
         });
+        if (!piattoResponse || !piattoResponse.ok) {
+            throw new Error("Impossibile recuperare il piatto selezionato.");
+        }
         var piatto = await piattoResponse.json();
 
         if (!piatto || !piatto._id) {

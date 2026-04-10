@@ -66,7 +66,7 @@
       }
     })();
   </script>
-  
+
 <div class="sidebar">
     <div class="sidebar-header">
       <img src="../assets/logo.png" alt="FastFood Logo">
@@ -81,7 +81,7 @@
     <a href="../profilo.html" class="nav-link">Profilo</a>
     <a href="../logout.html" class="nav-link">Logout</a>
   </div>
-  
+
     <div class="main-content">
     <h2>Crea Ristorante</h2>
     <div class="form-container">
@@ -107,7 +107,7 @@
       <div id="message" class="mt-3"></div>
     </div>
   </div>
-  
+
   <script>
     var apiBase = "http://localhost:3000";
     var token = localStorage.getItem("token");
@@ -115,22 +115,22 @@
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
-    
+
       if (!token) {
         window.location.href = "../logout.html";
         return;
       }
-    
+
       options.headers = options.headers || {};
       options.headers["Authorization"] = "Bearer " + token;
-    
+
       try {
         let response = await fetch(url, options);
-    
+
         if (response.status === 401) { // token scaduto o invalido
             window.location.href = "../logout.html";
           }
-    
+
         return response;
       } catch (error) {
         console.error("Errore nella richiesta API:", error);
@@ -141,7 +141,7 @@
     var restaurantForm = document.getElementById("restaurantForm");
     restaurantForm.addEventListener("submit", async function(e) {
       e.preventDefault();
-      
+
       var name = document.getElementById("name").value.trim();
       var address = document.getElementById("address").value.trim();
       var description = document.getElementById("description").value.trim();
@@ -169,6 +169,9 @@
           },
           body: JSON.stringify(payload)
         });
+        if (!response) {
+          throw new Error("Nessuna risposta dal server");
+        }
         var data = await response.json();
         if (!response.ok) {
           document.getElementById("message").innerHTML = '<div class="alert alert-danger">' + (data.error || "Errore nella creazione del ristorante") + '</div>';
