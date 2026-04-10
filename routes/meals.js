@@ -5,6 +5,13 @@ import authorizeRistoratore from "../middlewares/authorizeRistoratore.js";
 
 const mealsRouter = express.Router();
 
+function parseCsv(value) {
+  return String(value)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 // GET /meals - Restituisce tutti i piatti, con filtri opzionali
 mealsRouter.get("/", async (req, res) => {
   try {
@@ -16,6 +23,8 @@ mealsRouter.get("/", async (req, res) => {
       prezzoMin,
       prezzoMax,
       ristorante_id,
+      ingredients,
+      allergens
     } = req.query;
 
     const filter = {};
@@ -23,7 +32,7 @@ mealsRouter.get("/", async (req, res) => {
     if (strCategory) filter.strCategory = strCategory;
     if (strArea) filter.strArea = strArea;
     if (nome) {
-      filter.strMeal = { $regex: nome, $options: "i" }; // case-insensitive
+      filter.strMeal = { $regex: nome, $options: "i" };
     }
     if (prezzoMin || prezzoMax) {
       filter.prezzo = {};
@@ -37,6 +46,25 @@ mealsRouter.get("/", async (req, res) => {
       filter.ristorante_id = new ObjectId(ristorante_id);
     }
 
+    if (ingredients) {
+      const ingredientsList = parseCsv(ingredients);
+      filter.ingredients = {
+        $all: ingredientsList.map((i) => new RegExp(`^${i.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i"))
+      };
+    }
+
+    if (allergens) {
+      const allergensList = parseCsv(allergens);
+      filter.ingredients = {
+        ...(filter.ingredients || {}),
+        $not: {
+          $elemMatch: {
+            $in: allergensList.map((a) => new RegExp(a.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"))
+          }
+        }
+      };
+    }
+
     const meals = await db.collection("meals").find(filter).toArray();
 
     res.json(meals);
@@ -46,7 +74,7 @@ mealsRouter.get("/", async (req, res) => {
 });
 
 
-// GET /meals/:id - Dettagli singolo piatto, identificato per _id 
+// GET /meals/:id - Dettagli singolo piatto, identificato per _id
 mealsRouter.get("/:id", async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -246,7 +274,7 @@ mealsRouter.delete("/:id", authenticateUser, authorizeRistoratore, async (req, r
 
     res.status(204).end();
   } catch (err) {
-    res.status(500).json({ error: "aErrore nell'eliminazione del piatto" });
+    res.status(500).json({ error: "Errore nell'eliminazione del piatto" });
   }
 });
 

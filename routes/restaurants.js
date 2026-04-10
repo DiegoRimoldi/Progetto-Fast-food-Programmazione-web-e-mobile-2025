@@ -38,6 +38,59 @@ router.get("/search", async (req, res) => {
   }
 });
 
+
+
+/**
+ * GET /restaurants/by-meal
+ * Ricerca ristoranti che hanno nel menu un piatto che matcha il nome richiesto
+ * Query params:
+ *  - meal: stringa da cercare nel nome del piatto
+ */
+router.get("/by-meal", async (req, res) => {
+  const db = req.app.locals.db;
+  const { meal } = req.query;
+
+  if (!meal) {
+    return res.status(400).json({ error: "Parametro 'meal' obbligatorio" });
+  }
+
+  try {
+    const meals = await db.collection("meals").find({
+      strMeal: { $regex: meal, $options: "i" }
+    }, { projection: { _id: 1, strMeal: 1, ristorante_id: 1 } }).toArray();
+
+    if (meals.length === 0) {
+      return res.json({ total: 0, restaurants: [] });
+    }
+
+    const restaurantIds = [...new Set(meals
+      .map((m) => m.ristorante_id)
+      .filter(Boolean)
+      .map((id) => id.toString()))]
+      .map((id) => new ObjectId(id));
+
+    const restaurants = await db.collection("restaurants").find({ _id: { $in: restaurantIds } }).toArray();
+
+    const mealsByRestaurant = meals.reduce((acc, m) => {
+      if (!m.ristorante_id) return acc;
+      const key = m.ristorante_id.toString();
+      acc[key] = acc[key] || [];
+      acc[key].push({ _id: m._id, strMeal: m.strMeal });
+      return acc;
+    }, {});
+
+    const enrichedRestaurants = restaurants.map((r) => ({
+      ...r,
+      matchingMeals: mealsByRestaurant[r._id.toString()] || []
+    }));
+
+    res.json({ total: enrichedRestaurants.length, restaurants: enrichedRestaurants });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Errore nella ricerca ristoranti per piatto" });
+  }
+});
+
 //GET /restaurants - Lista ristoranti registrati
 router.get("/", async (req, res) => {
   const db = req.app.locals.db;
