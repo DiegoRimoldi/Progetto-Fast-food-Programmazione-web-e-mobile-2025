@@ -272,6 +272,11 @@ mealsRouter.delete("/:id", authenticateUser, authorizeRistoratore, async (req, r
 
     if (result.deletedCount === 0) return res.status(404).json({ error: "Piatto non trovato" });
 
+    await db.collection("restaurants").updateOne(
+      { _id: restaurant._id },
+      { $pull: { menu: new ObjectId(id) } }
+    );
+
     res.status(204).end();
   } catch (err) {
     res.status(500).json({ error: "Errore nell'eliminazione del piatto" });

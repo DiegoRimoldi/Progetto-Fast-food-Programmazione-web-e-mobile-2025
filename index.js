@@ -11,6 +11,7 @@ import swaggerUi from "swagger-ui-express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { ObjectId } from "mongodb";
 
 const swaggerDocument = JSON.parse(fs.readFileSync("./Documents/swagger.json", "utf-8"));
 const __filename = fileURLToPath(import.meta.url);
@@ -24,11 +25,35 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+function normalizeMealDocument(meal) {
+  const normalized = { ...meal };
+  if (meal?._id?.$oid && ObjectId.isValid(meal._id.$oid)) {
+    normalized._id = new ObjectId(meal._id.$oid);
+  } else {
+    delete normalized._id;
+  }
+  return normalized;
+}
+
+async function bootstrapInitialMeals(db) {
+  const mealsCollection = db.collection("meals");
+  const mealsCount = await mealsCollection.estimatedDocumentCount();
+  if (mealsCount > 0) return;
+
+  const rawMeals = JSON.parse(fs.readFileSync("./Documents/meals.json", "utf-8"));
+  const normalizedMeals = Array.isArray(rawMeals) ? rawMeals.map(normalizeMealDocument) : [];
+  if (normalizedMeals.length === 0) return;
+
+  await mealsCollection.insertMany(normalizedMeals, { ordered: false });
+  console.log(`Bootstrap completato: caricati ${normalizedMeals.length} piatti iniziali da Documents/meals.json`);
+}
+
 async function startServer() {
   try {
     const client = new MongoClient(config.MONGODB_URI);
     await client.connect();
     app.locals.db = client.db("Fast-Food");
+    await bootstrapInitialMeals(app.locals.db);
 
     app.get("/", (req, res) => {
       res.sendFile(path.join(__dirname, "public", "index.html"));

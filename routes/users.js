@@ -6,6 +6,36 @@ import authenticateUser from "../middlewares/authenticateUser.js";
 
 const usersRouter = express.Router();
 
+// GET /users - Lista utenti (filtrabile per ruolo), senza campi sensibili
+usersRouter.get("/", async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { role } = req.query;
+    const filter = {};
+
+    if (role) {
+      if (!["cliente", "ristoratore"].includes(role)) {
+        return res.status(400).json({ error: "role deve essere 'cliente' o 'ristoratore'" });
+      }
+      filter.role = role;
+    }
+
+    const users = await db.collection("users").find(
+      filter,
+      {
+        projection: {
+          password: 0
+        }
+      }
+    ).toArray();
+
+    res.json({ total: users.length, users });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Errore nel recupero utenti" });
+  }
+});
+
 // POST /users/register - Registrazione utente (cliente o ristoratore)
 usersRouter.post("/register", async (req, res) => {
   try {
@@ -158,16 +188,15 @@ usersRouter.put("/me", authenticateUser, async (req, res) => {
         }
       }
     }
-    const result = await db.collection("users").findOneAndUpdate(
+    const updatedUser = await db.collection("users").findOneAndUpdate(
       { _id: new ObjectId(userId) },
       { $set: req.body },
       { returnDocument: "after", projection: { password: 0 } }
     );
-    console.log(result)
 
-    if (!result) return res.status(404).json({ error: "Utente non trovato" });
+    if (!updatedUser) return res.status(404).json({ error: "Utente non trovato" });
 
-    res.json(result.value);
+    res.json(updatedUser);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Errore nell'aggiornamento utente" });
