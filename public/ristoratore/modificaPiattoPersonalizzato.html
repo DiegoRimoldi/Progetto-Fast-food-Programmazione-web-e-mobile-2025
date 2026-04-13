@@ -50,9 +50,50 @@
       color: #00B5A2;
       margin-bottom: 1.5rem;
     }
-    .form-container {
-      max-width: 600px;
-      margin: auto;
+    .meal-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .meal-card {
+      cursor: pointer;
+      border: 1px solid #dee2e6;
+      border-radius: 0.75rem;
+      transition: all 0.2s ease;
+      background: #fff;
+    }
+    .meal-card:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+    .meal-card.selected {
+      border-color: #00B5A2;
+      box-shadow: 0 0 0 2px rgba(0, 181, 162, 0.2);
+    }
+    .meal-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-top-left-radius: 0.75rem;
+      border-top-right-radius: 0.75rem;
+      background: #f8f9fa;
+    }
+    .meal-card .card-body {
+      padding: 0.9rem;
+    }
+    .meal-card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+    .meal-card-meta {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin: 0;
+    }
+    #piattoPersonalizzato {
+      max-width: 700px;
     }
   </style>
 </head>
@@ -66,7 +107,7 @@
       }
     })();
   </script>
-    <div class="sidebar">
+  <div class="sidebar">
     <div class="sidebar-header">
       <img src="../assets/logo.png" alt="FastFood Logo">
     </div>
@@ -79,59 +120,56 @@
     <a href="statistiche.html" class="nav-link">Statistiche</a>
     <a href="../profilo.html" class="nav-link">Profilo</a>
     <a href="../logout.html" class="nav-link">Logout</a>
-
   </div>
-
 
   <div class="main-content" id="intestazione">
     <h2>Modifica Piatto Personalizzato</h2>
-    <select name="listaPiatti" id="listaPiatti" style="display: none;">
-        <option disabled selected>Seleziona un piatto</option>
-    </select>
-
+    <div id="cardsContainer" class="meal-cards-grid"></div>
     <hr><br>
-      <form id="piattoPersonalizzato" style="display: none;">
-        <div class="mb-3">
-          <label for="strMeal" class="form-label">Nome Piatto *</label>
-          <input type="text" id="strMeal" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="strCategory" class="form-label">Categoria</label>
-          <input type="text" id="strCategory" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="strArea" class="form-label">Area</label>
-          <input type="text" id="strArea" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="prezzo" class="form-label">Prezzo (€)</label>
-          <input type="number" id="prezzo" class="form-control" step="0.01" required>
-        </div>
-        <div class="mb-3">
-          <label for="tempo_preparazione" class="form-label">Tempo di Preparazione (min)</label>
-          <input type="number" id="tempo_preparazione" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="ingredients" class="form-label">Ingredienti (separati da virgole)</label>
-          <input type="text" id="ingredients" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="measures" class="form-label">Quantità (separati da virgole, stesso numero degli ingredienti)</label>
-          <input type="text" id="measures" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="strMealThumb" class="form-label">URL Immagine</label>
-          <input type="url" id="strMealThumb" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="strInstructions" class="form-label">Istruzioni</label>
-          <textarea id="strInstructions" class="form-control" rows="4" required></textarea>
-        </div>
+    <form id="piattoPersonalizzato" style="display: none;">
+      <div class="mb-3">
+        <label for="strMeal" class="form-label">Nome Piatto *</label>
+        <input type="text" id="strMeal" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="strCategory" class="form-label">Categoria</label>
+        <input type="text" id="strCategory" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="strArea" class="form-label">Area</label>
+        <input type="text" id="strArea" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="prezzo" class="form-label">Prezzo (€)</label>
+        <input type="number" id="prezzo" class="form-control" step="0.01" required>
+      </div>
+      <div class="mb-3">
+        <label for="tempo_preparazione" class="form-label">Tempo di Preparazione (min)</label>
+        <input type="number" id="tempo_preparazione" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="ingredients" class="form-label">Ingredienti (separati da virgole)</label>
+        <input type="text" id="ingredients" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="measures" class="form-label">Quantità (separati da virgole, stesso numero degli ingredienti)</label>
+        <input type="text" id="measures" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="strMealThumb" class="form-label">URL Immagine</label>
+        <input type="url" id="strMealThumb" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="strInstructions" class="form-label">Istruzioni</label>
+        <textarea id="strInstructions" class="form-control" rows="4" required></textarea>
+      </div>
+      <div class="d-flex gap-2">
         <button type="submit" class="btn btn-warning">Modifica Piatto</button>
-      </form>
-      <div id="msg" class="mt-3"></div>
-    </div>
-
+        <button type="button" class="btn btn-danger" id="btnRimuoviPiatto">Rimuovi Piatto</button>
+      </div>
+    </form>
+    <div id="msg" class="mt-3"></div>
+  </div>
 
   <script>
     var apiBase = "http://localhost:3000";
@@ -139,6 +177,8 @@
     var userId = localStorage.getItem("userId");
 
     var mioRistorante = null;
+    var piattiPersonalizzati = [];
+    var selectedMealId = null;
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
@@ -152,11 +192,11 @@
       options.headers["Authorization"] = "Bearer " + token;
 
       try {
-        let response = await fetch(url, options);
+        var response = await fetch(url, options);
 
-        if (response.status === 401) { // token scaduto o invalido
-            window.location.href = "../logout.html";
-          }
+        if (response.status === 401) {
+          window.location.href = "../logout.html";
+        }
 
         return response;
       } catch (error) {
@@ -165,134 +205,209 @@
       }
     }
 
-    async function caricaRistorante() {
-    try {
-        var response = await fetchConControlloToken(apiBase + "/restaurants", {
-            headers: { "Authorization": "Bearer " + token }
-        });
-        var restaurants = await response.json();
-        mioRistorante = restaurants.find(r => r.ristoratore_id && r.ristoratore_id.toString() === userId);
+    function renderCards() {
+      var cardsContainer = document.getElementById("cardsContainer");
+      cardsContainer.innerHTML = "";
 
-        if (!mioRistorante) {
-            alert("Non hai ancora creato un ristorante. Vai alla pagina Gestisci Ristorante per crearlo.");
-            window.location.href = "gestioneRistorante.html";
-            return;
-        }
+      piattiPersonalizzati.forEach(function(piatto) {
+        var card = document.createElement("div");
+        card.className = "meal-card" + (selectedMealId === piatto._id ? " selected" : "");
+        card.dataset.mealId = piatto._id;
 
-        var selectElement = document.getElementById("listaPiatti");
-        var formElement = document.getElementById("piattoPersonalizzato");
+        card.innerHTML = `
+          <img src="${piatto.strMealThumb || '../assets/logo.png'}" alt="${piatto.strMeal}">
+          <div class="card-body">
+            <p class="meal-card-title">${piatto.strMeal}</p>
+            <p class="meal-card-meta">€ ${typeof piatto.prezzo === 'number' ? piatto.prezzo.toFixed(2) : '-'}</p>
+          </div>
+        `;
 
-        var piattiResponse = await fetchConControlloToken(`${apiBase}/meals`, {
-            headers: { "Authorization": "Bearer " + token }
-        });
-        var tuttiPiatti = await piattiResponse.json();
-
-        var piattiPersonalizzati = tuttiPiatti.filter(function(p) {
-            return p.ristorante_id && p.ristorante_id.toString() === mioRistorante._id.toString();
+        card.addEventListener("click", function() {
+          caricaDettagliPiatto(piatto._id);
         });
 
-        if (piattiPersonalizzati.length === 0) {
-            var msg = document.createElement("h3")
-            msg.textContent="Non hai ancora inserito piatti personalizzati.";
-            document.getElementById("intestazione").appendChild(msg);
-            return;
-        }
-
-        piattiPersonalizzati.forEach(piatto => {
-            var option = document.createElement("option");
-            option.text = piatto.strMeal;
-            option.value = piatto._id;
-            selectElement.add(option);
-        });
-
-        selectElement.style.display = "block";
-    } catch (err) {
-        console.error("Errore nel caricamento del ristorante o piatti:", err);
+        cardsContainer.appendChild(card);
+      });
     }
-}
 
-document.getElementById("listaPiatti").addEventListener("change", async function(e) {
-    var idMeal = e.target.value;
+    function popolaForm(piatto) {
+      document.getElementById("strMeal").value = piatto.strMeal;
+      document.getElementById("strCategory").value = piatto.strCategory || "";
+      document.getElementById("strArea").value = piatto.strArea || "";
+      document.getElementById("prezzo").value = piatto.prezzo || "";
+      document.getElementById("tempo_preparazione").value = piatto.tempo_preparazione || "";
+      document.getElementById("ingredients").value = piatto.ingredients ? piatto.ingredients.join(", ") : "";
+      document.getElementById("measures").value = piatto.measures ? piatto.measures.join(", ") : "";
+      document.getElementById("strMealThumb").value = piatto.strMealThumb || "";
+      document.getElementById("strInstructions").value = piatto.strInstructions || "";
+      document.getElementById("piattoPersonalizzato").style.display = "block";
+    }
 
-    try {
-        var piattoResponse = await fetchConControlloToken(`${apiBase}/meals/${idMeal}`, {
-            headers: { "Authorization": "Bearer " + token }
+    async function caricaDettagliPiatto(idMeal) {
+      try {
+        var piattoResponse = await fetchConControlloToken(apiBase + "/meals/" + idMeal, {
+          headers: { "Authorization": "Bearer " + token }
         });
+
         if (!piattoResponse || !piattoResponse.ok) {
-            throw new Error("Impossibile recuperare il piatto selezionato.");
+          throw new Error("Impossibile recuperare il piatto selezionato.");
         }
+
         var piatto = await piattoResponse.json();
 
         if (!piatto || !piatto._id) {
-            console.warn("Piatto non trovato!");
-            return;
+          console.warn("Piatto non trovato!");
+          return;
         }
 
-        document.getElementById("strMeal").value = piatto.strMeal;
-        document.getElementById("strCategory").value = piatto.strCategory || "";
-        document.getElementById("strArea").value = piatto.strArea || "";
-        document.getElementById("prezzo").value = piatto.prezzo || "";
-        document.getElementById("tempo_preparazione").value = piatto.tempo_preparazione || "";
-        document.getElementById("ingredients").value = piatto.ingredients ? piatto.ingredients.join(", ") : "";
-        document.getElementById("measures").value = piatto.measures ? piatto.measures.join(", ") : "";
-        document.getElementById("strMealThumb").value = piatto.strMealThumb || "";
-        document.getElementById("strInstructions").value = piatto.strInstructions || "";
-
-        document.getElementById("piattoPersonalizzato").style.display = "block";
-
-    } catch (err) {
+        selectedMealId = piatto._id;
+        popolaForm(piatto);
+        renderCards();
+      } catch (err) {
         console.error("Errore nel recupero del piatto:", err);
+      }
     }
-});
 
-document.getElementById("piattoPersonalizzato").addEventListener("submit", async function (e) {
-    e.preventDefault();
+    async function caricaRistorante() {
+      try {
+        var response = await fetchConControlloToken(apiBase + "/restaurants", {
+          headers: { "Authorization": "Bearer " + token }
+        });
 
-    var idMeal = document.getElementById("listaPiatti").value;
-    var payload = {
+        var restaurants = await response.json();
+        mioRistorante = restaurants.find(function(r) {
+          return r.ristoratore_id && r.ristoratore_id.toString() === userId;
+        });
+
+        if (!mioRistorante) {
+          alert("Non hai ancora creato un ristorante. Vai alla pagina Gestisci Ristorante per crearlo.");
+          window.location.href = "gestioneRistorante.html";
+          return;
+        }
+
+        var piattiResponse = await fetchConControlloToken(apiBase + "/meals", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+
+        var tuttiPiatti = await piattiResponse.json();
+
+        piattiPersonalizzati = tuttiPiatti.filter(function(p) {
+          return p.ristorante_id && p.ristorante_id.toString() === mioRistorante._id.toString();
+        });
+
+        if (piattiPersonalizzati.length === 0) {
+          var msg = document.createElement("h3");
+          msg.textContent = "Non hai ancora inserito piatti personalizzati.";
+          document.getElementById("intestazione").appendChild(msg);
+          return;
+        }
+
+        renderCards();
+      } catch (err) {
+        console.error("Errore nel caricamento del ristorante o piatti:", err);
+      }
+    }
+
+    document.getElementById("piattoPersonalizzato").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      if (!selectedMealId) {
+        alert("Seleziona prima un piatto da modificare.");
+        return;
+      }
+
+      var payload = {
         strMeal: document.getElementById("strMeal").value.trim(),
         strCategory: document.getElementById("strCategory").value.trim(),
         strArea: document.getElementById("strArea").value.trim(),
         prezzo: parseFloat(document.getElementById("prezzo").value),
-        tempo_preparazione: parseInt(document.getElementById("tempo_preparazione").value),
-        ingredients: document.getElementById("ingredients").value.split(",").map(i => i.trim()).filter(Boolean),
-        measures: document.getElementById("measures").value.split(",").map(m => m.trim()).filter(Boolean),
+        tempo_preparazione: parseInt(document.getElementById("tempo_preparazione").value, 10),
+        ingredients: document.getElementById("ingredients").value.split(",").map(function(i) { return i.trim(); }).filter(Boolean),
+        measures: document.getElementById("measures").value.split(",").map(function(m) { return m.trim(); }).filter(Boolean),
         strMealThumb: document.getElementById("strMealThumb").value.trim(),
         strInstructions: document.getElementById("strInstructions").value.trim()
-    };
+      };
 
-    if (payload.ingredients.length !== payload.measures.length) {
+      if (payload.ingredients.length !== payload.measures.length) {
         alert("Il numero di ingredienti e quantità deve essere uguale!");
         return;
-    }
+      }
 
-    try {
-        var response = await fetchConControlloToken(`${apiBase}/meals/${idMeal}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify(payload)
+      try {
+        var response = await fetchConControlloToken(apiBase + "/meals/" + selectedMealId, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
-            var errorText = await response.text();
-            throw new Error("Errore HTTP " + response.status + " - " + errorText);
+          var errorText = await response.text();
+          throw new Error("Errore HTTP " + response.status + " - " + errorText);
         }
 
-        alert("Piatto modificato con successo!");
+        var index = piattiPersonalizzati.findIndex(function(p) { return p._id === selectedMealId; });
+        if (index !== -1) {
+          piattiPersonalizzati[index] = Object.assign({}, piattiPersonalizzati[index], payload);
+        }
+        renderCards();
 
-    } catch (err) {
+        alert("Piatto modificato con successo!");
+      } catch (err) {
         console.error("Errore nella modifica del piatto:", err);
         alert(err.message);
-    }
-});
+      }
+    });
 
+    document.getElementById("btnRimuoviPiatto").addEventListener("click", async function() {
+      if (!selectedMealId) {
+        alert("Seleziona prima un piatto da rimuovere.");
+        return;
+      }
 
+      var conferma = confirm("Sei sicuro di voler rimuovere questo piatto?");
+      if (!conferma) {
+        return;
+      }
 
+      try {
+        var response = await fetchConControlloToken(apiBase + "/meals/" + selectedMealId, {
+          method: "DELETE",
+          headers: {
+            "Authorization": "Bearer " + token
+          }
+        });
 
-    (async function init() { await caricaRistorante(); })();
+        if (!response || !response.ok) {
+          var errorText = response ? await response.text() : "Nessuna risposta dal server";
+          throw new Error("Errore nella rimozione del piatto: " + errorText);
+        }
+
+        piattiPersonalizzati = piattiPersonalizzati.filter(function(p) {
+          return p._id !== selectedMealId;
+        });
+
+        selectedMealId = null;
+        document.getElementById("piattoPersonalizzato").reset();
+        document.getElementById("piattoPersonalizzato").style.display = "none";
+        renderCards();
+
+        if (piattiPersonalizzati.length === 0) {
+          document.getElementById("cardsContainer").innerHTML = "";
+        }
+
+        alert("Piatto rimosso con successo!");
+      } catch (err) {
+        console.error(err);
+        alert(err.message);
+      }
+    });
+
+    (async function init() {
+      await caricaRistorante();
+    })();
   </script>
 </body>
 </html>
