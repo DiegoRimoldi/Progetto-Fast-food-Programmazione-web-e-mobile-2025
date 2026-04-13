@@ -152,18 +152,25 @@
         const data = await res.json();
 
         if (res.ok) {
-          alertDiv.innerHTML = `<div class="alert alert-success text-center">Registrazione completata! Vai al <a href="login.html">login</a>.</div>`;
-          form.reset();
-          updateFields();
-        } else {
-          alertDiv.innerHTML = `<div class="alert alert-danger text-center">${data.error || "Errore nella registrazione"}</div>`;
-        }
-      } catch (err) {
-        alertDiv.innerHTML = `<div class="alert alert-danger text-center">Errore di rete</div>`;
-      }
-    });
-
-    updateFields();
+          alertDiv.innerHTML = `<div class="alert alert-success text-center">
+            Registrazione completata! Reindirizzamento...
+            </div>`;
+            
+            form.reset();
+            updateFields();
+            setTimeout(() => {
+              window.location.href = "login.html";
+            }, 1000);
+          }
+          else {
+            alertDiv.innerHTML = `<div class="alert alert-danger text-center">${data.error || "Errore nella registrazione"}</div>`;
+          }
+        } catch (err) {
+            alertDiv.innerHTML = `<div class="alert alert-danger text-center">Errore di rete</div>`;
+          }
+        });
+        
+        updateFields();
   </script>
 </body>
 </html>
