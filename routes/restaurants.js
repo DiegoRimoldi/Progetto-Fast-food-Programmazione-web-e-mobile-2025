@@ -177,9 +177,9 @@ router.get("/:restaurantId", async (req, res) => {
 router.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
   const db = req.app.locals.db;
   const user = req.user;
-  const { name, address, menu, description, image } = req.body;
-  if (!name || !address) {
-    return res.status(400).json({ error: "Nome e indirizzo sono obbligatori" });
+  const { name, address, numero_di_telefono, piva, menu, description, image } = req.body;
+  if (!name || !address || !numero_di_telefono) {
+    return res.status(400).json({ error: "Nome, indirizzo e numero di telefono sono obbligatori" });
   }
 
   try {
@@ -188,9 +188,17 @@ router.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
       return res.status(400).json({ error: "Hai già un ristorante associato" });
     }
 
+    const ristoratore = await db.collection("users").findOne({ _id: new ObjectId(user._id) });
+    const partitaIva = piva || ristoratore?.piva;
+    if (!partitaIva) {
+      return res.status(400).json({ error: "Partita IVA obbligatoria per creare un ristorante" });
+    }
+
     const newRestaurant = {
       name,
       address,
+      numero_di_telefono,
+      piva: partitaIva,
       description,
       image,
       menu,
@@ -210,7 +218,7 @@ router.put("/:restaurantId", authenticateUser, authorizeRistoratore, async (req,
   const db = req.app.locals.db;
   const user = req.user;
   const restaurantId = req.params.restaurantId;
-  const { name, address, menu, description, image } = req.body;
+  const { name, address, numero_di_telefono, piva, menu, description, image } = req.body;
   if (!ObjectId.isValid(restaurantId)) {
     return res.status(400).json({ error: "ID ristorante non valido" });
   }
@@ -229,6 +237,8 @@ router.put("/:restaurantId", authenticateUser, authorizeRistoratore, async (req,
 
     if (name) updateDoc.name = name;
     if (address) updateDoc.address = address;
+    if (numero_di_telefono) updateDoc.numero_di_telefono = numero_di_telefono;
+    if (piva) updateDoc.piva = piva;
     if (menu) updateDoc.menu = menu;
     if (description) updateDoc.description = description;
     if (image) updateDoc.image = image;
