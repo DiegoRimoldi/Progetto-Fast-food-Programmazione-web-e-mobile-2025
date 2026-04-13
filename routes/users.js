@@ -10,10 +10,24 @@ const usersRouter = express.Router();
 usersRouter.post("/register", async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const { username, email, password, numero_di_telefono, indirizzo = "", metodo_pagamento = "", piva = "", role } = req.body;
+    const {
+      username,
+      email,
+      password,
+      numero_di_telefono,
+      indirizzo = "",
+      metodo_pagamento = "",
+      preferenze = [],
+      piva = "",
+      role
+    } = req.body;
 
     if (!username || !email || !password || !numero_di_telefono) {
       return res.status(400).json({ error: "username, email, password e numero di telefono sono obbligatori" });
+    }
+
+    if (!["cliente", "ristoratore"].includes(role)) {
+      return res.status(400).json({ error: "role obbligatorio e deve essere 'cliente' o 'ristoratore'" });
     }
 
     if(role=="cliente" && (!indirizzo || !metodo_pagamento)){
@@ -54,6 +68,7 @@ usersRouter.post("/register", async (req, res) => {
         numero_di_telefono,
         indirizzo,
         metodo_pagamento,
+        preferenze: Array.isArray(preferenze) ? preferenze : [],
         role,
       };
     }
