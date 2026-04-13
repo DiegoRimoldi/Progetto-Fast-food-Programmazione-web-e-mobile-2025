@@ -315,13 +315,13 @@ ordersRouter.put("/:id/consegna", authenticateUser, async (req, res) => {
       return res.status(400).json({ error: "Puoi confermare la consegna solo se l'ordine è 'in consegna'" });
     }
 
-    const result = await db.collection("orders").findOneAndUpdate(
+    const updatedOrder = await db.collection("orders").findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: { stato: "consegnato" } },
       { returnDocument: "after" }
     );
 
-    res.json(result.value);
+    res.json(updatedOrder);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Errore nella conferma consegna" });
