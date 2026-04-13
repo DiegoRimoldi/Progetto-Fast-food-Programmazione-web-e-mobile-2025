@@ -142,6 +142,14 @@
                   '<input type="text" id="address" class="form-control" value="' + mioRistorante.address + '" required>' +
                 '</div>' +
                 '<div class="mb-3">' +
+                  '<label for="numero_di_telefono" class="form-label">Numero di Telefono *</label>' +
+                  '<input type="tel" id="numero_di_telefono" class="form-control" value="' + (mioRistorante.numero_di_telefono || "") + '" required>' +
+                '</div>' +
+                '<div class="mb-3">' +
+                  '<label for="piva" class="form-label">Partita IVA *</label>' +
+                  '<input type="text" id="piva" class="form-control" value="' + (mioRistorante.piva || "") + '" required>' +
+                '</div>' +
+                '<div class="mb-3">' +
                   '<label for="description" class="form-label">Descrizione</label>' +
                   '<textarea id="description" class="form-control" rows="3">' + (mioRistorante.description || "") + '</textarea>' +
                 '</div>' +
@@ -159,15 +167,19 @@
             e.preventDefault();
             var name = document.getElementById("name").value.trim();
             var address = document.getElementById("address").value.trim();
+            var numeroDiTelefono = document.getElementById("numero_di_telefono").value.trim();
+            var piva = document.getElementById("piva").value.trim();
             var description = document.getElementById("description").value.trim();
             var image = document.getElementById("image").value.trim();
-            if (!name || !address) {
-              document.getElementById("message").innerHTML = '<div class="alert alert-danger">Nome e indirizzo sono obbligatori.</div>';
+            if (!name || !address || !numeroDiTelefono || !piva) {
+              document.getElementById("message").innerHTML = '<div class="alert alert-danger">Nome, indirizzo, telefono e partita IVA sono obbligatori.</div>';
               return;
             }
             var payload = {
               name: name,
               address: address,
+              numero_di_telefono: numeroDiTelefono,
+              piva: piva,
               description: description,
               image: image,
             };

@@ -16,6 +16,8 @@ Questa verifica copre:
   1. script di avvio errato in `package.json` (`server.js` inesistente);
   2. controllo autorizzazione difettoso su `GET /orders/:id`;
   3. controllo proprietario difettoso su `DELETE /meals/:id`.
+  4. validazione ruolo in registrazione utente assente;
+  5. dati obbligatori del ristorante (telefono/P.IVA) non enforce lato API/form.
 - **Rischi residui non bloccanti per demo:** mancano test automatici (`npm test` non implementato), e non c'è un harness di integrazione end-to-end.
 
 ## Copertura requisiti (traccia)
@@ -62,10 +64,14 @@ Questa verifica copre:
    - `GET /orders/:id` ora valida separatamente cliente e ristoratore, con lookup del ristorante del ristoratore autenticato.
 3. **Autorizzazione eliminazione piatto corretto**
    - `DELETE /meals/:id` ora verifica proprietà del piatto rispetto all'ID del ristorante del ristoratore autenticato (non rispetto all'ID utente).
+4. **Validazione tipologia utente e preferenze cliente**
+   - `POST /users/register` ora richiede `role` valido (`cliente` o `ristoratore`) e salva preferenze cliente (campo `preferenze`).
+5. **Dati principali ristorante allineati alla traccia**
+   - `POST /restaurants` ora richiede `numero_di_telefono` e partita IVA (da payload o profilo ristoratore).
+   - Interfacce ristoratore `creaRistorante` e `gestioneRistorante` aggiornate con campi telefono e P.IVA.
 
 ## Raccomandazioni finali (prima della consegna)
 
 - Aggiungere test automatici (almeno smoke API principali).
 - Aggiungere una sezione nella relazione PDF che espliciti i compromessi su ricerca allergeni e routing dedicato “ristorante per piatto”.
 - Ridurre log sensibili in produzione (es. stampa token JWT in middleware).
-
