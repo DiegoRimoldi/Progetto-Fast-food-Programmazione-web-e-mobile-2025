@@ -165,7 +165,7 @@
           var updateBtn = document.createElement("button");
           updateBtn.className = "btn btn-warning";
           updateBtn.innerText = "Avanza Stato";
-          updateBtn.onclick = () => cambiaStatoOrdine(order._id);
+          updateBtn.onclick = () => cambiaStatoOrdine(order._id, order.stato);
           orderDiv.appendChild(updateBtn);
         }
 
@@ -181,7 +181,7 @@
     }
   }
 
-  async function cambiaStatoOrdine(orderId) {
+  async function cambiaStatoOrdine(orderId, statoAttuale) {
     try {
       var response = await fetchConControlloToken(`${apiBase}/orders/${orderId}`, {
         method: "PUT",
@@ -192,6 +192,26 @@
       });
 
       if (!response.ok) throw new Error("Errore nella modifica dello stato.");
+
+      var updatedOrder = null;
+      var responseText = await response.text();
+
+      if (responseText) {
+        try {
+          updatedOrder = JSON.parse(responseText);
+        } catch (parseError) {
+          console.warn("Risposta non in formato JSON:", parseError);
+        }
+      }
+
+      if (updatedOrder && updatedOrder.stato === "consegnato") {
+        alert("Ordine consegnato correttamente al cliente.");
+      } else if (
+        statoAttuale === "in preparazione" &&
+        (!updatedOrder || !updatedOrder.stato)
+      ) {
+        alert("Ordine consegnato correttamente al cliente.");
+      }
 
       caricaOrdiniRistoratore();
     } catch (err) {
