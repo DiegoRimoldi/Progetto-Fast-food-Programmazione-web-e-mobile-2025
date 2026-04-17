@@ -192,8 +192,14 @@
     var item = document.createElement("div");
       item.innerHTML = `
         <br>
-        <input type="radio" name="ritiro_${ristoranteId}" value="Ritiro in ristorante" checked> Ritiro in ristorante
-        <input type="radio" name="ritiro_${ristoranteId}" value="Consegna a domicilio: ${indirizzoUtente}"> Consegna a domicilio<br><br><hr>`
+        <label class="me-3">
+          <input type="radio" name="ritiro_${ristoranteId}" value="Ritiro in ristorante" checked>
+          Ritiro in ristorante
+        </label>
+        <label>
+          <input type="radio" name="ritiro_${ristoranteId}" value="Consegna a domicilio">
+          Consegna a domicilio${indirizzoUtente ? ` (${indirizzoUtente})` : ""}
+        </label><br><br><hr>`
         container.appendChild(item);
 
     });
