@@ -172,6 +172,10 @@
         if (["ordinato", "in preparazione", "in consegna"].includes(order.stato)) {
           activeOrders.appendChild(orderDiv);
         } else {
+          if (historyOrders.children.length > 0) {
+            var separator = document.createElement("hr");
+            historyOrders.appendChild(separator);
+          }
           historyOrders.appendChild(orderDiv);
         }
       });
