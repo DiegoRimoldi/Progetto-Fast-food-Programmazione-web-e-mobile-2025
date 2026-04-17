@@ -90,6 +90,7 @@
     var apiBase = "http://localhost:3000";
     var carrello = [];
     var indirizzoUtente = "";
+    var ordineInCorso = false;
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
@@ -140,6 +141,107 @@
         indirizzoUtente = user.indirizzo || "";
       } catch (err) {
         console.error("Errore nel recupero dell'indirizzo utente:", err);
+      }
+    }
+
+    function mostraMessaggio(tipo, testo) {
+      var messageBox = document.getElementById("message");
+      messageBox.innerHTML = `<div class="alert alert-${tipo}" role="alert">${testo}</div>`;
+    }
+
+    function estraiComponentiIndirizzo(indirizzo) {
+      var normalizzato = indirizzo.trim().replace(/\s+/g, " ");
+      var capMatch = normalizzato.match(/\b\d{5}\b/);
+      var cap = capMatch ? capMatch[0] : "";
+      var parti = normalizzato.split(",").map(function (parte) { return parte.trim(); }).filter(Boolean);
+      var via = parti.length > 0 ? parti[0] : "";
+      var citta = "";
+
+      if (parti.length > 1) {
+        var ultimoBlocco = parti[parti.length - 1];
+        citta = ultimoBlocco.replace(/\b\d{5}\b/g, "").trim();
+      }
+
+      return { via: via, citta: citta, cap: cap, indirizzo: normalizzato };
+    }
+
+    function corrispondeValore(valoreUtente, possibiliValori) {
+      if (!valoreUtente) return true;
+      var normalizzatoUtente = valoreUtente.toLowerCase().trim();
+      return possibiliValori.some(function (valore) {
+        return (valore || "").toLowerCase().trim() === normalizzatoUtente;
+      });
+    }
+
+    async function validaIndirizzoReale(indirizzo) {
+      if (!indirizzo || !indirizzo.trim()) {
+        return { valido: false, errore: "Nessun indirizzo presente nel profilo. Inseriscilo prima di ordinare a domicilio." };
+      }
+
+      var componenti = estraiComponentiIndirizzo(indirizzo);
+      if (!componenti.via || !componenti.citta || !componenti.cap) {
+        return {
+          valido: false,
+          errore: "L'indirizzo deve includere via, città e CAP (es. Via Roma 10, 00100 Roma)."
+        };
+      }
+
+      try {
+        var params = new URLSearchParams({
+          q: componenti.indirizzo,
+          format: "jsonv2",
+          addressdetails: "1",
+          limit: "5",
+          countrycodes: "it"
+        });
+
+        var response = await fetch("https://nominatim.openstreetmap.org/search?" + params.toString(), {
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("Servizio di geocoding non disponibile.");
+        }
+
+        var risultati = await response.json();
+        if (!Array.isArray(risultati) || risultati.length === 0) {
+          return { valido: false, errore: "Indirizzo non trovato su OpenStreetMap/Nominatim. Controlla i dati inseriti." };
+        }
+
+        var trovato = risultati.some(function (risultato) {
+          var address = risultato.address || {};
+          var capValido = corrispondeValore(componenti.cap, [address.postcode]);
+          var cittaValida = corrispondeValore(componenti.citta, [
+            address.city,
+            address.town,
+            address.village,
+            address.municipality,
+            address.county
+          ]);
+          var viaValida = corrispondeValore(componenti.via, [
+            address.road ? `${address.road} ${(address.house_number || "").trim()}`.trim() : "",
+            address.road,
+            risultato.name
+          ]);
+          return capValido && cittaValida && viaValida;
+        });
+
+        if (!trovato) {
+          return {
+            valido: false,
+            errore: "L'indirizzo esiste ma non coincide con via/città/CAP indicati. Verifica i dati."
+          };
+        }
+
+        return { valido: true };
+      } catch (error) {
+        console.error("Errore validazione indirizzo:", error);
+        return {
+          valido: false,
+          errore: "Errore durante la validazione dell'indirizzo. Riprova tra qualche minuto."
+        };
       }
     }
 
@@ -226,10 +328,16 @@
     }
 
     document.getElementById("orderBtn").addEventListener("click", async function () {
+        if (ordineInCorso) return;
+
         if (!carrello || carrello.meals.length === 0) {
           alert("Il carrello è vuoto!");
           return;
         }
+
+        ordineInCorso = true;
+        document.getElementById("orderBtn").disabled = true;
+        document.getElementById("message").innerHTML = "";
 
         var sceltaRitiro = {};
 
@@ -238,6 +346,22 @@
           var scelta = document.querySelector(`input[name="ritiro_${ristoranteId}"]:checked`).value;
           sceltaRitiro[ristoranteId] = scelta;
         });
+
+        var haConsegnaADomicilio = Object.values(sceltaRitiro).some(function (valore) {
+          return valore === "Consegna a domicilio";
+        });
+
+        if (haConsegnaADomicilio) {
+          mostraMessaggio("info", "Verifica indirizzo in corso tramite OpenStreetMap/Nominatim...");
+          var risultatoValidazione = await validaIndirizzoReale(indirizzoUtente);
+          if (!risultatoValidazione.valido) {
+            mostraMessaggio("danger", risultatoValidazione.errore);
+            ordineInCorso = false;
+            document.getElementById("orderBtn").disabled = false;
+            return;
+          }
+          mostraMessaggio("success", "Indirizzo verificato con successo.");
+        }
 
         var ordiniPerRistoranti = {};
 
@@ -291,6 +415,9 @@
       } catch (err) {
         console.error("Errore nell'ordine:", err);
         alert(`Errore durante l'ordine: ${err.message}`);
+      } finally {
+        ordineInCorso = false;
+        document.getElementById("orderBtn").disabled = false;
       }
     });
 
