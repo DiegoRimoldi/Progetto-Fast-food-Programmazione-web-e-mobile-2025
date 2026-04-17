@@ -60,7 +60,7 @@
       background-color: #fff;
     }
     .order-card p {
-      margin: 0;
+      margin: 0.25rem 0;
     }
     .btn-confirm {
       background-color: #00B5A2;
@@ -68,6 +68,23 @@
       border-radius: 0.375rem;
       padding: 0.5rem;
       margin-top: 0.5rem;
+    }
+    .order-details {
+      margin-top: 0.75rem;
+      border-top: 1px dashed #dee2e6;
+      padding-top: 0.75rem;
+    }
+    .order-details summary {
+      cursor: pointer;
+      color: #00B5A2;
+      font-weight: 600;
+    }
+    .meals-list {
+      margin: 0.75rem 0 0;
+      padding-left: 1rem;
+    }
+    .meal-item {
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
@@ -135,11 +152,85 @@
       }
     }
 
+    function formatEuro(value) {
+      return "€" + Number(value || 0).toFixed(2);
+    }
+
+    function creaDettagliPasti(order) {
+      if (!Array.isArray(order.meals) || order.meals.length === 0) {
+        return "<p class='text-muted mb-0'>Dettaglio prodotti non disponibile.</p>";
+      }
+
+      var righePasti = order.meals.map(meal => {
+        var quantita = Number(meal.quantita || 0);
+        var prezzoUnitario = Number(meal.prezzo_unitario || 0);
+        var subtotale = quantita * prezzoUnitario;
+        var tempoPreparazione = meal.tempo_preparazione ? `${meal.tempo_preparazione} min` : "N/D";
+
+        return `
+          <li class="meal-item">
+            <strong>${meal.nome || "Piatto non specificato"}</strong><br>
+            Quantità: ${quantita} • Prezzo unitario: ${formatEuro(prezzoUnitario)} • Subtotale: ${formatEuro(subtotale)}<br>
+            Tempo preparazione stimato: ${tempoPreparazione}
+          </li>
+        `;
+      }).join("");
+
+      return `<ul class="meals-list">${righePasti}</ul>`;
+    }
+
+    function creaCardOrdine(order) {
+      var orderDiv = document.createElement("div");
+      orderDiv.className = "order-card";
+
+      var consegnaDettagli = "";
+      if (order.metodo_consegna === "Consegna a domicilio") {
+        consegnaDettagli = `
+          <p>Indirizzo consegna: ${order.indirizzo_consegna || "Non specificato"}</p>
+          <p>Distanza: ${order.distanza_km ? order.distanza_km + " km" : "N/D"}</p>
+          <p>Costo consegna: ${formatEuro(order.costo_consegna)}</p>
+        `;
+      }
+
+      orderDiv.innerHTML = `
+        <p><strong>Ordine #${order._id}</strong></p>
+        <p>Ristorante: ${order.ristorante_nome}</p>
+        <p>Totale: ${formatEuro(order.totale)}</p>
+        <p>Data ordine: ${order.data_ordine}</p>
+        <p>Metodo consegna: ${order.metodo_consegna || "N/D"}</p>
+        ${consegnaDettagli}
+        <p>Tempo di attesa: ${order.tempo_attesa} min</p>
+        <p>Stato: <strong>${order.stato}</strong></p>
+        <details class="order-details">
+          <summary>Vedi dettaglio ordine</summary>
+          ${creaDettagliPasti(order)}
+        </details>
+      `;
+
+      return orderDiv;
+    }
+
+    function parseDataOrdine(dataOrdine) {
+      if (!dataOrdine || typeof dataOrdine !== "string") return 0;
+      var match = dataOrdine.match(/^(\d{2})\/(\d{2})\/(\d{4})\s-\s(\d{2}):(\d{2})$/);
+      if (!match) return 0;
+      var giorno = Number(match[1]);
+      var mese = Number(match[2]) - 1;
+      var anno = Number(match[3]);
+      var ora = Number(match[4]);
+      var minuto = Number(match[5]);
+      return new Date(anno, mese, giorno, ora, minuto).getTime();
+    }
+
     async function caricaOrdiniCliente() {
       try {
         var response = await fetchConControlloToken(apiBase + "/orders", {
           headers: { "Authorization": "Bearer " + token }
         });
+
+        if (!response || !response.ok) {
+          throw new Error("Impossibile recuperare gli ordini.");
+        }
 
         var orders = await response.json();
         var activeOrders = document.getElementById("activeOrders");
@@ -150,17 +241,10 @@
 
         let storicoVuoto = true;
 
+        orders.sort((a, b) => parseDataOrdine(b.data_ordine) - parseDataOrdine(a.data_ordine));
+
         orders.forEach(order => {
-          var orderDiv = document.createElement("div");
-          orderDiv.className = "order-card";
-          orderDiv.innerHTML = `
-            <p><strong>Ordine #${order._id}</strong></p>
-            <p>Ristorante: ${order.ristorante_nome}</p>
-            <p>Totale: €${order.totale.toFixed(2)}</p>
-            <p>Data ordine: ${order.data_ordine}</p>
-            <p>Tempo di attesa: ${order.tempo_attesa} min</p>
-            <p>Stato: <strong>${order.stato}</strong></p>
-          `;
+          var orderDiv = creaCardOrdine(order);
 
           if (order.stato === "in consegna") {
             var confirmBtn = document.createElement("button");
