@@ -20,7 +20,13 @@ function extractAddressParts(rawAddress = "") {
   const cap = capMatch ? capMatch[0] : "";
 
   const streetChunk = chunks[0] || "";
-  const cityChunk = chunks.length > 1 ? chunks[chunks.length - 1] : "";
+
+  // versione migliorata: pulisce CAP e "Italia"
+  const cityChunkRaw = chunks.length > 1 ? chunks[chunks.length - 1] : "";
+  const cityChunk = cityChunkRaw
+    .replace(/\b\d{5}\b/, "")
+    .replace(/\b(italia|italy)\b/i, "")
+    .trim();
 
   const hasStreetNumber = /\b\d+[a-zA-Z]?\b/.test(streetChunk);
 
@@ -44,11 +50,18 @@ function addressMatches(parsedInput, nominatimAddress = {}) {
     nominatimAddress.residential
   ].filter(Boolean);
 
-  const inputStreet = normalizeValue(parsedInput.streetChunk);
+  // versione migliorata: normalizza tipi di strada
+  const normalizeStreet = (streetValue = "") => normalizeValue(
+    streetValue
+      .replace(/\b(via|viale|piazza|corso|largo|vicolo|strada|piazzale)\b/gi, "")
+      .replace(/[.,]/g, " ")
+  );
+
+  const inputStreet = normalizeStreet(parsedInput.streetChunk);
   const inputCap = normalizeValue(parsedInput.cap);
   const inputCity = normalizeValue(parsedInput.cityChunk);
 
-  const candidateStreet = normalizeValue(
+  const candidateStreet = normalizeStreet(
     roadCandidates
       .map((road) => `${road} ${(nominatimAddress.house_number || "").trim()}`.trim())
       .join(" ")
@@ -89,7 +102,8 @@ export async function validateAddressWithOpenStreetMap(rawAddress, options = {})
     return { valid: false, reason: "Indirizzo troppo corto: specifica via, numero civico, CAP e città." };
   }
 
-  if (parsedInput.chunks.length < 2) {
+  // versione più permissiva ma corretta
+  if (parsedInput.chunks.length < 2 && !parsedInput.cap) {
     return { valid: false, reason: "Formato indirizzo non valido: usa almeno 'Via ... numero, CAP Città'." };
   }
 
@@ -99,6 +113,10 @@ export async function validateAddressWithOpenStreetMap(rawAddress, options = {})
 
   if (!parsedInput.cap) {
     return { valid: false, reason: "Inserisci un CAP valido a 5 cifre nell'indirizzo." };
+  }
+
+  if (!parsedInput.cityChunk) {
+    return { valid: false, reason: "Inserisci anche la città insieme al CAP (es. 20121 Milano)." };
   }
 
   const url = new URL(NOMINATIM_BASE_URL);
