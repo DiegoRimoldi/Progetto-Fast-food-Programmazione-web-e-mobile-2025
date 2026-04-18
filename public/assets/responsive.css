@@ -63,6 +63,10 @@ img {
     top: 0;
     z-index: 1000;
     background-color: #fff;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible;
+    align-self: stretch;
   }
 
   .sidebar-header {
