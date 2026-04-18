@@ -2,6 +2,7 @@ import express from "express";
 import { ObjectId } from "mongodb";
 import authenticateUser from "../middlewares/authenticateUser.js";
 import authorizeRistoratore from "../middlewares/authorizeRistoratore.js";
+import { validateAddressWithOpenStreetMap } from "../utils/addressValidation.js";
 
 const router = express.Router();
 
@@ -180,6 +181,13 @@ router.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
   const { name, address, numero_di_telefono, piva, menu, description, image } = req.body;
   if (!name || !address || !numero_di_telefono) {
     return res.status(400).json({ error: "Nome, indirizzo e numero di telefono sono obbligatori" });
+  }
+
+  const addressValidation = await validateAddressWithOpenStreetMap(address);
+  if (!addressValidation.valid) {
+    return res.status(400).json({
+      error: `Indirizzo ristorante non valido. ${addressValidation.reason}`
+    });
   }
 
   try {
