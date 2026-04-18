@@ -8,6 +8,7 @@ const ordersRouter = express.Router();
 const validStates = ["ordinato", "in preparazione", "in consegna", "consegnato"];
 const DELIVERY_COST_PER_KM = 0.7;
 const DELIVERY_BASE_COST = 1.5;
+const OSRM_TIMEOUT_MS = 7000;
 
 async function geocodeAddress(address) {
   const url = new URL("https://nominatim.openstreetmap.org/search");
@@ -48,6 +49,55 @@ function haversineKm(coord1, coord2) {
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
   return earthRadiusKm * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+async function getDrivingRouteMetrics(coordFrom, coordTo) {
+  const routeUrl = new URL(
+    `https://router.project-osrm.org/route/v1/driving/${coordFrom.lon},${coordFrom.lat};${coordTo.lon},${coordTo.lat}`
+  );
+  routeUrl.searchParams.set("overview", "false");
+  routeUrl.searchParams.set("alternatives", "false");
+  routeUrl.searchParams.set("steps", "false");
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OSRM_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(routeUrl, {
+      headers: {
+        "User-Agent": "FastFoodProject/1.0 (A.A.2025-2026)"
+      },
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`Errore routing OpenStreetMap/OSRM: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const firstRoute = data?.routes?.[0];
+
+    if (!firstRoute || typeof firstRoute.distance !== "number" || typeof firstRoute.duration !== "number") {
+      throw new Error("Risposta routing OSRM non valida");
+    }
+
+    return {
+      distanzaKm: Number((firstRoute.distance / 1000).toFixed(2)),
+      durataMin: Math.max(1, Math.ceil(firstRoute.duration / 60))
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function calculateOrderPreparationMinutes(order) {
+  if (!Array.isArray(order?.meals)) return 0;
+
+  return order.meals.reduce((totale, meal) => {
+    const quantita = Number.isFinite(meal?.quantita) ? meal.quantita : 0;
+    const tempoPreparazione = Number.isFinite(meal?.tempo_preparazione) ? meal.tempo_preparazione : 10;
+    return totale + (quantita * tempoPreparazione);
+  }, 0);
 }
 
 // POST /orders - Crea nuovo ordine per l'utente autenticato
@@ -102,6 +152,7 @@ ordersRouter.post("/", authenticateUser, async (req, res) => {
       let tempoAttesa = 0;
       let costoConsegna = 0;
       let distanzaKm = 0;
+      let durataConsegnaMin = 0;
 
       ordiniPerRistoranti[ristoranteId].forEach((meal) => {
         totale += meal.quantita * meal.prezzo_unitario;
@@ -123,7 +174,7 @@ ordersRouter.post("/", authenticateUser, async (req, res) => {
 
       ordiniRistorante.forEach((o) => {
         if (["in preparazione", "ordinato"].includes(o.stato)) {
-          tempoAttesa += o.tempo_attesa;
+          tempoAttesa += calculateOrderPreparationMinutes(o);
         }
       });
 
@@ -133,7 +184,19 @@ ordersRouter.post("/", authenticateUser, async (req, res) => {
           geocodeAddress(ristorante.address),
           geocodeAddress(indirizzoEffettivo)
         ]);
-        distanzaKm = Number(haversineKm(coordRistorante, coordConsegna).toFixed(2));
+
+        try {
+          const routeMetrics = await getDrivingRouteMetrics(coordRistorante, coordConsegna);
+          distanzaKm = routeMetrics.distanzaKm;
+          durataConsegnaMin = routeMetrics.durataMin;
+        } catch (routingError) {
+          console.warn("Routing OSRM non disponibile, fallback su distanza lineare.", routingError.message);
+          distanzaKm = Number(haversineKm(coordRistorante, coordConsegna).toFixed(2));
+          // Fallback prudenziale: velocità media urbana ~35 km/h
+          durataConsegnaMin = Math.max(1, Math.ceil((distanzaKm / 35) * 60));
+        }
+
+        tempoAttesa += durataConsegnaMin;
         costoConsegna = Number((DELIVERY_BASE_COST + (distanzaKm * DELIVERY_COST_PER_KM)).toFixed(2));
         totale += costoConsegna;
       }
