@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import authenticateUser from "../middlewares/authenticateUser.js";
+import { validateAddressWithOpenStreetMap } from "../utils/addressValidation.js";
 
 const usersRouter = express.Router();
 
@@ -62,6 +63,15 @@ usersRouter.post("/register", async (req, res) => {
 
     if(role=="cliente" && (!indirizzo || !metodo_pagamento)){
       return res.status(400).json({ error: "Indirizzo e metodo di pagamento sono obbligatori" });
+    }
+
+    if (role === "cliente") {
+      const addressValidation = await validateAddressWithOpenStreetMap(indirizzo);
+      if (!addressValidation.valid) {
+        return res.status(400).json({
+          error: `Indirizzo cliente non valido. ${addressValidation.reason}`
+        });
+      }
     }
 
     if(role=="ristoratore" && !piva){
