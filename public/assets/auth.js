@@ -15,8 +15,9 @@
     }
   }
 
-  function redirectToLogin() {
-    window.location.href = '/login.html';
+  function showAuthIssue(message) {
+    console.warn('Controllo autenticazione:', message);
+    return false;
   }
 
   function validateSession() {
@@ -31,12 +32,14 @@
     return payload;
   }
 
+  window.handleAuthIssue = function (reason) {
+    return showAuthIssue(reason || 'sessione non valida');
+  };
+
   window.ensureAuthenticated = function () {
     var payload = validateSession();
     if (!payload) {
-      localStorage.clear();
-      redirectToLogin();
-      return false;
+      return showAuthIssue('utente non autenticato');
     }
     return true;
   };
@@ -44,16 +47,12 @@
   window.ensureAuthenticatedRole = function (expectedRole) {
     var payload = validateSession();
     if (!payload) {
-      localStorage.clear();
-      redirectToLogin();
-      return false;
+      return showAuthIssue('utente non autenticato');
     }
 
-    // Evita redirect involontari su refresh in caso di clock del client non allineato.
-    // La validità reale del token viene sempre verificata dal backend sulle API protette.
+    // Evita redirect involontari su refresh: in caso di mismatch ruolo rimaniamo nella pagina.
     if (payload.role !== expectedRole) {
-      redirectToLogin();
-      return false;
+      return showAuthIssue('ruolo non autorizzato');
     }
 
     return true;

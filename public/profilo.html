@@ -102,7 +102,7 @@
       if (window.history.length > 1) {
         window.history.back();
       } else {
-        window.location.href = "./login.html"; // fallback se non c'è cronologia
+        window.handleAuthIssue("utente non autenticato"); // fallback se non c'è cronologia
       }
     }
 
@@ -110,7 +110,7 @@
       var token = localStorage.getItem("token");
 
       if (!token) {
-        window.location.href = "./logout.html";
+        window.handleAuthIssue("sessione non valida");
         return;
       }
 
@@ -121,7 +121,7 @@
         let response = await fetch(url, options);
 
         if (response.status === 401) {
-          window.location.href = "./logout.html";
+          window.handleAuthIssue("sessione non valida");
         }
 
         return response;
@@ -240,7 +240,7 @@
               throw new Error(delError);
             }
 
-            window.location.href = "./logout.html";
+            window.handleAuthIssue("sessione non valida");
           } catch (err) {
             document.getElementById("message").innerHTML =
               '<div class="alert alert-danger">' + err.message + '</div>';
