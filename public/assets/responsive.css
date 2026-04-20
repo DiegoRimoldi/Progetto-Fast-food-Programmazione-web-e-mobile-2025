@@ -3,6 +3,11 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  max-width: 100%;
+}
+
 img {
   max-width: 100%;
   height: auto;
@@ -32,6 +37,12 @@ img {
     justify-content: center !important;
     text-align: center;
     gap: 1.5rem;
+    min-height: auto !important;
+  }
+
+  .hero-text,
+  .hero-img {
+    max-width: 100% !important;
   }
 
   .hero-text h1 {
@@ -47,6 +58,68 @@ img {
     margin-top: 0.75rem !important;
     width: 100%;
     max-width: 320px;
+  }
+
+  .main-content {
+    padding: 1.25rem !important;
+  }
+
+  .card img,
+  .meal-card img,
+  .ristorante-card img {
+    height: 190px !important;
+  }
+
+  .search-bar,
+  .filter-panel,
+  .filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem !important;
+  }
+
+  .search-bar input,
+  .filter-panel > div,
+  .filter-panel .btn,
+  .filter-section > div,
+  .filter-section .btn {
+    width: 100%;
+  }
+
+  .meal-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+  }
+
+  .pagination-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .pagination-controls input[type="number"] {
+    width: 72px;
+  }
+
+  .order-card,
+  .stats-card,
+  .card-custom {
+    padding: 0.85rem !important;
+  }
+
+  .form-container,
+  .cart-container,
+  .login-container,
+  .register-container {
+    margin: 1rem auto !important;
+    padding: 1rem !important;
+  }
+
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 }
 
@@ -67,6 +140,7 @@ img {
     max-height: none !important;
     overflow-y: visible;
     align-self: stretch;
+    padding: 0.75rem !important;
   }
 
   .sidebar-header {
@@ -78,33 +152,24 @@ img {
   }
 
   .sidebar a.nav-link {
-    padding: 0.625rem 0.75rem !important;
+    padding: 0.55rem 0.7rem !important;
     margin-bottom: 0.35rem !important;
+    font-size: 0.95rem;
   }
 
   .main-content {
     padding: 1rem !important;
   }
 
+  .main-content h2 {
+    margin-bottom: 1rem !important;
+    font-size: 1.45rem;
+  }
+
   .search-bar,
-  .filter-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem !important;
-  }
-
-  .search-bar input,
-  .filter-panel > div,
-  .filter-panel .btn {
-    width: 100%;
-  }
-
-  .form-container,
-  .cart-container,
-  .login-container,
-  .register-container {
-    margin: 1rem auto !important;
-    padding: 1rem !important;
+  .filter-panel,
+  .filter-section {
+    gap: 0.6rem !important;
   }
 
   .card img,
@@ -113,10 +178,74 @@ img {
     height: 180px !important;
   }
 
-  table {
-    display: block;
+  .meal-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #piattoPersonalizzato,
+  #restaurantForm,
+  #profileForm,
+  #passwordForm {
+    max-width: 100% !important;
+  }
+
+  .d-flex.gap-2 {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .d-flex.gap-2 .btn {
     width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
+  }
+}
+
+@media (max-width: 576px) {
+  header {
+    padding: 0.85rem !important;
+  }
+
+  .logo {
+    font-size: 1.5rem !important;
+  }
+
+  .hero {
+    padding: 1.5rem 0.75rem !important;
+  }
+
+  .hero-text h1 {
+    font-size: 1.6rem !important;
+  }
+
+  .main-content {
+    padding: 0.85rem !important;
+  }
+
+  .main-content h2 {
+    font-size: 1.3rem;
+  }
+
+  .card img,
+  .meal-card img,
+  .ristorante-card img {
+    height: 165px !important;
+  }
+
+  .order-card,
+  .stats-card,
+  .card-custom,
+  .login-container,
+  .register-container,
+  .form-container,
+  .cart-container {
+    border-radius: 12px;
+  }
+
+  .order-details summary {
+    font-size: 0.95rem;
+  }
+
+  .meals-list,
+  .meal-item {
+    font-size: 0.95rem;
   }
 }
