@@ -319,7 +319,7 @@
               }
 
               document.getElementById("message").innerHTML = '<div class="alert alert-success">Ristorante aggiornato con successo!</div>';
-              alert("Conferma: il ristorante è stato aggiornato con successo.");
+              alert("Il Ristorante è stato aggiornato con successo.");
             } catch (err) {
               console.error("Errore:", err);
               document.getElementById("message").innerHTML = '<div class="alert alert-danger">' + err.message + '</div>';
@@ -342,7 +342,7 @@
               }
 
               document.getElementById("message").innerHTML = '<div class="alert alert-success">Ristorante eliminato con successo!</div>';
-              alert("Conferma: il ristorante è stato eliminato con successo.");
+              alert("Il Ristorante è stato eliminato con successo.");
               setTimeout(function() {
                 window.location.href = "home.html";
               }, 1200);
