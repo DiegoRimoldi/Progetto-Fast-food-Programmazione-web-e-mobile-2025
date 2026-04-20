@@ -1,5 +1,9 @@
 (function () {
   var AUTH_PAGES = ['/login.html', '/register.html', '/logout.html', '/index.html', '/'];
+  var ROLE_PATH_PREFIXES = {
+    ristoratore: '/ristoratore/',
+    cliente: '/cliente/'
+  };
 
   function getCurrentPath() {
     return window.location.pathname || '/';
@@ -56,17 +60,51 @@
     return false;
   }
 
-  function validateSession() {
-    var token = localStorage.getItem('token');
+  function inferRoleFromPath(pathname) {
+    if (!pathname) return null;
+    if (pathname.indexOf(ROLE_PATH_PREFIXES.ristoratore) === 0) return 'ristoratore';
+    if (pathname.indexOf(ROLE_PATH_PREFIXES.cliente) === 0) return 'cliente';
+    return null;
+  }
+
+  function getRoleScopedValue(baseKey, role) {
+    if (!role) return null;
+    return localStorage.getItem(baseKey + '_' + role);
+  }
+
+  function setRoleScopedValue(baseKey, role, value) {
+    if (!role || value === null || value === undefined || value === '') return;
+    localStorage.setItem(baseKey + '_' + role, value);
+  }
+
+  function validateSession(expectedRole) {
+    var pathname = getCurrentPath();
+    var roleFromPath = inferRoleFromPath(pathname);
+    var activeRole = expectedRole || roleFromPath;
+
+    var token = getRoleScopedValue('token', activeRole) || localStorage.getItem('token');
     if (!token) return null;
 
     var payload = decodeJwtPayload(token);
     if (!payload || !payload.role || !payload.userId) return null;
 
+    if (activeRole && payload.role !== activeRole) {
+      var fallbackToken = localStorage.getItem('token');
+      var fallbackPayload = fallbackToken ? decodeJwtPayload(fallbackToken) : null;
+      if (!fallbackPayload || fallbackPayload.role !== activeRole || !fallbackPayload.userId) {
+        return null;
+      }
+      token = fallbackToken;
+      payload = fallbackPayload;
+    }
+
+    localStorage.setItem('token', token);
     localStorage.setItem('role', payload.role);
     localStorage.setItem('userId', payload.userId);
+    setRoleScopedValue('token', payload.role, token);
+    setRoleScopedValue('userId', payload.role, payload.userId);
 
-    saveLastVisitedPath(getCurrentPath());
+    saveLastVisitedPath(pathname);
     return payload;
   }
 
@@ -88,7 +126,7 @@
   };
 
   window.ensureAuthenticatedRole = function (expectedRole) {
-    var payload = validateSession();
+    var payload = validateSession(expectedRole);
     if (!payload) {
       return showAuthIssue('utente non autenticato');
     }
