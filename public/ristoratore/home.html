@@ -242,14 +242,27 @@
       }
 
       ordiniFiltrati.forEach(order => {
+        var dataOrdine = order.data_ordine || "Non disponibile";
+        var numeroPiatti = Array.isArray(order.meals)
+          ? order.meals.reduce((totale, meal) => totale + (Number(meal.quantita) || 0), 0)
+          : 0;
+        var tempoAttesa = Number.isFinite(order.tempo_attesa) ? order.tempo_attesa : null;
+        var indirizzoConsegna = order.metodo_consegna === "Consegna a domicilio"
+          ? (order.indirizzo_consegna || "Non disponibile")
+          : "Ritiro presso il ristorante";
+
         var orderDiv = document.createElement("div");
         orderDiv.className = "mb-3 p-2 border rounded";
         orderDiv.innerHTML = `
           <p><strong>Ordine #${order._id}</strong></p>
+          <p>Data ordine: ${dataOrdine}</p>
           <p>Cliente: ${order.cliente_nome}</p>
           <p>Totale: €${order.totale.toFixed(2)}</p>
           <p>Stato: <span class="badge bg-warning">${order.stato}</span></p>
           <p>Consegna: ${order.metodo_consegna}</p>
+          <p>Piatti totali: ${numeroPiatti}</p>
+          <p>Indirizzo consegna: ${indirizzoConsegna}</p>
+          <p>Tempo di attesa stimato: ${tempoAttesa !== null ? tempoAttesa + " min" : "Non disponibile"}</p>
         `;
         ordersContainer.appendChild(orderDiv);
       });
