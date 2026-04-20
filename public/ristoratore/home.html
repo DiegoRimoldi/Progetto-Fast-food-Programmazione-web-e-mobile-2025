@@ -70,16 +70,11 @@
     }
   </style>
     <link rel="icon" type="image/png" href="../assets/Favicon.png">
+  <script src="../assets/auth.js"></script>
 </head>
 <body>
   <script>
-    (function() {
-      var token = localStorage.getItem("token");
-      var role = localStorage.getItem("role");
-      if (!token || role !== "ristoratore") {
-        window.location.href = "../login.html";
-      }
-    })();
+    window.ensureAuthenticatedRole("ristoratore");
   </script>
 
 <div class="sidebar">
