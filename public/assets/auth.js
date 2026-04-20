@@ -16,32 +16,41 @@
   }
 
   function redirectToLogin() {
-    window.location.href = '../login.html';
+    window.location.href = '/login.html';
   }
 
-  window.ensureAuthenticatedRole = function (expectedRole) {
+  function validateSession() {
     var token = localStorage.getItem('token');
-    if (!token) {
-      redirectToLogin();
-      return false;
-    }
+    if (!token) return null;
 
     var payload = decodeJwtPayload(token);
-    if (!payload || !payload.role || !payload.userId) {
-      localStorage.clear();
-      redirectToLogin();
-      return false;
-    }
-
-    if (payload.exp && Date.now() >= payload.exp * 1000) {
-      localStorage.clear();
-      redirectToLogin();
-      return false;
-    }
+    if (!payload || !payload.role || !payload.userId) return null;
 
     localStorage.setItem('role', payload.role);
     localStorage.setItem('userId', payload.userId);
+    return payload;
+  }
 
+  window.ensureAuthenticated = function () {
+    var payload = validateSession();
+    if (!payload) {
+      localStorage.clear();
+      redirectToLogin();
+      return false;
+    }
+    return true;
+  };
+
+  window.ensureAuthenticatedRole = function (expectedRole) {
+    var payload = validateSession();
+    if (!payload) {
+      localStorage.clear();
+      redirectToLogin();
+      return false;
+    }
+
+    // Evita redirect involontari su refresh in caso di clock del client non allineato.
+    // La validità reale del token viene sempre verificata dal backend sulle API protette.
     if (payload.role !== expectedRole) {
       redirectToLogin();
       return false;
