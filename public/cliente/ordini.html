@@ -134,7 +134,7 @@
       var token = localStorage.getItem("token");
 
       if (!token) {
-        window.location.href = "../logout.html";
+        window.handleAuthIssue("sessione non valida");
         return;
       }
 
@@ -145,7 +145,7 @@
         let response = await fetch(url, options);
 
         if (response.status === 401) { // token scaduto o invalido
-            window.location.href = "../logout.html";
+            window.handleAuthIssue("sessione non valida");
           }
 
         return response;
