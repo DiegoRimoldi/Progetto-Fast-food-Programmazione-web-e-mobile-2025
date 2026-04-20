@@ -110,7 +110,7 @@
       var token = localStorage.getItem("token");
 
       if (!token) {
-        window.location.href = "./logout.html";
+        window.redirectToLogoutIfAllowed();
         return;
       }
 
@@ -121,7 +121,7 @@
         let response = await fetch(url, options);
 
         if (response.status === 401) {
-          window.location.href = "./logout.html";
+          window.redirectToLogoutIfAllowed();
         }
 
         return response;
@@ -240,7 +240,7 @@
               throw new Error(delError);
             }
 
-            window.location.href = "./logout.html";
+            window.redirectToLogoutIfAllowed();
           } catch (err) {
             document.getElementById("message").innerHTML =
               '<div class="alert alert-danger">' + err.message + '</div>';

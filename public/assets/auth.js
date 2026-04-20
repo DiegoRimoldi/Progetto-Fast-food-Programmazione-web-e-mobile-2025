@@ -15,9 +15,42 @@
     }
   }
 
+  function isReloadNavigation() {
+    var navEntries = performance.getEntriesByType('navigation');
+    if (navEntries && navEntries.length > 0) {
+      return navEntries[0].type === 'reload';
+    }
+
+    if (performance.navigation) {
+      return performance.navigation.type === 1;
+    }
+
+    return false;
+  }
+
   function redirectToLogin() {
     window.location.href = '/login.html';
   }
+
+  window.redirectToLoginIfAllowed = function () {
+    if (isReloadNavigation()) {
+      console.warn('Redirect al login bloccato perché la pagina è stata ricaricata.');
+      return false;
+    }
+
+    redirectToLogin();
+    return true;
+  };
+
+  window.redirectToLogoutIfAllowed = function () {
+    if (isReloadNavigation()) {
+      console.warn('Redirect al logout bloccato perché la pagina è stata ricaricata.');
+      return false;
+    }
+
+    window.location.href = '/logout.html';
+    return true;
+  };
 
   function validateSession() {
     var token = localStorage.getItem('token');
@@ -35,7 +68,7 @@
     var payload = validateSession();
     if (!payload) {
       localStorage.clear();
-      redirectToLogin();
+      window.redirectToLoginIfAllowed();
       return false;
     }
     return true;
@@ -45,14 +78,14 @@
     var payload = validateSession();
     if (!payload) {
       localStorage.clear();
-      redirectToLogin();
+      window.redirectToLoginIfAllowed();
       return false;
     }
 
     // Evita redirect involontari su refresh in caso di clock del client non allineato.
     // La validità reale del token viene sempre verificata dal backend sulle API protette.
     if (payload.role !== expectedRole) {
-      redirectToLogin();
+      window.redirectToLoginIfAllowed();
       return false;
     }
 
