@@ -1,4 +1,40 @@
 (function () {
+  var AUTH_PAGES = ['/login.html', '/register.html', '/logout.html', '/index.html', '/'];
+
+  function getCurrentPath() {
+    return window.location.pathname || '/';
+  }
+
+  function isAuthPage(pathname) {
+    return AUTH_PAGES.includes(pathname);
+  }
+
+  function saveLastVisitedPath(pathname) {
+    try {
+      if (!isAuthPage(pathname)) {
+        sessionStorage.setItem('lastVisitedPath', pathname + window.location.search + window.location.hash);
+      }
+    } catch (error) {
+      console.warn('Impossibile salvare il percorso corrente:', error);
+    }
+  }
+
+  function restoreLastVisitedPath(payload) {
+    var pathname = getCurrentPath();
+    if (pathname !== '/login.html' || !payload) return;
+
+    try {
+      var fallbackPath = payload.role === 'ristoratore' ? '/ristoratore/home.html' : '/cliente/home.html';
+      var targetPath = sessionStorage.getItem('lastVisitedPath') || fallbackPath;
+
+      if (targetPath && !isAuthPage(targetPath)) {
+        window.location.replace(targetPath);
+      }
+    } catch (error) {
+      console.warn('Impossibile ripristinare l’ultima pagina visitata:', error);
+    }
+  }
+
   function decodeJwtPayload(token) {
     var parts = token.split('.');
     if (parts.length < 2) return null;
@@ -29,8 +65,15 @@
 
     localStorage.setItem('role', payload.role);
     localStorage.setItem('userId', payload.userId);
+
+    saveLastVisitedPath(getCurrentPath());
     return payload;
   }
+
+  (function bootstrapNavigationState() {
+    var payload = validateSession();
+    restoreLastVisitedPath(payload);
+  })();
 
   window.handleAuthIssue = function (reason) {
     return showAuthIssue(reason || 'sessione non valida');
