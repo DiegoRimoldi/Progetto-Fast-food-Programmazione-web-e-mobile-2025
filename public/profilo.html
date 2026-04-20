@@ -25,15 +25,11 @@
     }
   </style>
     <link rel="icon" type="image/png" href="assets/Favicon.png">
+  <script src="assets/auth.js"></script>
 </head>
 <body>
   <script>
-    (function() {
-      var token = localStorage.getItem("token");
-      if (!token) {
-        window.location.href = "../login.html";
-      }
-    })();
+    window.ensureAuthenticated();
   </script>
 
   <div class="main-content">
