@@ -111,12 +111,13 @@
           return;
         }
 
-        localStorage.clear();
         localStorage.setItem("token", data.token);
 
         const payload = JSON.parse(atob(data.token.split('.')[1])); //atob, decodifica stringa Base64
         localStorage.setItem("role", payload.role);
         localStorage.setItem("userId", payload.userId);
+        localStorage.setItem(`token_${payload.role}`, data.token);
+        localStorage.setItem(`userId_${payload.role}`, payload.userId);
 
         if (payload.role === "ristoratore") {
           window.location.href = "ristoratore/home.html";
