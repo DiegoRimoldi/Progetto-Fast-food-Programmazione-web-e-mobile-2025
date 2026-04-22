@@ -183,6 +183,15 @@
         !["ordinato", "in preparazione", "in consegna"].includes(order.stato)
       );
 
+      var ordiniConsegnatiConfermatiDalCliente = historyOrdersList.filter(order =>
+        order.metodo_consegna === "Consegna a domicilio" && order.notifica_ristoratore_consegna === true
+      );
+
+      if (ordiniConsegnatiConfermatiDalCliente.length > 0) {
+        alert("Confermata la corretta consegna a domicilio al cliente.");
+        confermaLetturaNotificheConsegna();
+      }
+
       activeOrdersList.forEach(order => {
         var orderDiv = document.createElement("div");
         orderDiv.className = "order-card";
@@ -206,7 +215,7 @@
           var updateBtn = document.createElement("button");
           updateBtn.className = "btn btn-warning";
           updateBtn.innerText = "Avanza Stato";
-          updateBtn.onclick = () => cambiaStatoOrdine(order._id, order.stato);
+          updateBtn.onclick = () => cambiaStatoOrdine(order._id, order.stato, order.metodo_consegna);
           orderDiv.appendChild(updateBtn);
         }
 
@@ -245,7 +254,7 @@
     }
   }
 
-  async function cambiaStatoOrdine(orderId, statoAttuale) {
+  async function cambiaStatoOrdine(orderId, statoAttuale, metodoConsegna) {
     try {
       var response = await fetchConControlloToken(`${apiBase}/orders/${orderId}`, {
         method: "PUT",
@@ -268,10 +277,16 @@
         }
       }
 
-      if (updatedOrder && updatedOrder.stato === "consegnato") {
+      if (
+        metodoConsegna === "Consegna a domicilio" &&
+        statoAttuale === "in preparazione"
+      ) {
+        alert("L'ordine è in fase di consegna al cliente.");
+      } else if (updatedOrder && updatedOrder.stato === "consegnato") {
         alert("Ordine consegnato correttamente al cliente.");
       } else if (
         statoAttuale === "in preparazione" &&
+        metodoConsegna === "Ritiro in ristorante" &&
         (!updatedOrder || !updatedOrder.stato)
       ) {
         alert("Ordine consegnato correttamente al cliente.");
@@ -280,6 +295,20 @@
       caricaOrdiniRistoratore();
     } catch (err) {
       console.error("Errore:", err);
+    }
+  }
+
+  async function confermaLetturaNotificheConsegna() {
+    try {
+      await fetchConControlloToken(`${apiBase}/orders/notifiche-consegna/ack`, {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        }
+      });
+    } catch (err) {
+      console.error("Errore nella conferma lettura notifiche consegna:", err);
     }
   }
 

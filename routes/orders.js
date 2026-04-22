@@ -211,6 +211,7 @@ ordersRouter.post("/", authenticateUser, async (req, res) => {
         data_ordine: DateTime.now().setZone("Europe/Rome").toFormat("dd/MM/yyyy - HH:mm"),
         metodo_consegna,
         indirizzo_consegna: metodo_consegna === "Consegna a domicilio" ? indirizzoEffettivo : null,
+        notifica_ristoratore_consegna: false,
         distanza_km: distanzaKm,
         costo_consegna: costoConsegna,
         tempo_attesa: tempoAttesa
@@ -309,6 +310,35 @@ ordersRouter.get("/", authenticateUser, async (req, res) => {
   }
 });
 
+// PUT /orders/notifiche-consegna/ack - Segna come lette le notifiche consegna a domicilio per il ristoratore
+ordersRouter.put("/notifiche-consegna/ack", authenticateUser, authorizeRistoratore, async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const user = req.user;
+
+    if (user.role !== "ristoratore") {
+      return res.status(403).json({ error: "Solo i ristoratori possono confermare le notifiche" });
+    }
+
+    const ristorante = await db.collection("restaurants").findOne({ ristoratore_id: new ObjectId(user._id) });
+    if (!ristorante) return res.status(404).json({ error: "Ristorante non trovato" });
+
+    await db.collection("orders").updateMany(
+      {
+        ristorante_id: new ObjectId(ristorante._id),
+        metodo_consegna: "Consegna a domicilio",
+        notifica_ristoratore_consegna: true
+      },
+      { $set: { notifica_ristoratore_consegna: false } }
+    );
+
+    res.json({ message: "Notifiche consegna confermate." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Errore nella conferma notifiche consegna" });
+  }
+});
+
 
 // GET /orders/:id - Dettagli singolo ordine (Cliente solo propri, Ristoratore solo quelli relativi al suo ristorante)
 ordersRouter.get("/:id", authenticateUser, async (req, res) => {
@@ -380,7 +410,7 @@ ordersRouter.put("/:id/consegna", authenticateUser, async (req, res) => {
 
     const updatedOrder = await db.collection("orders").findOneAndUpdate(
       { _id: new ObjectId(id) },
-      { $set: { stato: "consegnato" } },
+      { $set: { stato: "consegnato", notifica_ristoratore_consegna: true } },
       { returnDocument: "after" }
     );
 
