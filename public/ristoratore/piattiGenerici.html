@@ -96,6 +96,10 @@
       text-align: center;
       margin: 0 0.5rem;
     }
+    .meal-card.selected {
+      border: 2px solid #00B5A2;
+      box-shadow: 0 0 0 0.2rem rgba(0, 181, 162, 0.25);
+    }
   </style>
     <link rel="icon" type="image/png" href="../assets/Favicon.png">
   <script src="../assets/auth.js"></script>
@@ -140,7 +144,10 @@
         <input type="number" id="filterPriceMax" class="form-control" placeholder="Prezzo Max">
       </div>
       <div class="mb-3">
-        <button id="applyFilter" class="btn btn-warning">Cerca</button>
+        <div class="d-flex gap-2">
+          <button id="applyFilter" class="btn btn-warning">Cerca</button>
+          <button id="addSelectedMeals" class="btn btn-success">Aggiungi selezionati al Menu (0)</button>
+        </div>
       </div>
     </div>
 
@@ -159,6 +166,7 @@
     var genericMealsData = [];
     var currentPage = 1;
     var itemsPerPage = 6;
+    var selectedMealIds = new Set();
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
@@ -259,20 +267,26 @@
       }
 
       pageItems.forEach(p => {
+        var isSelected = selectedMealIds.has(p._id);
         var col = document.createElement("div");
         col.className = "col-md-6";
-        col.innerHTML = `<div class="card meal-card h-100">
+        col.innerHTML = `<div class="card meal-card h-100 ${isSelected ? "selected" : ""}" data-meal-id="${p._id}">
                           <img src="${p.strMealThumb}" class="card-img-top" alt="${p.strMeal}">
                           <div class="card-body d-flex flex-column">
+                            <div class="form-check mb-2">
+                              <input class="form-check-input meal-selector" type="checkbox" data-meal-id="${p._id}" ${isSelected ? "checked" : ""}>
+                              <label class="form-check-label">Seleziona piatto</label>
+                            </div>
                             <h5 class="card-title">${p.strMeal}</h5>
                             <p class="card-text">${p.strCategory || ""}</p>
                             <p class="card-text"><strong>€ ${p.prezzo ? p.prezzo.toFixed(2) : "0.00"}</strong></p>
-                            <button class="btn btn-outline-secondary mt-auto" onclick="aggiungiPiattoAlMenu('${p._id}')">Aggiungi al Menu</button>
                           </div>
                         </div>`;
         container.appendChild(col);
       });
 
+      bindMealSelectionEvents();
+      updateAddSelectedButtonLabel();
       updatePaginationControls();
     }
 
@@ -317,6 +331,109 @@
       }
     }
 
+    function bindMealSelectionEvents() {
+      var cards = document.querySelectorAll(".meal-card");
+      cards.forEach(function(card) {
+        card.addEventListener("click", function(event) {
+          if (event.target.classList.contains("meal-selector")) {
+            return;
+          }
+          var checkbox = card.querySelector(".meal-selector");
+          checkbox.checked = !checkbox.checked;
+          toggleMealSelection(checkbox.dataset.mealId, checkbox.checked);
+        });
+      });
+
+      var checkboxes = document.querySelectorAll(".meal-selector");
+      checkboxes.forEach(function(checkbox) {
+        checkbox.addEventListener("click", function(event) {
+          event.stopPropagation();
+        });
+        checkbox.addEventListener("change", function() {
+          toggleMealSelection(checkbox.dataset.mealId, checkbox.checked);
+        });
+      });
+    }
+
+    function toggleMealSelection(mealId, isSelected) {
+      var card = document.querySelector('.meal-card[data-meal-id="' + mealId + '"]');
+
+      if (isSelected) {
+        selectedMealIds.add(mealId);
+      } else {
+        selectedMealIds.delete(mealId);
+      }
+
+      if (card) {
+        card.classList.toggle("selected", isSelected);
+      }
+      updateAddSelectedButtonLabel();
+    }
+
+    function updateAddSelectedButtonLabel() {
+      var btn = document.getElementById("addSelectedMeals");
+      if (btn) {
+        btn.textContent = "Aggiungi selezionati al Menu (" + selectedMealIds.size + ")";
+      }
+    }
+
+    async function aggiungiPiattiSelezionatiAlMenu() {
+      if (!mioRistorante) {
+        alert("Ristorante non trovato.");
+        return;
+      }
+
+      if (selectedMealIds.size === 0) {
+        alert("Seleziona almeno un piatto prima di aggiungerlo al menu.");
+        return;
+      }
+
+      var menuCorrente = Array.isArray(mioRistorante.menu) ? mioRistorante.menu : [];
+      var selectedArray = Array.from(selectedMealIds);
+      var piattiGiaPresenti = selectedArray.filter(id => menuCorrente.includes(id));
+      var piattiDaAggiungere = selectedArray.filter(id => !menuCorrente.includes(id));
+
+      if (piattiDaAggiungere.length === 0) {
+        alert("I piatti selezionati sono già presenti nel menu.");
+        return;
+      }
+
+      var nuovoMenu = [...menuCorrente, ...piattiDaAggiungere];
+      var payload = {
+        menu: nuovoMenu,
+        updatedAt: new Date()
+      };
+
+      try {
+        var updateRes = await fetchConControlloToken(apiBase + "/restaurants/" + mioRistorante._id, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!updateRes.ok) {
+          var errorText = await updateRes.text();
+          throw new Error("HTTP " + updateRes.status + " - " + errorText);
+        }
+
+        mioRistorante.menu = nuovoMenu;
+        selectedMealIds.clear();
+        displayGenericMealsPage(currentPage);
+
+        var messaggioConferma = "Aggiunti " + piattiDaAggiungere.length + " piatti al menu con successo!";
+        if (piattiGiaPresenti.length > 0) {
+          messaggioConferma += " " + piattiGiaPresenti.length + " erano già presenti.";
+        }
+        alert(messaggioConferma);
+      } catch (err) {
+        console.error("Errore:", err);
+        alert(err.message);
+      }
+    }
+
     function updatePaginationControls() {
       var controls = document.getElementById("paginationControls");
       var totalPages = Math.max(1, Math.ceil(filteredMeals.length / itemsPerPage));
@@ -348,6 +465,7 @@
     }
 
     document.getElementById("applyFilter").addEventListener("click", applicaFiltri);
+    document.getElementById("addSelectedMeals").addEventListener("click", aggiungiPiattiSelezionatiAlMenu);
 
     (async function init() {
       await caricaRistorante();
