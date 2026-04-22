@@ -183,6 +183,12 @@
     document.getElementById("piattoPersonalizzato").addEventListener("submit", async function (e) {
   e.preventDefault();
 
+  var form = e.target;
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
   var payload = {
         strMeal: document.getElementById("strMeal").value.trim(),
         strCategory: document.getElementById("strCategory").value.trim(),
