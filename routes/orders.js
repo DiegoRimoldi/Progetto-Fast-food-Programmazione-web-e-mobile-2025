@@ -298,6 +298,19 @@ ordersRouter.get("/", authenticateUser, async (req, res) => {
 
     const orders = await db.collection("orders").find(filter).toArray();
 
+    if (user.role === "ristoratore") {
+      const ordiniConNotificaConsegna = orders
+        .filter(order => order.notifica_ristoratore_consegna === true)
+        .map(order => order._id);
+
+      if (ordiniConNotificaConsegna.length > 0) {
+        await db.collection("orders").updateMany(
+          { _id: { $in: ordiniConNotificaConsegna } },
+          { $set: { notifica_ristoratore_consegna: false } }
+        );
+      }
+    }
+
     for (const order of orders) {
       const ristorante = await db.collection("restaurants").findOne({ _id: order.ristorante_id });
       order.ristorante_nome = ristorante ? ristorante.name : "Ristorante Sconosciuto";
