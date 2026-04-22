@@ -101,6 +101,13 @@
     var apiBase = "http://localhost:3000";
     var token = localStorage.getItem("token");
 
+    function estraiTimestampOrdine(order) {
+      if (!order || !order.data_ordine) return 0;
+
+      var timestamp = new Date(order.data_ordine).getTime();
+      return Number.isNaN(timestamp) ? 0 : timestamp;
+    }
+
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
 
@@ -146,7 +153,19 @@
         return;
       }
 
-      orders.forEach(order => {
+      var ordiniOrdinatiPerDataDesc = [...orders].sort((a, b) => {
+        return estraiTimestampOrdine(b) - estraiTimestampOrdine(a);
+      });
+
+      var activeOrdersList = ordiniOrdinatiPerDataDesc.filter(order =>
+        ["ordinato", "in preparazione", "in consegna"].includes(order.stato)
+      );
+
+      var historyOrdersList = ordiniOrdinatiPerDataDesc.filter(order =>
+        !["ordinato", "in preparazione", "in consegna"].includes(order.stato)
+      );
+
+      activeOrdersList.forEach(order => {
         var orderDiv = document.createElement("div");
         orderDiv.className = "order-card";
         orderDiv.innerHTML = `
@@ -173,15 +192,33 @@
           orderDiv.appendChild(updateBtn);
         }
 
-        if (["ordinato", "in preparazione", "in consegna"].includes(order.stato)) {
-          activeOrders.appendChild(orderDiv);
-        } else {
-          if (historyOrders.children.length > 0) {
-            var separator = document.createElement("hr");
-            historyOrders.appendChild(separator);
-          }
-          historyOrders.appendChild(orderDiv);
+        activeOrders.appendChild(orderDiv);
+      });
+
+      historyOrdersList.forEach(order => {
+        var orderDiv = document.createElement("div");
+        orderDiv.className = "order-card";
+        orderDiv.innerHTML = `
+          <br>
+          <p><strong>Ordine #${order._id}</strong></p>
+          <p>Cliente: ${order.cliente_nome || "Sconosciuto"}</p>
+          <p>Totale: €${Number(order.totale || 0).toFixed(2)}</p>
+          <p>Data ordine: ${order.data_ordine || "N/D"}</p>
+          <p>Tempo di attesa: ${order.tempo_attesa ?? "N/D"} min</p>
+          <p>Metodo di consegna: ${order.metodo_consegna || "N/D"}</p>
+          <p><b>Piatti:</b></p>
+          <ul>
+            ${(order.meals || []).map(meal => `<li>${meal.nome} - Quantità: ${meal.quantita}</li>`).join("") || "<li>Nessun piatto disponibile</li>"}
+          </ul>
+          <p>Stato: <strong>${order.stato}</strong></p>
+          <br>
+        `;
+
+        if (historyOrders.children.length > 0) {
+          var separator = document.createElement("hr");
+          historyOrders.appendChild(separator);
         }
+        historyOrders.appendChild(orderDiv);
       });
 
     } catch (err) {
