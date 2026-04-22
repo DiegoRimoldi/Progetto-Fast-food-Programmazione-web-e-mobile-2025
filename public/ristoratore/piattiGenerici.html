@@ -4,18 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FastFood - Piatti Generici</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/modern-theme.css">
   <link rel="stylesheet" href="../assets/responsive.css" />
+  <link rel="icon" type="image/png" href="../assets/Favicon.png">
+
+  <script src="../assets/auth.js"></script>
+
   <style>
     body {
       margin: 0;
       padding: 0;
-      background-color: #fff;
+      background-color: #e8eef5;
       font-family: 'Segoe UI', sans-serif;
       display: flex;
       min-height: 100vh;
     }
+
     .sidebar {
       width: clamp(180px, 22vw, 250px);
       flex: 0 0 clamp(180px, 22vw, 250px);
@@ -26,17 +32,19 @@
       flex-direction: column;
       position: sticky;
       top: 0;
-      align-self: flex-start;
       height: 100vh;
       overflow-y: auto;
     }
+
     .sidebar-header {
       text-align: center;
       margin-bottom: 1rem;
     }
+
     .sidebar-header img {
       max-width: 150px;
     }
+
     .sidebar a.nav-link {
       color: #555;
       padding: 0.75rem 1rem;
@@ -44,62 +52,88 @@
       margin-bottom: 0.5rem;
       text-decoration: none;
     }
+
     .sidebar a.nav-link.active,
     .sidebar a.nav-link:hover {
       background-color: #fecd4c;
       color: #000;
     }
+
     .main-content {
       flex: 1;
       padding: 2rem;
       overflow-y: auto;
     }
+
     .main-content h2 {
       color: #00B5A2;
       margin-bottom: 1.5rem;
     }
+
     .filter-section {
       margin-bottom: 1rem;
     }
-    .filter-section .mb-3 {
-      margin-bottom: 1rem;
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 2fr 1.45fr 0.95fr 0.95fr auto;
+      gap: 1rem;
+      align-items: center;
     }
+
+    .filter-section .mb-3 {
+      margin-bottom: 0;
+    }
+
+    .filter-section .form-control,
+    .filter-section .form-select {
+      border-radius: 0.9rem;
+      border: 1px solid #c7d1df;
+      background-color: #f3f3f3;
+      min-height: 48px;
+      font-size: 1.1rem;
+      padding: 0.65rem 1rem;
+    }
+
+    #applyFilter {
+      min-height: 48px;
+      border-radius: 1rem;
+      padding: 0.65rem 1.35rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
     .meal-card {
       transition: transform 0.3s, box-shadow 0.3s;
       margin-bottom: 1rem;
     }
+
     .meal-card:hover {
       transform: translateY(-3px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
+
     .meal-card img {
       height: 200px;
       object-fit: cover;
       border-top-left-radius: 0.375rem;
       border-top-right-radius: 0.375rem;
     }
+
     .meal-card .card-body {
       background-color: #fff;
-      border-bottom-left-radius: 0.375rem;
-      border-bottom-right-radius: 0.375rem;
     }
+
     .meal-card .card-title {
       color: #00B5A2;
       font-weight: bold;
     }
-    .pagination-controls {
-      margin-top: 1rem;
-      text-align: center;
-    }
-    .pagination-controls input[type="number"] {
-      width: 80px;
-      text-align: center;
-      margin: 0 0.5rem;
-    }
+
     .meal-card.selected {
       border: 2px solid #00B5A2;
       box-shadow: 0 0 0 0.2rem rgba(0, 181, 162, 0.25);
     }
+
     .selection-controls {
       margin-bottom: 1rem;
       display: flex;
@@ -107,322 +141,211 @@
       gap: 0.75rem;
       flex-wrap: wrap;
     }
+
+    .pagination-controls {
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    .pagination-controls input {
+      width: 80px;
+      text-align: center;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1200px) {
+      .filter-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
-    <link rel="icon" type="image/png" href="../assets/Favicon.png">
-  <script src="../assets/auth.js"></script>
 </head>
+
 <body>
-  <script>
-    window.ensureAuthenticatedRole("ristoratore");
-  </script>
 
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <img src="../assets/logo.png" alt="FastFood Logo">
-    </div>
-    <a href="home.html" class="nav-link">Dashboard</a>
-    <a href="gestioneRistorante.html" class="nav-link">Gestisci Ristorante</a>
-    <a href="piattiGenerici.html" class="nav-link active">Aggiungi Piatto Generico</a>
-    <a href="piattoPersonalizzato.html" class="nav-link">Aggiungi Piatto Personalizzato</a>
-    <a href="modificaPiattoPersonalizzato.html" class="nav-link">Modifica Piatto Personalizzato</a>
-    <a href="ordini.html" class="nav-link">Ordini</a>
-    <a href="statistiche.html" class="nav-link">Statistiche</a>
-    <a href="../profilo.html" class="nav-link">Profilo</a>
-    <a href="../logout.html" class="nav-link">Logout</a>
+<script>
+  window.ensureAuthenticatedRole("ristoratore");
+</script>
 
+<div class="sidebar">
+  <div class="sidebar-header">
+    <img src="../assets/logo.png" alt="FastFood Logo">
   </div>
 
-  <div class="main-content">
-    <h2>Piatti Generici</h2>
+  <a href="home.html" class="nav-link">Dashboard</a>
+  <a href="gestioneRistorante.html" class="nav-link">Gestisci Ristorante</a>
+  <a href="piattiGenerici.html" class="nav-link active">Aggiungi Piatto Generico</a>
+  <a href="piattoPersonalizzato.html" class="nav-link">Aggiungi Piatto Personalizzato</a>
+  <a href="modificaPiattoPersonalizzato.html" class="nav-link">Modifica Piatto Personalizzato</a>
+  <a href="ordini.html" class="nav-link">Ordini</a>
+  <a href="statistiche.html" class="nav-link">Statistiche</a>
+  <a href="../profilo.html" class="nav-link">Profilo</a>
+  <a href="../logout.html" class="nav-link">Logout</a>
+</div>
 
-    <div class="filter-section">
-      <div class="mb-3">
-        <input type="text" id="filterName" class="form-control" placeholder="Filtra per nome">
-      </div>
-      <div class="mb-3">
-        <select id="filterCategory" class="form-select">
-          <option value="">Tutte le categorie</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <input type="number" id="filterPriceMin" class="form-control" placeholder="Prezzo Min">
-      </div>
-      <div class="mb-3">
-        <input type="number" id="filterPriceMax" class="form-control" placeholder="Prezzo Max">
-      </div>
-      <div class="mb-3">
-        <button id="applyFilter" class="btn btn-warning">Cerca</button>
-      </div>
-    </div>
+<div class="main-content">
+  <h2>Piatti Generici</h2>
 
-    <div id="genericMealsContainer" class="row g-4"></div>
-
-    <div class="selection-controls">
-      <button id="addSelectedMealsBtn" class="btn btn-success">Aggiungi i piatti selezionati al Menù</button>
-      <span id="selectedMealsCounter" class="text-muted">0 piatti selezionati</span>
-    </div>
-
-    <div id="paginationControls" class="pagination-controls"></div>
+  <div class="filter-section filter-grid">
+    <input type="text" id="filterName" class="form-control" placeholder="Cerca per nome piatto">
+    <select id="filterCategory" class="form-select">
+      <option value="">Tutte le categorie</option>
+    </select>
+    <input type="number" id="filterPriceMin" class="form-control" placeholder="Prezzo Min">
+    <input type="number" id="filterPriceMax" class="form-control" placeholder="Prezzo Max">
+    <button id="applyFilter" class="btn btn-warning">Cerca</button>
   </div>
 
-  <script>
-    var apiBase = "http://localhost:3000";
-    var token = localStorage.getItem("token");
-    var userId = localStorage.getItem("userId");
+  <div id="genericMealsContainer" class="row g-4"></div>
 
-    var mioRistorante = null;
-    var filteredMeals = [];
-    var genericMealsData = [];
-    var currentPage = 1;
-    var itemsPerPage = 6;
-    var selectedMeals = new Set();
+  <div class="selection-controls">
+    <button id="addSelectedMealsBtn" class="btn btn-success">Aggiungi i piatti selezionati al Menù</button>
+    <span id="selectedMealsCounter" class="text-muted">0 piatti selezionati</span>
+  </div>
 
-    async function fetchConControlloToken(url, options = {}) {
-      var token = localStorage.getItem("token");
+  <div id="paginationControls" class="pagination-controls"></div>
+</div>
 
-      if (!token) {
-        window.handleAuthIssue("sessione non valida");
-        return;
-      }
+<script>
+var apiBase = "http://localhost:3000";
+var token = localStorage.getItem("token");
+var userId = localStorage.getItem("userId");
 
-      options.headers = options.headers || {};
-      options.headers["Authorization"] = "Bearer " + token;
+var mioRistorante = null;
+var filteredMeals = [];
+var genericMealsData = [];
+var currentPage = 1;
+var itemsPerPage = 6;
+var selectedMeals = new Set();
 
-      try {
-        let response = await fetch(url, options);
+async function fetchConControlloToken(url, options = {}) {
+  var token = localStorage.getItem("token");
+  if (!token) return window.handleAuthIssue("sessione non valida");
 
-        if (response.status === 401) { // token scaduto o invalido
-            window.handleAuthIssue("sessione non valida");
-          }
+  options.headers = options.headers || {};
+  options.headers["Authorization"] = "Bearer " + token;
 
-        return response;
-      } catch (error) {
-        console.error("Errore nella richiesta API:", error);
-        return null;
-      }
-    }
+  let response = await fetch(url, options);
+  if (response.status === 401) window.handleAuthIssue("sessione non valida");
+  return response;
+}
 
-    async function caricaRistorante() {
-      try {
-        var response = await fetchConControlloToken(apiBase + "/restaurants", {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        var restaurants = await response.json();
-        mioRistorante = restaurants.find(r => r.ristoratore_id && r.ristoratore_id.toString() === userId);
+async function caricaRistorante() {
+  var res = await fetchConControlloToken(apiBase + "/restaurants");
+  var data = await res.json();
 
-        if (!mioRistorante) {
-          alert("Non hai ancora creato un ristorante. Vai alla pagina Gestisci Ristorante per crearlo.");
-          window.location.href = "gestioneRistorante.html";
-        }
-      } catch (err) {
-        console.error("Errore nel caricamento del ristorante:", err);
-      }
-    }
+  mioRistorante = data.find(r => r.ristoratore_id?.toString() === userId);
 
-    var genericMealsData = [];
+  if (!mioRistorante) {
+    alert("Crea prima un ristorante.");
+    location.href = "gestioneRistorante.html";
+  }
+}
 
-    async function caricaPiattiGenerici() {
-      try {
-        var response = await fetchConControlloToken(apiBase + "/meals");
-        var meals = await response.json();
+async function caricaPiattiGenerici() {
+  var res = await fetchConControlloToken(apiBase + "/meals");
+  var meals = await res.json();
 
-        genericMealsData = meals.filter(m => !m.ristorante_id);
-        filteredMeals = [...genericMealsData];
+  genericMealsData = meals.filter(m => !m.ristorante_id);
+  filteredMeals = [...genericMealsData];
+  displayGenericMealsPage(1);
+}
 
-        displayGenericMealsPage(1);
-      } catch (err) {
-        console.error("Errore nel caricamento dei piatti generici:", err);
-      }
-    }
+async function caricaCategorie() {
+  var select = document.getElementById("filterCategory");
+  var res = await fetchConControlloToken(apiBase + "/meals");
+  var meals = await res.json();
 
+  [...new Set(meals.filter(m => !m.ristorante_id).map(m => m.strCategory))]
+    .filter(Boolean)
+    .forEach(cat => {
+      var opt = document.createElement("option");
+      opt.value = cat;
+      opt.text = cat;
+      select.add(opt);
+    });
+}
 
-    async function caricaCategorie() {
-      var categorySelect = document.getElementById("filterCategory");
+function displayGenericMealsPage(page) {
+  currentPage = page;
+  var container = document.getElementById("genericMealsContainer");
+  container.innerHTML = "";
 
-      if (!categorySelect) {
-        console.error("Elemento select delle categorie non trovato!");
-        return;
-      }
+  var items = filteredMeals.slice((page-1)*itemsPerPage, page*itemsPerPage);
 
-      try {
-        var response = await fetchConControlloToken(`${apiBase}/meals`);
-        var meals = await response.json();
+  items.forEach(p => {
+    var selected = selectedMeals.has(p._id);
 
-        var piattiGenerici = meals.filter(m => !m.ristorante_id);
-        var categorieUniche = [...new Set(piattiGenerici.map(m => m.strCategory).filter(Boolean))];
+    var col = document.createElement("div");
+    col.className = "col-md-6 col-lg-4";
 
-        categorieUniche.forEach(cat => {
-          var option = document.createElement("option");
-          option.text = cat;
-          option.value = cat;
-          categorySelect.add(option);
-        });
+    col.innerHTML = `
+      <div class="card meal-card ${selected ? "selected" : ""}">
+        <img src="${p.strMealThumb}" class="card-img-top">
+        <div class="card-body d-flex flex-column">
+          <h5>${p.strMeal}</h5>
+          <p>${p.strCategory || ""}</p>
+          <p><strong>€ ${p.prezzo || 0}</strong></p>
+          <input type="checkbox" value="${p._id}" ${selected ? "checked":""}>
+        </div>
+      </div>`;
 
-      } catch (err) {
-        console.error("Errore nel caricamento delle categorie:", err);
-      }
-    }
+    col.querySelector("input").onchange = e => {
+      e.target.checked ? selectedMeals.add(p._id) : selectedMeals.delete(p._id);
+      displayGenericMealsPage(currentPage);
+    };
 
-      function displayGenericMealsPage(page) {
-      currentPage = page;
-      var container = document.getElementById("genericMealsContainer");
-      container.innerHTML = "";
-      var startIndex = (page - 1) * itemsPerPage;
-      var endIndex = startIndex + itemsPerPage;
-      var pageItems = filteredMeals.slice(startIndex, endIndex);
+    container.appendChild(col);
+  });
 
-      if (pageItems.length === 0) {
-        container.innerHTML = '<p class="text-muted">Nessun piatto trovato.</p>';
-      }
+  document.getElementById("selectedMealsCounter").innerText =
+    selectedMeals.size + " piatti selezionati";
+}
 
-      pageItems.forEach(p => {
-        var isSelected = selectedMeals.has(p._id);
-        var col = document.createElement("div");
-        col.className = "col-md-6";
-        col.innerHTML = `<div class="card meal-card h-100 ${isSelected ? "selected" : ""}">
-                          <img src="${p.strMealThumb}" class="card-img-top" alt="${p.strMeal}">
-                          <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">${p.strMeal}</h5>
-                            <p class="card-text">${p.strCategory || ""}</p>
-                            <p class="card-text"><strong>€ ${p.prezzo ? p.prezzo.toFixed(2) : "0.00"}</strong></p>
-                            <div class="form-check mt-auto">
-                              <input class="form-check-input meal-selector" type="checkbox" value="${p._id}" id="meal-${p._id}" ${isSelected ? "checked" : ""}>
-                              <label class="form-check-label" for="meal-${p._id}">
-                                Seleziona piatto
-                              </label>
-                            </div>
-                          </div>
-                        </div>`;
-        container.appendChild(col);
-      });
+function applicaFiltri() {
+  var name = filterName.value.toLowerCase();
+  var cat = filterCategory.value.toLowerCase();
+  var min = +filterPriceMin.value || 0;
+  var max = +filterPriceMax.value || Infinity;
 
-      container.querySelectorAll(".meal-selector").forEach(function(checkbox) {
-        checkbox.addEventListener("change", function() {
-          var mealId = this.value;
-          if (this.checked) {
-            selectedMeals.add(mealId);
-          } else {
-            selectedMeals.delete(mealId);
-          }
+  filteredMeals = genericMealsData.filter(p =>
+    (!name || p.strMeal.toLowerCase().includes(name)) &&
+    (!cat || p.strCategory?.toLowerCase() === cat) &&
+    (p.prezzo >= min && p.prezzo <= max)
+  );
 
-          var card = this.closest(".meal-card");
-          if (card) {
-            card.classList.toggle("selected", this.checked);
-          }
+  displayGenericMealsPage(1);
+}
 
-          updateSelectedMealsCounter();
-        });
-      });
+async function aggiungiPiattiSelezionatiAlMenu() {
+  if (!selectedMeals.size) return alert("Seleziona almeno un piatto");
 
-      updatePaginationControls();
-      updateSelectedMealsCounter();
-    }
+  var nuovi = [...selectedMeals].filter(id => !mioRistorante.menu?.includes(id));
 
-    async function aggiungiPiattiSelezionatiAlMenu() {
-      if (!mioRistorante) {
-        alert("Ristorante non trovato.");
-        return;
-      }
+  var res = await fetchConControlloToken(apiBase+"/restaurants/"+mioRistorante._id,{
+    method:"PUT",
+    headers:{ "Content-Type":"application/json"},
+    body: JSON.stringify({ menu:[...(mioRistorante.menu||[]), ...nuovi] })
+  });
 
-      if (selectedMeals.size === 0) {
-        alert("Seleziona almeno un piatto prima di aggiungerlo al menù.");
-        return;
-      }
+  if(res.ok) alert("Piatti aggiunti!");
+}
 
-      var menuAttuale = mioRistorante.menu ? [...mioRistorante.menu] : [];
-      var piattiGiaPresenti = new Set(menuAttuale);
-      var piattiDaAggiungere = Array.from(selectedMeals).filter(idMeal => !piattiGiaPresenti.has(idMeal));
+applyFilter.onclick = applicaFiltri;
+addSelectedMealsBtn.onclick = aggiungiPiattiSelezionatiAlMenu;
 
-      if (piattiDaAggiungere.length === 0) {
-        alert("I piatti selezionati sono già presenti nel menù.");
-        return;
-      }
-
-      var nuovoMenu = [...menuAttuale, ...piattiDaAggiungere];
-
-      var payload = {
-        menu: nuovoMenu,
-        updatedAt: new Date()
-      };
-
-      try {
-        var updateRes = await fetchConControlloToken(apiBase + "/restaurants/" + mioRistorante._id, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (!updateRes.ok) {
-          var errorText = await updateRes.text();
-          throw new Error("HTTP " + updateRes.status + " - " + errorText);
-        }
-
-        mioRistorante.menu = nuovoMenu;
-        var nomiPiattiAggiunti = piattiDaAggiungere.map(function(idMeal) {
-          var meal = genericMealsData.find(function(p) { return p._id === idMeal; });
-          return meal ? meal.strMeal : idMeal;
-        });
-
-        selectedMeals.clear();
-        displayGenericMealsPage(currentPage);
-        alert("Piatti aggiunti al menù con successo:\n- " + nomiPiattiAggiunti.join("\n- "));
-      } catch (err) {
-        console.error("Errore:", err);
-        alert(err.message);
-      }
-    }
-
-    function updateSelectedMealsCounter() {
-      var counter = document.getElementById("selectedMealsCounter");
-      if (!counter) return;
-
-      var numeroSelezionati = selectedMeals.size;
-      counter.textContent = numeroSelezionati + (numeroSelezionati === 1 ? " piatto selezionato" : " piatti selezionati");
-    }
-
-    function updatePaginationControls() {
-      var controls = document.getElementById("paginationControls");
-      var totalPages = Math.max(1, Math.ceil(filteredMeals.length / itemsPerPage));
-      controls.innerHTML = `Pagina: <input type='number' id='pagePicker' min='1' max='${totalPages}' value='${currentPage}' step='1' /> di ${totalPages}`;
-
-      document.getElementById("pagePicker").onchange = function() {
-        var page = parseInt(this.value);
-        if (page < 1) { page = 1; this.value = 1; }
-        if (page > totalPages) { page = totalPages; this.value = totalPages; }
-        displayGenericMealsPage(page);
-      };
-    }
-
-    function applicaFiltri() {
-      var nomeFiltro = document.getElementById("filterName").value.trim().toLowerCase();
-      var categoriaFiltro = document.getElementById("filterCategory").value.trim().toLowerCase();
-      var prezzoMin = parseFloat(document.getElementById("filterPriceMin").value) || 0;
-      var prezzoMax = parseFloat(document.getElementById("filterPriceMax").value) || Number.MAX_VALUE;
-
-      filteredMeals = genericMealsData.filter(function(p) {
-        var nomeMatch = nomeFiltro === "" || (p.strMeal && p.strMeal.toLowerCase().includes(nomeFiltro));
-        var categoriaMatch = categoriaFiltro === "" || (p.strCategory && p.strCategory.toLowerCase() === categoriaFiltro);
-        var prezzo = Number(p.prezzo || 0);
-        var prezzoMatch = (prezzo >= prezzoMin && prezzo <= prezzoMax);
-        return nomeMatch && categoriaMatch && prezzoMatch;
-      });
-
-      displayGenericMealsPage(1);
-    }
-
-    document.getElementById("applyFilter").addEventListener("click", applicaFiltri);
-    document.getElementById("addSelectedMealsBtn").addEventListener("click", aggiungiPiattiSelezionatiAlMenu);
-
-    (async function init() {
-      await caricaRistorante();
-      await caricaPiattiGenerici();
-      await caricaCategorie();
-    })();
-  </script>
-
+(async () => {
+  await caricaRistorante();
+  await caricaPiattiGenerici();
+  await caricaCategorie();
+})();
+</script>
 
 </body>
 </html>
