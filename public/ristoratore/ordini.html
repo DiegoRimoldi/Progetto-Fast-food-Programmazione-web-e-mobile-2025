@@ -59,7 +59,7 @@
       margin-bottom: 1.5rem;
     }
   </style>
-    <link rel="icon" type="image/png" href="../assets/Favicon.png">
+  <link rel="icon" type="image/png" href="../assets/Favicon.png">
   <script src="../assets/auth.js"></script>
 </head>
 <body>
@@ -80,7 +80,6 @@
   <a href="statistiche.html" class="nav-link">Statistiche</a>
   <a href="../profilo.html" class="nav-link">Profilo</a>
   <a href="../logout.html" class="nav-link">Logout</a>
-
 </div>
 
 <div class="main-content">
@@ -97,67 +96,68 @@
   <div id="historyOrders"></div>
 </div>
 
-  <script>
-    var apiBase = "http://localhost:3000";
+<script>
+  var apiBase = "http://localhost:3000";
+  var token = localStorage.getItem("token");
+
+  function estraiTimestampOrdine(order) {
+    if (!order || !order.data_ordine) return 0;
+
+    var dataOrdineRaw = String(order.data_ordine).trim();
+
+    // Formato italiano: "22/04/2026 - 09:41"
+    var matchDataIt = dataOrdineRaw.match(
+      /^(\d{2})\/(\d{2})\/(\d{4})\s*-\s*(\d{2}):(\d{2})$/
+    );
+
+    if (matchDataIt) {
+      var giorno = Number(matchDataIt[1]);
+      var mese = Number(matchDataIt[2]) - 1;
+      var anno = Number(matchDataIt[3]);
+      var ore = Number(matchDataIt[4]);
+      var minuti = Number(matchDataIt[5]);
+
+      return new Date(anno, mese, giorno, ore, minuti).getTime();
+    }
+
+    // Fallback per ISO o altri formati
+    var timestamp = new Date(dataOrdineRaw).getTime();
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+  }
+
+  async function fetchConControlloToken(url, options = {}) {
     var token = localStorage.getItem("token");
 
-    function estraiTimestampOrdine(order) {
-      if (!order || !order.data_ordine) return 0;
-
-      var dataOrdineRaw = String(order.data_ordine).trim();
-
-      // Supporta il formato mostrato in UI: "22/04/2026 - 09:41"
-      var matchDataIt = dataOrdineRaw.match(
-        /^(\d{2})\/(\d{2})\/(\d{4})\s*-\s*(\d{2}):(\d{2})$/
-      );
-
-      if (matchDataIt) {
-        var giorno = Number(matchDataIt[1]);
-        var mese = Number(matchDataIt[2]) - 1;
-        var anno = Number(matchDataIt[3]);
-        var ore = Number(matchDataIt[4]);
-        var minuti = Number(matchDataIt[5]);
-
-        return new Date(anno, mese, giorno, ore, minuti).getTime();
-      }
-
-      // Fallback per eventuali date ISO o altri formati compatibili.
-      var timestamp = new Date(dataOrdineRaw).getTime();
-      return Number.isNaN(timestamp) ? 0 : timestamp;
+    if (!token) {
+      window.handleAuthIssue("sessione non valida");
+      return;
     }
 
-    async function fetchConControlloToken(url, options = {}) {
-      var token = localStorage.getItem("token");
+    options.headers = options.headers || {};
+    options.headers["Authorization"] = "Bearer " + token;
 
-      if (!token) {
+    try {
+      let response = await fetch(url, options);
+
+      if (response.status === 401) {
         window.handleAuthIssue("sessione non valida");
-        return;
       }
 
-      options.headers = options.headers || {};
-      options.headers["Authorization"] = "Bearer " + token;
-
-      try {
-        let response = await fetch(url, options);
-
-        if (response.status === 401) { // token scaduto o invalido
-            window.handleAuthIssue("sessione non valida");
-          }
-
-        return response;
-      } catch (error) {
-        console.error("Errore nella richiesta API:", error);
-        return null;
-      }
+      return response;
+    } catch (error) {
+      console.error("Errore nella richiesta API:", error);
+      return null;
     }
+  }
 
-    async function caricaOrdiniRistoratore() {
+  async function caricaOrdiniRistoratore() {
     try {
       var response = await fetchConControlloToken(apiBase + "/orders");
 
       if (!response || !response.ok) {
         throw new Error("Impossibile recuperare gli ordini.");
       }
+
       var orders = await response.json();
       var activeOrders = document.getElementById("activeOrders");
       var historyOrders = document.getElementById("historyOrders");
@@ -236,6 +236,7 @@
           var separator = document.createElement("hr");
           historyOrders.appendChild(separator);
         }
+
         historyOrders.appendChild(orderDiv);
       });
 
@@ -263,7 +264,7 @@
         try {
           updatedOrder = JSON.parse(responseText);
         } catch (parseError) {
-          console.warn("Risposta non in formato JSON:", parseError);
+          console.warn("Risposta non JSON:", parseError);
         }
       }
 
@@ -281,7 +282,8 @@
       console.error("Errore:", err);
     }
   }
-    caricaOrdiniRistoratore();
-  </script>
+
+  caricaOrdiniRistoratore();
+</script>
 </body>
 </html>
