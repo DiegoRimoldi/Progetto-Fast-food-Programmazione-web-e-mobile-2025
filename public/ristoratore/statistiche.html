@@ -11,16 +11,17 @@
     body {
       margin: 0;
       padding: 0;
-      background-color: #fff;
-      font-family: 'Segoe UI', sans-serif;
+      background: #f6f8fb;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       min-height: 100vh;
     }
+
     .sidebar {
       width: clamp(180px, 22vw, 250px);
       flex: 0 0 clamp(180px, 22vw, 250px);
-      background: #fff;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      background-color: #ffffff;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
       padding: 1rem;
       display: flex;
       flex-direction: column;
@@ -30,52 +31,141 @@
       height: 100vh;
       overflow-y: auto;
     }
+
     .sidebar-header {
       text-align: center;
       margin-bottom: 1rem;
     }
+
     .sidebar-header img {
       max-width: 150px;
     }
+
     .sidebar a.nav-link {
       color: #555;
       padding: 0.75rem 1rem;
       border-radius: 0.5rem;
       margin-bottom: 0.5rem;
       text-decoration: none;
+      transition: background-color 0.3s, color 0.3s;
     }
-    .sidebar a.nav-link.active {
+
+    .sidebar a.nav-link.active,
+    .sidebar a.nav-link:hover {
       background-color: #fecd4c;
       color: #000;
     }
+
     .main-content {
       flex: 1;
       padding: 2rem;
       overflow-y: auto;
     }
-    h2 {
-      color: #00B5A2;
+
+    .page-header {
       margin-bottom: 1.5rem;
     }
-    .stats-card {
-      border: 1px solid #ddd;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      background-color: #f9f9f9;
+
+    .page-header h2 {
+      color: #00B5A2;
+      margin: 0;
+      font-weight: 700;
     }
-    .hidden {
-      display: none;
+
+    .page-header p {
+      margin: 0.25rem 0 0;
+      color: #6c757d;
+    }
+
+    .metric-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fcff 100%);
+      border: 1px solid #e9eef5;
+      border-radius: 1rem;
+      box-shadow: 0 10px 20px rgba(8, 38, 78, 0.08);
+      padding: 1rem 1.25rem;
+      height: 100%;
+    }
+
+    .metric-label {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 0.2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04rem;
+    }
+
+    .metric-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #1f2937;
+      line-height: 1.2;
+    }
+
+    .section-card {
+      border: 1px solid #e9eef5;
+      border-radius: 1rem;
+      box-shadow: 0 10px 20px rgba(8, 38, 78, 0.06);
+      background-color: #fff;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .section-card .card-header {
+      background: #fecd4c;
+      font-weight: 700;
+      border-bottom: 1px solid #f0d783;
+      color: #1f2937;
+    }
+
+    .list-clean {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      border: 1px solid #edf1f5;
+      border-radius: 0.7rem;
+      padding: 0.65rem 0.85rem;
+      background: #fafcff;
+      color: #364152;
+      font-size: 0.95rem;
+    }
+
+    .badge-soft {
+      background-color: #00b5a214;
+      color: #008274;
+      border: 1px solid #00b5a242;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      min-height: 320px;
+      border: 1px dashed #ced4da;
+      border-radius: 1rem;
+      background: #fff;
+    }
+
+    .empty-state p {
+      color: #6c757d;
     }
   </style>
-    <link rel="icon" type="image/png" href="../assets/Favicon.png">
+  <link rel="icon" type="image/png" href="../assets/Favicon.png">
   <script src="../assets/auth.js"></script>
 </head>
 <body>
 
-  <script>
-    window.ensureAuthenticatedRole("ristoratore");
-  </script>
+<script>
+  window.ensureAuthenticatedRole("ristoratore");
+</script>
 
 <div class="sidebar">
   <div class="sidebar-header">
@@ -90,50 +180,109 @@
   <a href="statistiche.html" class="nav-link active">Statistiche</a>
   <a href="../profilo.html" class="nav-link">Profilo</a>
   <a href="../logout.html" class="nav-link">Logout</a>
-
 </div>
 
 <div class="main-content">
-  <h2>Statistiche Ristorante</h2>
-
-  <div id="contentArea">
-    <div class="stats-card"><strong>Totale Ordini:</strong> <span id="totalOrders">...</span></div>
-    <div class="stats-card"><strong>Ricavo Totale:</strong> €<span id="totalRevenue">...</span></div>
-    <div class="stats-card"><strong>Ordini per Stato:</strong> <div id="ordersByState"></div></div>
-    <div class="stats-card"><strong>Piatti più ordinati:</strong> <div id="topMeals"></div></div>
-    <div class="stats-card"><strong>Andamento Ordini (ultimi 30gg):</strong> <div id="ordersTrend"></div></div>
+  <div class="page-header">
+    <h2>Statistiche Ristorante</h2>
+    <p>Monitora performance, ordini e piatti più richiesti in modo semplice e immediato.</p>
   </div>
 
+  <div id="contentArea">
+    <div class="row g-3 mb-1">
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="metric-card">
+          <div class="metric-label">Totale ordini</div>
+          <div class="metric-value" id="totalOrders">...</div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="metric-card">
+          <div class="metric-label">Ricavo totale</div>
+          <div class="metric-value">€<span id="totalRevenue">...</span></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="metric-card">
+          <div class="metric-label">Media ordine</div>
+          <div class="metric-value">€<span id="avgOrderValue">...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+      <div class="col-12 col-xl-6">
+        <div class="card section-card">
+          <div class="card-header">Ordini per stato</div>
+          <div class="card-body">
+            <div id="ordersByState" class="list-clean"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-xl-6">
+        <div class="card section-card">
+          <div class="card-header">Piatti più ordinati</div>
+          <div class="card-body">
+            <div id="topMeals" class="list-clean"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="card section-card">
+          <div class="card-header">Andamento ordini (ultimi 30 giorni)</div>
+          <div class="card-body">
+            <div id="ordersTrend" class="list-clean"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
   var apiBase = "http://localhost:3000";
-  var token = localStorage.getItem("token");
 
   async function fetchConControlloToken(url, options = {}) {
-      var token = localStorage.getItem("token");
+    var token = localStorage.getItem("token");
 
-      if (!token) {
-        window.handleAuthIssue("sessione non valida");
-        return;
-      }
-
-      options.headers = options.headers || {};
-      options.headers["Authorization"] = "Bearer " + token;
-
-      try {
-        let response = await fetch(url, options);
-
-        if (response.status === 401) { // token scaduto o invalido
-            window.handleAuthIssue("sessione non valida");
-          }
-
-        return response;
-      } catch (error) {
-        console.error("Errore nella richiesta API:", error);
-        return null;
-      }
+    if (!token) {
+      window.handleAuthIssue("sessione non valida");
+      return;
     }
+
+    options.headers = options.headers || {};
+    options.headers["Authorization"] = "Bearer " + token;
+
+    try {
+      let response = await fetch(url, options);
+
+      if (response.status === 401) {
+        window.handleAuthIssue("sessione non valida");
+      }
+
+      return response;
+    } catch (error) {
+      console.error("Errore nella richiesta API:", error);
+      return null;
+    }
+  }
+
+  function renderListItem(label, value, suffix) {
+    return '<div class="list-item">' +
+      '<span>' + label + '</span>' +
+      '<span class="badge-soft">' + value + (suffix ? ' ' + suffix : '') + '</span>' +
+      '</div>';
+  }
+
+  function formatDateLabel(dateString) {
+    var parsedDate = new Date(dateString);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return dateString;
+    }
+    return parsedDate.toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric" });
+  }
 
   async function caricaStatistiche() {
     try {
@@ -145,25 +294,39 @@
 
       if (stats.totalOrders === 0) {
         contentArea.innerHTML =
-            '<div class="d-flex flex-column justify-content-center align-items-center" style="min-height:300px;">' +
-              '<p class="fs-4 text-muted mb-3">Non hai ancora completato ordini</p>' +
-              '<a href="ordini.html" class="btn btn-warning">Vai alla pagina ordini</a>' +
-            '</div>';        return;
-      } else {
-        document.getElementById("totalOrders").innerText = stats.totalOrders;
-        document.getElementById("totalRevenue").innerText = stats.totalRevenue?.toFixed(2) ?? "N/A";
-
-        var stateContainer = document.getElementById("ordersByState");
-        stateContainer.innerHTML = Object.entries(stats.ordersByState || {})
-          .map(([stato, count]) => `<p>${stato}: ${count}</p>`).join("");
-
-        var mealsContainer = document.getElementById("topMeals");
-        mealsContainer.innerHTML = (stats.topMeals || []).map(([nome, quantita]) => `<p>${nome}, Ordinato ${quantita} Volte</p>`).join("");
-
-        var trendContainer = document.getElementById("ordersTrend");
-        trendContainer.innerHTML = Object.entries(stats.ordersTrend || {})
-          .map(([date, count]) => `<p>${date}: ${count} ordini</p>`).join("");
+          '<div class="empty-state d-flex flex-column justify-content-center align-items-center">' +
+          '<p class="fs-4 mb-3">Non hai ancora completato ordini</p>' +
+          '<a href="ordini.html" class="btn btn-warning">Vai alla pagina ordini</a>' +
+          '</div>';
+        return;
       }
+
+      document.getElementById("totalOrders").innerText = stats.totalOrders;
+      document.getElementById("totalRevenue").innerText = stats.totalRevenue?.toFixed(2) ?? "N/A";
+
+      var averageOrderValue = stats.totalOrders > 0 && typeof stats.totalRevenue === "number"
+        ? (stats.totalRevenue / stats.totalOrders).toFixed(2)
+        : "N/A";
+      document.getElementById("avgOrderValue").innerText = averageOrderValue;
+
+      var stateContainer = document.getElementById("ordersByState");
+      stateContainer.innerHTML = Object.entries(stats.ordersByState || {})
+        .map(function(entry) {
+          return renderListItem(entry[0], entry[1], "ordini");
+        }).join("") || '<p class="text-muted mb-0">Nessun dato disponibile.</p>';
+
+      var mealsContainer = document.getElementById("topMeals");
+      mealsContainer.innerHTML = (stats.topMeals || [])
+        .map(function(item) {
+          return renderListItem(item[0], item[1], "volte");
+        }).join("") || '<p class="text-muted mb-0">Nessun dato disponibile.</p>';
+
+      var trendContainer = document.getElementById("ordersTrend");
+      trendContainer.innerHTML = Object.entries(stats.ordersTrend || {})
+        .sort(function(a, b) { return new Date(b[0]) - new Date(a[0]); })
+        .map(function(entry) {
+          return renderListItem(formatDateLabel(entry[0]), entry[1], "ordini");
+        }).join("") || '<p class="text-muted mb-0">Nessun dato disponibile.</p>';
     } catch (err) {
       console.error("Errore nel caricamento delle statistiche:", err);
     }
