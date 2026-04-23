@@ -35,6 +35,13 @@
       text-align: center;
       margin-bottom: 1rem;
     }
+    .sidebar-logo-link {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+    .sidebar-logo-link:hover {
+      transform: scale(1.03);
+    }
     .sidebar-header img {
       max-width: 150px;
     }
@@ -46,10 +53,13 @@
       text-decoration: none;
       transition: background-color 0.3s, color 0.3s;
     }
-    .sidebar a.nav-link.active,
+    .sidebar a.nav-link.active {
+      background-color: #0d6efd;
+      color: #fff;
+    }
     .sidebar a.nav-link:hover {
-      background-color: #fecd4c;
-      color: #000;
+      background-color: #0b5ed7;
+      color: #fff;
     }
 
     .main-content {
@@ -57,7 +67,7 @@
       padding: 2rem;
     }
     .main-content h2 {
-      color: #00B5A2;
+      color: #0d6efd;
       margin-bottom: 1.5rem;
     }
 
@@ -94,17 +104,17 @@
       border-bottom-right-radius: 0.375rem;
     }
     .ristorante-card .card-title {
-      color: #00B5A2;
+      color: #0d6efd;
       font-weight: bold;
     }
     .ristorante-card .btn {
-      background-color: #00B5A2;
+      background-color: #0d6efd;
       color: #fff;
       border: none;
       border-radius: 0.375rem;
     }
     .ristorante-card .btn:hover {
-      background-color: #02685e;
+      background-color: #0b5ed7;
     }
   </style>
     <link rel="icon" type="image/png" href="../assets/Favicon.png">
@@ -117,7 +127,9 @@
 
   <div class="sidebar">
     <div class="sidebar-header">
+      <a href="../index.html" class="sidebar-logo-link" aria-label="Torna alla home">
       <img src="../assets/logo.png" alt="FastFood Logo" />
+      </a>
     </div>
     <a href="home.html" class="nav-link active">Home</a>
     <a href="carrello.html" class="nav-link">Carrello</a>

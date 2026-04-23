@@ -34,6 +34,13 @@
       text-align: center;
       margin-bottom: 1rem;
     }
+    .sidebar-logo-link {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+    .sidebar-logo-link:hover {
+      transform: scale(1.03);
+    }
     .sidebar-header img {
       max-width: 150px;
     }
@@ -45,17 +52,20 @@
       text-decoration: none;
       transition: background-color 0.3s, color 0.3s;
     }
-    .sidebar a.nav-link.active,
+    .sidebar a.nav-link.active {
+      background-color: #0d6efd;
+      color: #fff;
+    }
     .sidebar a.nav-link:hover {
-      background-color: #fecd4c;
-      color: #000;
+      background-color: #0b5ed7;
+      color: #fff;
     }
     .main-content {
       flex: 1;
       padding: 2rem;
     }
     .main-content h2 {
-      color: #00B5A2;
+      color: #0d6efd;
       margin-bottom: 1.5rem;
     }
     .card-custom {
@@ -97,7 +107,9 @@
 
 <div class="sidebar">
   <div class="sidebar-header">
-    <img src="../assets/logo.png" alt="FastFood Logo">
+    <a href="../index.html" class="sidebar-logo-link" aria-label="Torna alla home">
+      <img src="../assets/logo.png" alt="FastFood Logo" />
+      </a>
   </div>
   <a href="home.html" class="nav-link active">Dashboard</a>
   <a href="gestioneRistorante.html" class="nav-link">Gestisci Ristorante</a>
