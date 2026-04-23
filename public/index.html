@@ -30,7 +30,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 30px 60px;
+      padding: 22px 56px;
     }
 
     .logo {
@@ -47,12 +47,12 @@
     }
 
     .logo-text {
-      font-size: 2rem;
+      font-size: 1.85rem;
       font-weight: 800;
-      letter-spacing: 0.04em;
-      color: #00B5A2;
+      letter-spacing: 0.03em;
+      color: #0d6efd;
       text-transform: uppercase;
-      text-shadow: 0 2px 8px rgba(0, 181, 162, 0.18);
+      text-shadow: 0 2px 8px rgba(13, 110, 253, 0.2);
       line-height: 1;
     }
 
@@ -61,9 +61,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 48px 36px;
+      padding: 18px 48px 36px;
       flex-wrap: wrap;
       gap: 24px;
+    }
+
+    .hero-card {
+      background: #ffffff;
+      border: none;
+      border-radius: 24px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.14);
+    }
+
+    .hero-text-card {
+      padding: 30px;
+      max-width: 600px;
     }
 
     .hero-text {
@@ -88,6 +100,15 @@
       max-width: min(420px, 38vw);
     }
 
+    .hero-logo-card {
+      padding: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 360px;
+      min-width: min(440px, 90vw);
+    }
+
     .btn-custom {
       background-color: #0d6efd;
       color: white;
@@ -102,23 +123,6 @@
       background-color: #0b5ed7;
       color: white;
     }
-    .logo {
-      display: inline-flex;
-      align-items: center;
-      text-decoration: none;
-    }
-    .logo img {
-      height: 52px;
-      width: auto;
-      display: block;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 48px 10px;
-      min-height: 96px;
-    }
   </style>
 </head>
 
@@ -127,6 +131,7 @@
   <header>
     <a href="login.html" class="logo" aria-label="FastFood">
       <img src="assets/Favicon.png" alt="FastFood">
+      <span class="logo-text">Fast Food</span>
     </a>
     <div>
       <a href="login.html" class="btn btn-custom">Login</a>
@@ -135,14 +140,18 @@
   </header>
 
   <section class="hero">
-    <div class="hero-text">
-      <h1>Fast Food: Controllo totale della tua ristorazione!!</h1>
-      <p>Un’unica piattaforma, dall’ordine alla consegna!</p>
-      <a href="login.html" class="btn btn-custom">Inizia ora</a>
+    <div class="hero-card hero-text-card">
+      <div class="hero-text">
+        <h1>Fast Food: Controllo totale della tua ristorazione!!</h1>
+        <p>Un’unica piattaforma, dall’ordine alla consegna!</p>
+        <a href="login.html" class="btn btn-custom">Inizia ora</a>
+      </div>
     </div>
 
-    <div class="hero-img">
-      <img src="assets/logo.png" alt="FastFood Logo" class="img-fluid">
+    <div class="hero-card hero-logo-card">
+      <div class="hero-img">
+        <img src="assets/logo.png" alt="FastFood Logo" class="img-fluid">
+      </div>
     </div>
   </section>
 
