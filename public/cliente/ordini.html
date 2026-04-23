@@ -71,26 +71,76 @@
       margin-bottom: 1.5rem;
     }
     .order-card {
-      border: 1px solid #dee2e6;
-      border-radius: 0.375rem;
-      padding: 1rem;
+      border: 1px solid #d8e1eb;
+      border-radius: 0.75rem;
+      padding: 1.1rem 1.15rem;
       margin-bottom: 1rem;
-      background-color: #fff;
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(13, 110, 253, 0.07);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .order-card p {
+    .order-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(13, 110, 253, 0.12);
+    }
+    .order-title {
+      font-size: 1.2rem;
+      color: #0d2f6f;
+      margin-bottom: 0.25rem;
+    }
+    .order-meta {
+      margin: 0;
+      color: #6c757d;
+      font-size: 0.95rem;
+    }
+    .order-info {
+      margin-top: 0.75rem;
+    }
+    .order-info p {
       margin: 0.25rem 0;
+    }
+    .status-badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      letter-spacing: 0.2px;
+    }
+    .status-ordinato,
+    .status-in-preparazione {
+      background-color: #fff4d6;
+      color: #8f5f00;
+    }
+    .status-in-consegna {
+      background-color: #e7f1ff;
+      color: #0d58ca;
+    }
+    .status-consegnato {
+      background-color: #ddf6e8;
+      color: #0f5132;
+    }
+    .status-annullato {
+      background-color: #fde2e1;
+      color: #842029;
     }
     .btn-confirm {
       background-color: #0d6efd;
       color: white;
       border-radius: 0.375rem;
-      padding: 0.5rem;
-      margin-top: 0.5rem;
+      padding: 0.5rem 0.85rem;
+      margin-top: 0.2rem;
+      border: none;
+      font-weight: 600;
+    }
+    .btn-confirm:hover {
+      background-color: #0b5ed7;
     }
     .order-details {
       margin-top: 0.75rem;
-      border-top: 1px dashed #dee2e6;
-      padding-top: 0.75rem;
+      border-top: 1px dashed #d8e1eb;
+      padding-top: 0.7rem;
     }
     .order-details summary {
       cursor: pointer;
@@ -102,7 +152,10 @@
       padding-left: 1rem;
     }
     .meal-item {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.45rem;
+    }
+    .order-actions {
+      margin-top: 0.75rem;
     }
   </style>
     <link rel="icon" type="image/png" href="../assets/Favicon.png">
@@ -172,6 +225,15 @@
       return "€" + Number(value || 0).toFixed(2);
     }
 
+    function normalizzaClasseStato(stato) {
+      return String(stato || "")
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
     function creaDettagliPasti(order) {
       if (!Array.isArray(order.meals) || order.meals.length === 0) {
         return "<p class='text-muted mb-0'>Dettaglio prodotti non disponibile.</p>";
@@ -196,6 +258,8 @@
     }
 
     function creaCardOrdine(order) {
+      var classeStato = normalizzaClasseStato(order.stato);
+      var tempoAttesa = order.tempo_attesa ?? "N/D";
       var orderDiv = document.createElement("div");
       orderDiv.className = "order-card";
 
@@ -209,18 +273,21 @@
       }
 
       orderDiv.innerHTML = `
-        <p><strong>Ordine #${order._id}</strong></p>
-        <p>Ristorante: ${order.ristorante_nome}</p>
-        <p>Totale: ${formatEuro(order.totale)}</p>
-        <p>Data ordine: ${order.data_ordine}</p>
-        <p>Metodo consegna: ${order.metodo_consegna || "N/D"}</p>
-        ${consegnaDettagli}
-        <p>Tempo di attesa: ${order.tempo_attesa} min</p>
-        <p>Stato: <strong>${order.stato}</strong></p>
+        <h4 class="order-title">Ordine #${order._id}</h4>
+        <p class="order-meta">Ristorante: ${order.ristorante_nome || "Non specificato"}</p>
+        <div class="order-info">
+          <p>Totale: ${formatEuro(order.totale)}</p>
+          <p>Data ordine: ${order.data_ordine || "N/D"}</p>
+          <p>Metodo consegna: ${order.metodo_consegna || "N/D"}</p>
+          ${consegnaDettagli}
+          <p>Tempo di attesa: ${tempoAttesa} min</p>
+          <p>Stato: <span class="status-badge status-${classeStato}">${order.stato || "N/D"}</span></p>
+        </div>
         <details class="order-details">
           <summary>Vedi dettaglio ordine</summary>
           ${creaDettagliPasti(order)}
         </details>
+        <div class="order-actions"></div>
       `;
 
       return orderDiv;
@@ -266,7 +333,7 @@
             confirmBtn.className = "btn btn-confirm";
             confirmBtn.innerText = "Conferma Consegna";
             confirmBtn.onclick = () => confermaConsegna(order._id, confirmBtn);
-            orderDiv.appendChild(confirmBtn);
+            orderDiv.querySelector(".order-actions").appendChild(confirmBtn);
           }
 
           if (["in preparazione", "ordinato", "in consegna"].includes(order.stato)) {
