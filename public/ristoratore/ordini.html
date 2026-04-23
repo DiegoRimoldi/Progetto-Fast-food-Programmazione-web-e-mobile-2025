@@ -68,6 +68,81 @@
       color: #0d6efd;
       margin-bottom: 1.5rem;
     }
+    .order-card {
+      border: 1px solid #d8e1eb;
+      border-radius: 0.75rem;
+      padding: 1.1rem 1.15rem;
+      margin-bottom: 1rem;
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(13, 110, 253, 0.07);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .order-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(13, 110, 253, 0.12);
+    }
+    .order-title {
+      font-size: 1.2rem;
+      color: #0d2f6f;
+      margin-bottom: 0.25rem;
+    }
+    .order-meta {
+      margin: 0;
+      color: #6c757d;
+      font-size: 0.95rem;
+    }
+    .order-info {
+      margin-top: 0.75rem;
+    }
+    .order-info p {
+      margin: 0.25rem 0;
+    }
+    .status-badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      letter-spacing: 0.2px;
+    }
+    .status-ordinato,
+    .status-in-preparazione {
+      background-color: #fff4d6;
+      color: #8f5f00;
+    }
+    .status-in-consegna {
+      background-color: #e7f1ff;
+      color: #0d58ca;
+    }
+    .status-consegnato {
+      background-color: #ddf6e8;
+      color: #0f5132;
+    }
+    .status-annullato {
+      background-color: #fde2e1;
+      color: #842029;
+    }
+    .order-details {
+      margin-top: 0.75rem;
+      border-top: 1px dashed #d8e1eb;
+      padding-top: 0.7rem;
+    }
+    .order-details summary {
+      cursor: pointer;
+      color: #0d6efd;
+      font-weight: 600;
+    }
+    .meals-list {
+      margin: 0.75rem 0 0;
+      padding-left: 1rem;
+    }
+    .meal-item {
+      margin-bottom: 0.45rem;
+    }
+    .order-actions {
+      margin-top: 0.75rem;
+    }
   </style>
   <link rel="icon" type="image/png" href="../assets/Favicon.png">
   <script src="../assets/auth.js"></script>
@@ -133,6 +208,79 @@
 
     var timestamp = new Date(dataOrdineRaw).getTime();
     return Number.isNaN(timestamp) ? 0 : timestamp;
+  }
+
+  function formatEuro(value) {
+    return "€" + Number(value || 0).toFixed(2);
+  }
+
+  function normalizzaClasseStato(stato) {
+    return String(stato || "")
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function creaDettagliPasti(order) {
+    if (!Array.isArray(order.meals) || order.meals.length === 0) {
+      return "<p class='text-muted mb-0'>Nessun piatto disponibile.</p>";
+    }
+
+    return `
+      <ul class="meals-list">
+        ${order.meals.map(meal => {
+          var quantita = Number(meal.quantita || 0);
+          var prezzoUnitario = Number(meal.prezzo_unitario || 0);
+          var subtotale = quantita * prezzoUnitario;
+          return `
+            <li class="meal-item">
+              <strong>${meal.nome || "Piatto non specificato"}</strong><br>
+              Quantità: ${quantita} • Prezzo unitario: ${formatEuro(prezzoUnitario)} • Subtotale: ${formatEuro(subtotale)}
+            </li>
+          `;
+        }).join("")}
+      </ul>
+    `;
+  }
+
+  function creaCardOrdine(order) {
+    var classeStato = normalizzaClasseStato(order.stato);
+    var distanza = order.distanza_km ? `${order.distanza_km} km` : "N/D";
+    var costoConsegna = formatEuro(order.costo_consegna);
+    var tempoAttesa = order.tempo_attesa ?? "N/D";
+
+    var consegnaDettagli = "";
+    if (order.metodo_consegna === "Consegna a domicilio") {
+      consegnaDettagli = `
+        <p>Indirizzo consegna: ${order.indirizzo_consegna || "Non specificato"}</p>
+        <p>Distanza: ${distanza}</p>
+        <p>Costo consegna: ${costoConsegna}</p>
+      `;
+    }
+
+    var orderDiv = document.createElement("div");
+    orderDiv.className = "order-card";
+    orderDiv.innerHTML = `
+      <h4 class="order-title">Ordine #${order._id}</h4>
+      <p class="order-meta">Cliente: ${order.cliente_nome || "Sconosciuto"}</p>
+      <div class="order-info">
+        <p>Totale: ${formatEuro(order.totale)}</p>
+        <p>Data ordine: ${order.data_ordine || "N/D"}</p>
+        <p>Metodo consegna: ${order.metodo_consegna || "N/D"}</p>
+        ${consegnaDettagli}
+        <p>Tempo di attesa: ${tempoAttesa} min</p>
+        <p>Stato: <span class="status-badge status-${classeStato}">${order.stato || "N/D"}</span></p>
+      </div>
+      <details class="order-details">
+        <summary>Vedi dettaglio ordine</summary>
+        ${creaDettagliPasti(order)}
+      </details>
+      <div class="order-actions"></div>
+    `;
+
+    return orderDiv;
   }
 
   async function fetchConControlloToken(url, options = {}) {
@@ -203,53 +351,21 @@
       }
 
       activeOrdersList.forEach(order => {
-        var orderDiv = document.createElement("div");
-        orderDiv.className = "order-card";
-        orderDiv.innerHTML = `
-          <br>
-          <p><strong>Ordine #${order._id}</strong></p>
-          <p>Cliente: ${order.cliente_nome || "Sconosciuto"}</p>
-          <p>Totale: €${Number(order.totale || 0).toFixed(2)}</p>
-          <p>Data ordine: ${order.data_ordine || "N/D"}</p>
-          <p>Tempo di attesa: ${order.tempo_attesa ?? "N/D"} min</p>
-          <p>Metodo di consegna: ${order.metodo_consegna || "N/D"}</p>
-          <p><b>Piatti:</b></p>
-          <ul>
-            ${(order.meals || []).map(meal => `<li>${meal.nome} - Quantità: ${meal.quantita}</li>`).join("") || "<li>Nessun piatto disponibile</li>"}
-          </ul>
-          <p>Stato: <strong>${order.stato}</strong></p>
-          <br>
-        `;
+        var orderDiv = creaCardOrdine(order);
 
         if (["ordinato", "in preparazione"].includes(order.stato)) {
           var updateBtn = document.createElement("button");
           updateBtn.className = "btn btn-warning";
           updateBtn.innerText = "Avanza Stato";
           updateBtn.onclick = () => cambiaStatoOrdine(order._id, order.stato, order.metodo_consegna);
-          orderDiv.appendChild(updateBtn);
+          orderDiv.querySelector(".order-actions").appendChild(updateBtn);
         }
 
         activeOrders.appendChild(orderDiv);
       });
 
       historyOrdersList.forEach(order => {
-        var orderDiv = document.createElement("div");
-        orderDiv.className = "order-card";
-        orderDiv.innerHTML = `
-          <br>
-          <p><strong>Ordine #${order._id}</strong></p>
-          <p>Cliente: ${order.cliente_nome || "Sconosciuto"}</p>
-          <p>Totale: €${Number(order.totale || 0).toFixed(2)}</p>
-          <p>Data ordine: ${order.data_ordine || "N/D"}</p>
-          <p>Tempo di attesa: ${order.tempo_attesa ?? "N/D"} min</p>
-          <p>Metodo di consegna: ${order.metodo_consegna || "N/D"}</p>
-          <p><b>Piatti:</b></p>
-          <ul>
-            ${(order.meals || []).map(meal => `<li>${meal.nome} - Quantità: ${meal.quantita}</li>`).join("") || "<li>Nessun piatto disponibile</li>"}
-          </ul>
-          <p>Stato: <strong>${order.stato}</strong></p>
-          <br>
-        `;
+        var orderDiv = creaCardOrdine(order);
 
         if (historyOrders.children.length > 0) {
           var separator = document.createElement("hr");
