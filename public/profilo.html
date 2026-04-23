@@ -218,7 +218,7 @@
         </div>
         <div class="card-body">
           <p class="card-subtitle">Questa azione eliminerà definitivamente il tuo profilo e i dati associati.</p>
-          <button id="deleteBtn" class="btn btn-outline-primary">Elimina Profilo</button>
+          <button id="deleteBtn" type="button" class="btn btn-outline-primary">Elimina Profilo</button>
         </div>
       </div>
 
@@ -228,6 +228,7 @@
   <script>
     var apiBase = "http://localhost:3000";
     var token = localStorage.getItem("token");
+    var userId = localStorage.getItem("userId");
 
     function goBack() {
       if (window.history.length > 1) {
@@ -262,6 +263,15 @@
       }
     }
 
+    function mostraMessaggio(testo, tipo) {
+      alert(testo);
+      if (tipo === "errore") {
+        console.error(testo);
+      } else {
+        console.log(testo);
+      }
+    }
+
     async function caricaDatiProfilo() {
       try {
         var response = await fetchConControlloToken(apiBase + "/users/me", {
@@ -269,8 +279,17 @@
           headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token }
         });
 
+        if (!response || !response.ok) {
+          return;
+        }
+
         var profile = await response.json();
         if (!profile) return;
+
+        userId = profile._id || userId;
+        if (userId) {
+          localStorage.setItem("userId", userId);
+        }
 
         document.getElementById("username").value = profile.username;
         document.getElementById("email").value = profile.email;
@@ -291,6 +310,116 @@
         console.error("Errore nel caricamento del profilo:", err);
       }
     }
+
+    document.getElementById("profileForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      var payload = {
+        username: document.getElementById("username").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        numero_di_telefono: document.getElementById("numero_di_telefono").value.trim()
+      };
+
+      var campiClienteVisibili = document.getElementById("campiCliente").style.display === "block";
+      var campiRistoratoreVisibili = document.getElementById("campiRistoratore").style.display === "block";
+
+      if (campiClienteVisibili) {
+        payload.indirizzo = document.getElementById("indirizzo").value.trim();
+        payload.metodo_pagamento = document.getElementById("metodo_pagamento").value.trim();
+      }
+
+      if (campiRistoratoreVisibili) {
+        payload.piva = document.getElementById("piva").value.trim();
+      }
+
+      try {
+        var response = await fetchConControlloToken(apiBase + "/users/me", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response) return;
+
+        var data = await response.json();
+        if (!response.ok) {
+          mostraMessaggio(data.error || "Errore durante l'aggiornamento del profilo.", "errore");
+          return;
+        }
+
+        mostraMessaggio("Profilo aggiornato con successo.", "successo");
+      } catch (err) {
+        mostraMessaggio("Errore di rete durante l'aggiornamento del profilo.", "errore");
+      }
+    });
+
+    document.getElementById("passwordForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      var oldPassword = document.getElementById("oldPassword").value;
+      var newPassword = document.getElementById("newPassword").value;
+
+      if (!oldPassword || !newPassword) {
+        mostraMessaggio("Compila tutti i campi della password.", "errore");
+        return;
+      }
+
+      try {
+        var response = await fetchConControlloToken(apiBase + "/users/me/password", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
+        });
+
+        if (!response) return;
+
+        var data = await response.json();
+        if (!response.ok) {
+          mostraMessaggio(data.error || "Errore durante la modifica della password.", "errore");
+          return;
+        }
+
+        document.getElementById("passwordForm").reset();
+        mostraMessaggio("Password modificata con successo.", "successo");
+      } catch (err) {
+        mostraMessaggio("Errore di rete durante la modifica della password.", "errore");
+      }
+    });
+
+    document.getElementById("deleteBtn").addEventListener("click", async function () {
+      if (!userId) {
+        mostraMessaggio("ID utente non disponibile. Ricarica la pagina.", "errore");
+        return;
+      }
+
+      var conferma = confirm("Sei sicuro di voler eliminare definitivamente il tuo profilo?");
+      if (!conferma) {
+        return;
+      }
+
+      try {
+        var response = await fetchConControlloToken(apiBase + "/users/" + userId, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" }
+        });
+
+        if (!response) return;
+
+        var data = await response.json();
+        if (!response.ok) {
+          mostraMessaggio(data.error || "Errore durante l'eliminazione del profilo.", "errore");
+          return;
+        }
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("role");
+        mostraMessaggio("Profilo eliminato correttamente.", "successo");
+        window.location.href = "/index.html";
+      } catch (err) {
+        mostraMessaggio("Errore di rete durante l'eliminazione del profilo.", "errore");
+      }
+    });
 
     caricaDatiProfilo();
   </script>
