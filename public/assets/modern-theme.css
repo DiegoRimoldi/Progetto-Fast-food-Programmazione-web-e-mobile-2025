@@ -1,5 +1,5 @@
 :root {
-  --brand-primary: #61bada;
+  --brand-primary: #0d6efd;
   --brand-accent: #fecd4c;
   --surface: #ffffff;
   --surface-soft: #f8fbff;
@@ -30,12 +30,18 @@ body {
   transition: all 0.2s ease;
 }
 
-.sidebar a.nav-link.active,
-.sidebar a.nav-link:hover {
-  background: linear-gradient(120deg, var(--brand-accent) 0%, #ffd976 100%) !important;
-  color: #111827 !important;
+.sidebar a.nav-link.active {
+  background: linear-gradient(120deg, var(--brand-primary) 0%, #6ea8fe 100%) !important;
+  color: #fff !important;
   transform: translateX(2px);
-  box-shadow: 0 6px 14px rgba(254, 205, 76, 0.3);
+  box-shadow: 0 6px 14px rgba(13, 110, 253, 0.28);
+}
+
+.sidebar a.nav-link:hover {
+  background: linear-gradient(120deg, #0b5ed7 0%, #3d8bfd 100%) !important;
+  color: #fff !important;
+  transform: translateX(2px);
+  box-shadow: 0 6px 14px rgba(13, 110, 253, 0.22);
 }
 
 .main-content > h1,
@@ -63,7 +69,7 @@ body {
 .card-custom .card-header,
 .panel-heading,
 thead {
-  background: linear-gradient(120deg, var(--brand-primary) 0%, #7fc9e2 100%) !important;
+  background: linear-gradient(120deg, var(--brand-primary) 0%, #6ea8fe 100%) !important;
   color: #fff !important;
   border-bottom: none !important;
   font-weight: 600;
@@ -85,7 +91,7 @@ input[type="tel"] {
 .form-select:focus,
 textarea:focus {
   border-color: var(--brand-primary) !important;
-  box-shadow: 0 0 0 0.18rem rgba(97, 186, 218, 0.16) !important;
+  box-shadow: 0 0 0 0.18rem rgba(13, 110, 253, 0.16) !important;
 }
 
 .btn {
@@ -95,7 +101,7 @@ textarea:focus {
 
 .btn-primary,
 .btn-success {
-  background: linear-gradient(120deg, var(--brand-primary) 0%, #7fc9e2 100%) !important;
+  background: linear-gradient(120deg, var(--brand-primary) 0%, #6ea8fe 100%) !important;
   border: none !important;
 }
 

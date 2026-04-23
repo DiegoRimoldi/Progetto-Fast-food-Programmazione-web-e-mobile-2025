@@ -21,6 +21,9 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     header {
@@ -54,47 +57,67 @@
     }
 
     .hero {
-      min-height: 100vh;
+      min-height: calc(100vh - 110px);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 60px;
+      padding: 20px 48px 36px;
       flex-wrap: wrap;
+      gap: 24px;
     }
 
     .hero-text {
-      max-width: 600px;
+      max-width: 560px;
     }
 
     .hero-text h1 {
-      font-size: 3rem;
+      font-size: clamp(2rem, 4vw, 2.6rem);
       font-weight: 800;
       color: #1e1e1e;
+      margin-bottom: 0.65rem;
     }
 
     .hero-text p {
-      font-size: 1.25rem;
-      margin-top: 20px;
+      font-size: clamp(1rem, 2vw, 1.12rem);
+      margin-top: 10px;
       color: #333;
+      margin-bottom: 1rem;
     }
 
     .hero-img {
-      max-width: 500px;
+      max-width: min(420px, 38vw);
     }
 
     .btn-custom {
-      background-color: #61bada;
+      background-color: #0d6efd;
       color: white;
-      padding: 12px 24px;
+      padding: 10px 22px;
       font-weight: 600;
       border-radius: 30px;
-      margin-right: 15px;
-      margin-top: 30px;
+      margin-right: 12px;
+      margin-top: 8px;
     }
 
     .btn-custom:hover {
-      background-color: #4a9cb9;
+      background-color: #0b5ed7;
       color: white;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .logo img {
+      height: 52px;
+      width: auto;
+      display: block;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 48px 10px;
+      min-height: 96px;
     }
   </style>
 </head>
@@ -102,9 +125,8 @@
 <body>
 
   <header>
-    <a href="login.html" class="logo" aria-label="Vai al login">
-      <img src="assets/Favicon.png" alt="Fast Food">
-      <span class="logo-text">Fast Food</span>
+    <a href="index.html" class="logo" aria-label="FastFood">
+      <img src="assets/Favicon.png" alt="FastFood">
     </a>
     <div>
       <a href="login.html" class="btn btn-custom">Login</a>
@@ -114,8 +136,8 @@
 
   <section class="hero">
     <div class="hero-text">
-      <h1>Consegna veloce, gusto garantito</h1>
-      <p>Ordina dai tuoi ristoranti preferiti con un click.</p>
+      <h1>Il tuo fast food preferito, sempre a portata di click.</h1>
+      <p>Ordina in pochi secondi e ricevi tutto caldo, fresco e puntuale.</p>
       <a href="login.html" class="btn btn-custom">Inizia ora</a>
     </div>
 

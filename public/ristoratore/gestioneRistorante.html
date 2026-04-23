@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../assets/modern-theme.css">
   <style>
     :root {
-      --brand-primary: #61bada;
+      --brand-primary: #0d6efd;
       --brand-accent: #fecd4c;
       --surface: #ffffff;
       --muted: #6c757d;
@@ -48,6 +48,13 @@
       margin-bottom: 1.25rem;
     }
 
+    .sidebar-logo-link {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+    .sidebar-logo-link:hover {
+      transform: scale(1.03);
+    }
     .sidebar-header img {
       max-width: 150px;
       filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
@@ -63,12 +70,17 @@
       transition: all 0.2s ease;
     }
 
-    .sidebar a.nav-link.active,
-    .sidebar a.nav-link:hover {
-      background: linear-gradient(120deg, var(--brand-accent) 0%, #ffd976 100%);
-      color: #111827;
+    .sidebar a.nav-link.active {
+      background: linear-gradient(120deg, var(--brand-primary) 0%, #6ea8fe 100%);
+      color: #fff;
       transform: translateX(2px);
-      box-shadow: 0 6px 14px rgba(254, 205, 76, 0.3);
+      box-shadow: 0 6px 14px rgba(13, 110, 253, 0.28);
+    }
+    .sidebar a.nav-link:hover {
+      background: linear-gradient(120deg, #0b5ed7 0%, #3d8bfd 100%);
+      color: #fff;
+      transform: translateX(2px);
+      box-shadow: 0 6px 14px rgba(13, 110, 253, 0.22);
     }
 
     .main-content {
@@ -107,7 +119,7 @@
     }
 
     .panel-card .card-header {
-      background: linear-gradient(120deg, #61bada 0%, #7fc9e2 100%);
+      background: linear-gradient(120deg, #0d6efd 0%, #6ea8fe 100%);
       color: #fff;
       border-bottom: none;
       padding: 1rem 1.25rem;
@@ -133,7 +145,7 @@
 
     .form-control:focus {
       border-color: var(--brand-primary);
-      box-shadow: 0 0 0 0.18rem rgba(97, 186, 218, 0.16);
+      box-shadow: 0 0 0 0.18rem rgba(13, 110, 253, 0.16);
     }
 
     .action-row {
@@ -168,7 +180,9 @@
 
   <div class="sidebar">
     <div class="sidebar-header">
-      <img src="../assets/logo.png" alt="FastFood Logo">
+      <a href="../index.html" class="sidebar-logo-link" aria-label="Torna alla home">
+      <img src="../assets/logo.png" alt="FastFood Logo" />
+      </a>
     </div>
     <a href="home.html" class="nav-link">Dashboard</a>
     <a href="gestioneRistorante.html" class="nav-link active">Gestisci Ristorante</a>
