@@ -67,46 +67,45 @@
     }
 
     .hero-card {
-      background: #ffffff;
       border: none;
       border-radius: 24px;
       box-shadow: 0 14px 35px rgba(0, 0, 0, 0.14);
     }
 
+    /* CARD TESTO (blu) */
     .hero-text-card {
+      background: #0d6efd;
       padding: 30px;
       max-width: 600px;
     }
 
-    .hero-text {
-      max-width: 560px;
-    }
-
-    .hero-text h1 {
+    .hero-text-card h1 {
       font-size: clamp(2rem, 4vw, 2.6rem);
       font-weight: 800;
-      color: #1e1e1e;
+      color: #ffffff;
       margin-bottom: 0.65rem;
     }
 
-    .hero-text p {
+    .hero-text-card p {
       font-size: clamp(1rem, 2vw, 1.12rem);
       margin-top: 10px;
-      color: #333;
+      color: #eaf2ff;
       margin-bottom: 1rem;
     }
 
-    .hero-img {
-      max-width: min(420px, 38vw);
-    }
-
+    /* CARD LOGO (bianca) */
     .hero-logo-card {
+      background: #ffffff;
       padding: 22px;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 360px;
       min-width: min(440px, 90vw);
+    }
+
+    .hero-img {
+      max-width: min(420px, 38vw);
     }
 
     .btn-custom {
@@ -133,6 +132,7 @@
       <img src="assets/Favicon.png" alt="FastFood">
       <span class="logo-text">Fast Food</span>
     </a>
+
     <div>
       <a href="login.html" class="btn btn-custom">Login</a>
       <a href="register.html" class="btn btn-custom">Registrati</a>
@@ -141,7 +141,7 @@
 
   <section class="hero">
     <div class="hero-card hero-text-card">
-      <div class="hero-text">
+      <div>
         <h1>Fast Food: Controllo totale della tua ristorazione!!</h1>
         <p>Un’unica piattaforma, dall’ordine alla consegna!</p>
         <a href="login.html" class="btn btn-custom">Inizia ora</a>
