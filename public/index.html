@@ -52,10 +52,14 @@
       color: white;
     }
     .logo {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #00B5A2;
+      display: inline-flex;
+      align-items: center;
       text-decoration: none;
+    }
+    .logo img {
+      height: 52px;
+      width: auto;
+      display: block;
     }
     header {
       display: flex;
@@ -68,7 +72,9 @@
 </head>
 <body>
   <header>
-    <a href="#" class="logo">FastFood</a>
+    <a href="#" class="logo" aria-label="FastFood">
+      <img src="assets/Favicon.png" alt="FastFood">
+    </a>
     <div>
       <a href="login.html" class="btn btn-custom">Login</a>
       <a href="register.html" class="btn btn-custom">Registrati</a>
