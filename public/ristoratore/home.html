@@ -181,10 +181,15 @@
 
       if (!mioRistorante) {
         contentArea.innerHTML =
-            '<div class="d-flex flex-column justify-content-center align-items-center" style="min-height:300px;">' +
-              '<p class="fs-4 text-muted mb-3">Non hai ancora creato un ristorante</p>' +
-              '<a href="creaRistorante.html" class="btn btn-warning">Crea Ristorante</a>' +
-            '</div>';        return;
+          '<div class="card empty-state-card">' +
+            '<div class="card-body text-center p-4 p-md-5">' +
+              '<div class="empty-state-icon">🍔</div>' +
+              '<h4 class="fw-semibold mb-2">Non hai ancora creato un ristorante</h4>' +
+              '<p class="text-muted mb-4">Inizia adesso configurando il tuo ristorante e rendilo visibile ai clienti.</p>' +
+              '<a href="creaRistorante.html" class="btn btn-primary btn-lg px-4">Crea Ristorante</a>' +
+            '</div>' +
+          '</div>';
+        return;
       }
 
       contentArea.innerHTML = `
