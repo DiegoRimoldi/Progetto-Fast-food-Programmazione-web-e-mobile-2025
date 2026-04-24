@@ -30,6 +30,7 @@
       flex-direction: column;
       position: sticky;
       top: 0;
+      align-self: flex-start;
       height: 100vh;
       overflow-y: auto;
     }
@@ -39,18 +40,26 @@
       margin-bottom: 1rem;
     }
 
+    .sidebar-logo-link {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .sidebar-logo-link:hover {
+      transform: scale(1.03);
+    }
+
     .sidebar-header img {
       max-width: 150px;
     }
 
     .sidebar a.nav-link {
       color: #555;
-      padding: 0.6rem 0.9rem;
+      padding: 0.75rem 1rem;
       border-radius: 0.5rem;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.5rem;
       text-decoration: none;
-      transition: 0.3s;
-      font-size: 0.95rem;
+      transition: background-color 0.3s, color 0.3s;
     }
 
     .sidebar a.nav-link.active {
@@ -152,7 +161,7 @@
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sidebar-header">
-    <a href="../index.html">
+    <a href="../index.html" class="sidebar-logo-link" aria-label="Torna alla home">
       <img src="../assets/logo.png" alt="Logo" />
     </a>
   </div>

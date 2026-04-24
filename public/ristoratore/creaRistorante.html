@@ -32,23 +32,32 @@
     }
 
     .sidebar {
-      width: clamp(190px, 22vw, 250px);
-      flex: 0 0 clamp(190px, 22vw, 250px);
-      background: var(--surface);
-      border-right: 1px solid rgba(0, 0, 0, 0.05);
-      box-shadow: 2px 0 20px rgba(15, 23, 42, 0.08);
-      padding: 1.25rem 1rem;
+      width: clamp(180px, 22vw, 250px);
+      flex: 0 0 clamp(180px, 22vw, 250px);
+      background-color: #ffffff;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
       display: flex;
       flex-direction: column;
       position: sticky;
       top: 0;
+      align-self: flex-start;
       height: 100vh;
       overflow-y: auto;
     }
 
     .sidebar-header {
       text-align: center;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .sidebar-logo-link {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .sidebar-logo-link:hover {
+      transform: scale(1.03);
     }
 
     .sidebar-header img {
@@ -56,17 +65,21 @@
     }
 
     .sidebar a.nav-link {
-      color: #4b5563;
-      padding: 0.72rem 0.9rem;
-      border-radius: 0.75rem;
-      margin-bottom: 0.4rem;
+      color: #555;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
       text-decoration: none;
-      font-weight: 500;
+      transition: background-color 0.3s, color 0.3s;
     }
 
-    .sidebar a.nav-link.active,
+    .sidebar a.nav-link.active {
+      background-color: #0d6efd;
+      color: #fff;
+    }
+
     .sidebar a.nav-link:hover {
-      background: linear-gradient(120deg, var(--brand-primary) 0%, #6ea8fe 100%);
+      background-color: #0b5ed7;
       color: #fff;
     }
 
@@ -149,7 +162,7 @@
 
 <div class="sidebar">
   <div class="sidebar-header">
-    <a href="../index.html">
+    <a href="../index.html" class="sidebar-logo-link" aria-label="Torna alla home">
       <img src="../assets/logo.png" alt="FastFood Logo" />
     </a>
   </div>
