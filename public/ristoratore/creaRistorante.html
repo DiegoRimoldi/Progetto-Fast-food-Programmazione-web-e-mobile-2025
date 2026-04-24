@@ -215,8 +215,7 @@
 </div>
 
 <script>
-  var apiBase = "http://localhost:3000";
-  var token = localStorage.getItem("token");
+  var apiBase = window.location.origin || "http://localhost:3000";
   var userId = localStorage.getItem("userId");
   var formEl = document.getElementById("restaurantForm");
   var feedbackBox = document.getElementById("formFeedback");
@@ -235,9 +234,11 @@
   }
 
   async function fetchConControlloToken(url, options = {}) {
+    var token = localStorage.getItem("token");
+
     if (!token) {
       window.handleAuthIssue("sessione non valida");
-      return;
+      return null;
     }
 
     options.headers = options.headers || {};
@@ -278,7 +279,9 @@
       });
 
       if (!response) {
-        mostraFeedback("danger", "Creazione non riuscita: impossibile contattare il server. Riprova tra qualche minuto.");
+        var erroreConnessione = "Creazione non riuscita: impossibile contattare il server. Riprova tra qualche minuto.";
+        mostraFeedback("danger", erroreConnessione);
+        alert(erroreConnessione);
         return;
       }
 
@@ -293,20 +296,23 @@
       }
 
       if (!response.ok) {
-        mostraFeedback(
-          "danger",
-          data.error || data.message || "Creazione non riuscita: verifica i dati inseriti e riprova."
-        );
+        var messaggioErrore = data.error || data.message || "Creazione non riuscita: verifica i dati inseriti e riprova.";
+        mostraFeedback("danger", messaggioErrore);
+        alert("Errore durante la creazione del ristorante: " + messaggioErrore);
         return;
       }
 
-      mostraFeedback("success", "Ristorante creato con successo! Tra pochi secondi verrai reindirizzato alla dashboard.");
+      var messaggioSuccesso = "Ristorante creato con successo! Tra pochi secondi verrai reindirizzato alla dashboard.";
+      mostraFeedback("success", messaggioSuccesso);
+      alert(messaggioSuccesso);
       setTimeout(function() {
         window.location.href = "home.html";
       }, 1200);
 
     } catch (err) {
-      mostraFeedback("danger", "Errore durante la creazione del ristorante. Riprova più tardi.");
+      var erroreImprevisto = "Errore durante la creazione del ristorante. Riprova più tardi.";
+      mostraFeedback("danger", erroreImprevisto);
+      alert(erroreImprevisto);
     }
   });
 </script>
