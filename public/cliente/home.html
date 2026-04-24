@@ -173,8 +173,10 @@
 
     async function ricercaRistoranti(queryName, queryAddress) {
       try {
-        var response = await fetchConControlloToken(`${apiBase}/restaurants/search?q=${queryName}&address=${queryAddress}`);
-        if (!response.ok) throw new Error("Errore nella ricerca dei ristoranti.");
+        var response = await fetchConControlloToken(
+          `${apiBase}/restaurants/search?q=${encodeURIComponent(queryName)}&address=${encodeURIComponent(queryAddress)}`
+        );
+        if (!response || !response.ok) throw new Error("Errore nella ricerca dei ristoranti.");
         var data = await response.json();
         mostraRistoranti(data.restaurants);
       } catch (err) {
