@@ -66,7 +66,7 @@
       background: #eef3f7;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
     }
     .main-content h2 {
       color: #0d6efd;
@@ -88,6 +88,15 @@
       font-weight: 700;
       line-height: 1.2;
       margin: 0;
+    }
+    .dashboard-title-card .title-sub {
+      margin: 0.6rem 0 0;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+    #contentArea {
+      width: 100%;
+      max-width: 1180px;
     }
     .card-custom {
       border: 1px solid #dee2e6;
@@ -200,6 +209,7 @@
 <div class="main-content">
   <div class="dashboard-title-card">
     <div class="title-main">Dashboard Ristoratore</div>
+    <p class="title-sub">Aggiorna i dati in modo semplice e mantieni sempre il profilo del locale in ordine.</p>
   </div>
   <div id="contentArea"></div>
 </div>
@@ -263,8 +273,8 @@
       }
 
       contentArea.innerHTML = `
-        <div class="row g-4">
-          <div class="col-12 col-xl-6">
+        <div class="row g-4 justify-content-center">
+          <div class="col-12 col-xl-5">
             <div class="card card-custom overview-card h-100">
               <div class="card-header">Dati Ristorante</div>
               <div class="card-body">
@@ -297,7 +307,7 @@
             </div>
           </div>
 
-          <div class="col-12 col-xl-6">
+          <div class="col-12 col-xl-5">
             <div class="card card-custom overview-card h-100">
               <div class="card-header">Ordini in Corso</div>
               <div class="card-body" id="ordersInProgress">
