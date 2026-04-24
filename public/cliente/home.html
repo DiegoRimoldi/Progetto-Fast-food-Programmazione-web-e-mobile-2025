@@ -93,6 +93,8 @@
       border: 1px solid #e8eef8;
       border-radius: 0.8rem;
       box-shadow: 0 8px 22px rgba(13, 110, 253, 0.08);
+      max-width: 460px;
+      margin: 0 auto;
     }
     .ristorante-card:hover {
       transform: translateY(-3px);
@@ -206,7 +208,7 @@
       }
       lista.forEach(function(r) {
         var col = document.createElement("div");
-        col.className = "col-12 col-md-6 col-xl-4";
+        col.className = "col-12 col-md-10 col-lg-6 col-xxl-4";
         col.innerHTML = '<div class="card ristorante-card h-100">' +
                           '<img src="' + (r.image) + '" class="card-img-top" alt="' + r.name + '">' +
                           '<div class="card-body d-flex flex-column">' +
