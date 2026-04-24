@@ -109,6 +109,12 @@
       box-shadow: 0 0 0 0.18rem rgba(13, 110, 253, 0.16);
     }
 
+    .form-control.is-invalid,
+    .form-control.is-invalid:focus {
+      border-color: #dc3545;
+      box-shadow: 0 0 0 0.18rem rgba(220, 53, 69, 0.18);
+    }
+
     textarea.form-control {
       min-height: 120px;
     }
@@ -225,12 +231,119 @@
   var pivaInput = document.getElementById("piva");
   var descriptionInput = document.getElementById("description");
   var imageInput = document.getElementById("image");
+  var initialPlaceholders = {
+    name: nameInput.placeholder,
+    address: addressInput.placeholder,
+    numero_di_telefono: phoneInput.placeholder,
+    piva: pivaInput.placeholder,
+    description: descriptionInput.placeholder,
+    image: imageInput.placeholder
+  };
 
   function mostraFeedback(tipo, messaggio) {
     feedbackBox.innerHTML =
       '<div class="alert alert-' + tipo + '" role="alert">' +
       messaggio +
       "</div>";
+  }
+
+  function resetCampo(inputEl, key) {
+    inputEl.classList.remove("is-invalid");
+    inputEl.placeholder = initialPlaceholders[key];
+  }
+
+  function evidenziaCampoErrore(inputEl, key, testoPlaceholderErrore) {
+    inputEl.classList.add("is-invalid");
+    if (testoPlaceholderErrore) {
+      inputEl.value = "";
+      inputEl.placeholder = testoPlaceholderErrore;
+    }
+    inputEl.focus();
+  }
+
+  function resetValidazione() {
+    resetCampo(nameInput, "name");
+    resetCampo(addressInput, "address");
+    resetCampo(phoneInput, "numero_di_telefono");
+    resetCampo(pivaInput, "piva");
+    resetCampo(descriptionInput, "description");
+    resetCampo(imageInput, "image");
+  }
+
+  function trovaCampoDaErrore(messaggio) {
+    var testo = (messaggio || "").toLowerCase();
+    if (testo.includes("nome") || testo.includes("name")) return "name";
+    if (testo.includes("indirizzo") || testo.includes("address")) return "address";
+    if (testo.includes("telefono") || testo.includes("numero_di_telefono")) return "numero_di_telefono";
+    if (testo.includes("partita iva") || testo.includes("piva") || testo.includes("iva")) return "piva";
+    if (testo.includes("descrizione") || testo.includes("description")) return "description";
+    if (testo.includes("immagine") || testo.includes("image") || testo.includes("url")) return "image";
+    return null;
+  }
+
+  function validaForm() {
+    resetValidazione();
+    var name = nameInput.value.trim();
+    var address = addressInput.value.trim();
+    var phone = phoneInput.value.trim();
+    var piva = pivaInput.value.trim();
+    var description = descriptionInput.value.trim();
+    var image = imageInput.value.trim();
+
+    if (!name || name.length < 3) {
+      var msgNome = "Il nome deve contenere almeno 3 caratteri.";
+      evidenziaCampoErrore(nameInput, "name", "Inserisci almeno 3 caratteri");
+      mostraFeedback("danger", msgNome);
+      alert(msgNome);
+      return false;
+    }
+
+    if (!address || address.length < 8 || !/\d/.test(address)) {
+      var msgIndirizzo = "L'indirizzo è obbligatorio e deve contenere via/piazza e numero civico.";
+      evidenziaCampoErrore(addressInput, "address", "Es. Via Roma 10, Milano");
+      mostraFeedback("danger", msgIndirizzo);
+      alert(msgIndirizzo);
+      return false;
+    }
+
+    if (!/^\+?[0-9\s-]{8,15}$/.test(phone)) {
+      var msgTelefono = "Il telefono deve contenere da 8 a 15 cifre (puoi usare +, spazi o trattini).";
+      evidenziaCampoErrore(phoneInput, "numero_di_telefono", "Es. +39 333 1234567");
+      mostraFeedback("danger", msgTelefono);
+      alert(msgTelefono);
+      return false;
+    }
+
+    if (!/^\d{11}$/.test(piva)) {
+      var msgPiva = "La partita IVA deve essere composta da 11 cifre numeriche.";
+      evidenziaCampoErrore(pivaInput, "piva", "Inserisci 11 cifre");
+      mostraFeedback("danger", msgPiva);
+      alert(msgPiva);
+      return false;
+    }
+
+    if (description && (description.length < 15 || description.length > 500)) {
+      var msgDescrizione = "La descrizione, se inserita, deve avere tra 15 e 500 caratteri.";
+      evidenziaCampoErrore(descriptionInput, "description", "Descrizione tra 15 e 500 caratteri");
+      mostraFeedback("danger", msgDescrizione);
+      alert(msgDescrizione);
+      return false;
+    }
+
+    try {
+      var imageUrl = new URL(image);
+      if (!["http:", "https:"].includes(imageUrl.protocol)) {
+        throw new Error("Protocollo non valido");
+      }
+    } catch (_) {
+      var msgImmagine = "L'URL immagine deve essere valido e iniziare con http:// oppure https://.";
+      evidenziaCampoErrore(imageInput, "image", "Es. https://example.com/foto.jpg");
+      mostraFeedback("danger", msgImmagine);
+      alert(msgImmagine);
+      return false;
+    }
+
+    return true;
   }
 
   async function fetchConControlloToken(url, options = {}) {
@@ -260,6 +373,9 @@
 
   formEl.addEventListener("submit", async function(e) {
     e.preventDefault();
+    if (!validaForm()) {
+      return;
+    }
 
     var payload = {
       name: nameInput.value.trim(),
@@ -297,6 +413,13 @@
 
       if (!response.ok) {
         var messaggioErrore = data.error || data.message || "Creazione non riuscita: verifica i dati inseriti e riprova.";
+        var campoErrore = trovaCampoDaErrore(messaggioErrore);
+        if (campoErrore === "name") evidenziaCampoErrore(nameInput, "name", "Correggi il nome inserito");
+        if (campoErrore === "address") evidenziaCampoErrore(addressInput, "address", "Correggi l'indirizzo inserito");
+        if (campoErrore === "numero_di_telefono") evidenziaCampoErrore(phoneInput, "numero_di_telefono", "Correggi il telefono inserito");
+        if (campoErrore === "piva") evidenziaCampoErrore(pivaInput, "piva", "Correggi la partita IVA inserita");
+        if (campoErrore === "description") evidenziaCampoErrore(descriptionInput, "description", "Correggi la descrizione inserita");
+        if (campoErrore === "image") evidenziaCampoErrore(imageInput, "image", "Correggi l'URL immagine inserito");
         mostraFeedback("danger", messaggioErrore);
         alert("Errore durante la creazione del ristorante: " + messaggioErrore);
         return;
