@@ -8,31 +8,20 @@
   <link rel="stylesheet" href="../assets/responsive.css">
   <link rel="stylesheet" href="../assets/modern-theme.css">
   <style>
-    :root {
-      --brand-primary: #0d6efd;
-      --brand-accent: #fecd4c;
-      --surface: #ffffff;
-      --muted: #6c757d;
-      --text: #1f2937;
-    }
-
     body {
       margin: 0;
       padding: 0;
-      background: linear-gradient(180deg, #f3f8ff 0%, #eefbf8 100%);
+      background-color: #ffffff;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: var(--text);
       display: flex;
       min-height: 100vh;
     }
-
     .sidebar {
-      width: clamp(190px, 22vw, 250px);
-      flex: 0 0 clamp(190px, 22vw, 250px);
-      background: var(--surface);
-      border-right: 1px solid rgba(0, 0, 0, 0.05);
-      box-shadow: 2px 0 20px rgba(15, 23, 42, 0.08);
-      padding: 1.25rem 1rem;
+      width: clamp(180px, 22vw, 250px);
+      flex: 0 0 clamp(180px, 22vw, 250px);
+      background-color: #ffffff;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      padding: 1rem;
       display: flex;
       flex-direction: column;
       position: sticky;
@@ -43,7 +32,7 @@
     }
     .sidebar-header {
       text-align: center;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
     }
     .sidebar-logo-link {
       display: inline-block;
@@ -54,80 +43,47 @@
     }
     .sidebar-header img {
       max-width: 150px;
-      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
     }
     .sidebar a.nav-link {
-      color: #4b5563;
-      padding: 0.72rem 0.9rem;
-      border-radius: 0.75rem;
-      margin-bottom: 0.4rem;
+      color: #555;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
       text-decoration: none;
-      font-weight: 500;
-      transition: all 0.2s ease;
+      transition: background-color 0.3s, color 0.3s;
     }
     .sidebar a.nav-link.active {
-      background: linear-gradient(120deg, var(--brand-primary) 0%, #6ea8fe 100%);
+      background-color: #0d6efd;
       color: #fff;
-      transform: translateX(2px);
-      box-shadow: 0 6px 14px rgba(13, 110, 253, 0.28);
     }
     .sidebar a.nav-link:hover {
-      background: linear-gradient(120deg, #0b5ed7 0%, #3d8bfd 100%);
+      background-color: #0b5ed7;
       color: #fff;
-      transform: translateX(2px);
-      box-shadow: 0 6px 14px rgba(13, 110, 253, 0.22);
     }
-
     .main-content {
       flex: 1;
-      padding: clamp(1.25rem, 2.5vw, 2.25rem);
+      padding: 2rem;
     }
-
-    .page-shell {
-      max-width: 1020px;
-      margin: 0 auto;
+    .main-content h2 {
+      color: #0d6efd;
+      margin-bottom: 1.5rem;
     }
-
-    .hero-card {
-      border: none;
-      border-radius: 1rem;
-      background: linear-gradient(120deg, #ffffff 0%, #f8fbff 100%);
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-    }
-
-    .hero-title {
-      color: var(--brand-primary);
-      margin-bottom: 0.2rem;
-      font-weight: 700;
-    }
-
-    .hero-subtitle {
-      color: var(--muted);
-      margin-bottom: 0;
-    }
-
     .card-custom {
-      border: none;
-      border-radius: 1rem;
-      overflow: hidden;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      border: 1px solid #dee2e6;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     .card-custom .card-header {
-      background: linear-gradient(120deg, #0d6efd 0%, #6ea8fe 100%);
-      color: #fff;
-      border-bottom: none;
-      padding: 1rem 1.25rem;
-      font-weight: 600;
-    }
-    .card-custom .card-body {
-      background: #fff;
-      padding: 1.25rem;
+      background-color: #fecd4c;
+      color: #000;
+      font-weight: bold;
     }
     .restaurant-image {
       width: 100%;
-      max-height: 250px;
+      max-height: 260px;
       object-fit: cover;
-      border-radius: 0.75rem;
+      border-radius: 0.5rem;
       border: 1px solid #e9ecef;
       background-color: #f8f9fa;
     }
@@ -139,27 +95,6 @@
     .data-value {
       font-weight: 600;
       margin-bottom: 0.9rem;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 2rem;
-      border: none;
-      border-radius: 1rem;
-      background: #fff;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-    }
-
-    .order-item {
-      border: 1px solid #e5e7eb;
-      border-radius: 0.9rem;
-      padding: 0.95rem 1rem;
-      background: linear-gradient(120deg, #ffffff 0%, #f8fbff 100%);
-      margin-bottom: 0.8rem;
-    }
-
-    .order-item p {
-      margin-bottom: 0.35rem;
     }
   </style>
     <link rel="icon" type="image/png" href="../assets/Favicon.png">
@@ -190,15 +125,8 @@
 
 
 <div class="main-content">
-  <div class="page-shell">
-    <div class="card hero-card mb-4">
-      <div class="card-body p-4">
-        <h2 class="hero-title h3">Dashboard Ristoratore</h2>
-        <p class="hero-subtitle">Tieni sotto controllo le informazioni del tuo locale e gli ordini attivi in un colpo d'occhio.</p>
-      </div>
-    </div>
-    <div id="contentArea"></div>
-  </div>
+  <h2>Dashboard Ristoratore</h2>
+  <div id="contentArea"></div>
 </div>
 
 <script>
@@ -248,9 +176,9 @@
 
       if (!mioRistorante) {
         contentArea.innerHTML =
-            '<div class="empty-state">' +
+            '<div class="d-flex flex-column justify-content-center align-items-center" style="min-height:300px;">' +
               '<p class="fs-4 text-muted mb-3">Non hai ancora creato un ristorante</p>' +
-              '<a href="creaRistorante.html" class="btn btn-warning">Crea Ristorante</a>' +
+              '<a href="creaRistorante.html" class="btn btn-primary">Crea Ristorante</a>' +
             '</div>';        return;
       }
 
@@ -337,7 +265,7 @@
           : "Ritiro presso il ristorante";
 
         var orderDiv = document.createElement("div");
-        orderDiv.className = "order-item";
+        orderDiv.className = "mb-3 p-2 border rounded";
         orderDiv.innerHTML = `
           <p><strong>Ordine #${order._id}</strong></p>
           <p>Data ordine: ${dataOrdine}</p>
