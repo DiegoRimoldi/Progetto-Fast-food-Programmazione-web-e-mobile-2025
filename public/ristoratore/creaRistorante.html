@@ -218,7 +218,14 @@
   var apiBase = "http://localhost:3000";
   var token = localStorage.getItem("token");
   var userId = localStorage.getItem("userId");
+  var formEl = document.getElementById("restaurantForm");
   var feedbackBox = document.getElementById("formFeedback");
+  var nameInput = document.getElementById("name");
+  var addressInput = document.getElementById("address");
+  var phoneInput = document.getElementById("numero_di_telefono");
+  var pivaInput = document.getElementById("piva");
+  var descriptionInput = document.getElementById("description");
+  var imageInput = document.getElementById("image");
 
   function mostraFeedback(tipo, messaggio) {
     feedbackBox.innerHTML =
@@ -250,16 +257,16 @@
     }
   }
 
-  document.getElementById("restaurantForm").addEventListener("submit", async function(e) {
+  formEl.addEventListener("submit", async function(e) {
     e.preventDefault();
 
     var payload = {
-      name: name.value.trim(),
-      address: address.value.trim(),
-      numero_di_telefono: numero_di_telefono.value.trim(),
-      piva: piva.value.trim(),
-      description: description.value.trim(),
-      image: image.value.trim(),
+      name: nameInput.value.trim(),
+      address: addressInput.value.trim(),
+      numero_di_telefono: phoneInput.value.trim(),
+      piva: pivaInput.value.trim(),
+      description: descriptionInput.value.trim(),
+      image: imageInput.value.trim(),
       ristoratore_id: userId
     };
 
