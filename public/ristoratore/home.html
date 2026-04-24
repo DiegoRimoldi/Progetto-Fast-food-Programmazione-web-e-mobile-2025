@@ -62,37 +62,31 @@
     }
     .main-content {
       flex: 1;
-      padding: 2rem;
+      padding: 1rem 2rem 2rem;
       background: #eef3f7;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
     .main-content h2 {
       color: #0d6efd;
       margin-bottom: 0;
     }
     .dashboard-title-card {
-      border-radius: 20px;
+      border-radius: 16px;
       background-color: #f3f5f8;
-      padding: clamp(1.2rem, 2.2vw, 1.8rem) clamp(1.2rem, 2.6vw, 2rem);
-      margin-bottom: 1.4rem;
-      max-width: 980px;
+      padding: 0.85rem 1.2rem;
+      margin: 0 0 1rem;
+      max-width: 420px;
       width: 100%;
+      box-shadow: 0 6px 16px rgba(13, 110, 253, 0.08);
     }
     .dashboard-title-card .title-main {
       color: #0d6efd;
-      font-size: clamp(1.7rem, 2.6vw, 2.35rem);
+      font-size: clamp(1.35rem, 2vw, 1.75rem);
       font-weight: 700;
-      line-height: 1.1;
-      margin-bottom: 0.7rem;
-    }
-    .dashboard-title-card .title-sub {
-      color: #526479;
-      font-size: clamp(1rem, 1.2vw, 1.25rem);
+      line-height: 1.2;
       margin: 0;
-      border: 1px solid #dce6f8;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #ffffff 0%, #f6faff 100%);
-      box-shadow: 0 8px 20px rgba(13, 110, 253, 0.08);
-      padding: 0.85rem 1.1rem;
     }
     .card-custom {
       border: 1px solid #dee2e6;
@@ -205,7 +199,6 @@
 <div class="main-content">
   <div class="dashboard-title-card">
     <div class="title-main">Dashboard Ristoratore</div>
-    <p class="title-sub">Aggiorna i dati in modo semplice e mantieni sempre il profilo del locale in ordine.</p>
   </div>
   <div id="contentArea"></div>
 </div>
