@@ -70,6 +70,22 @@
       margin-bottom: 0;
     }
     .dashboard-title-card {
+      border-radius: 20px;
+      background-color: #f3f5f8;
+      padding: 1.8rem 2rem;
+      margin-bottom: 1.4rem;
+    }
+    .dashboard-title-card .title-main {
+      color: #0d6efd;
+      font-size: clamp(2rem, 2.8vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 0.45rem;
+    }
+    .dashboard-title-card .title-sub {
+      color: #526479;
+      font-size: clamp(1.15rem, 1.45vw, 1.9rem);
+      margin: 0;
       border: 1px solid #dce6f8;
       border-radius: 14px;
       background: linear-gradient(135deg, #ffffff 0%, #f6faff 100%);
@@ -187,6 +203,8 @@
 
 <div class="main-content">
   <div class="dashboard-title-card">
+    <div class="title-main">Gestisci il tuo ristorante</div>
+    <p class="title-sub">Aggiorna i dati in modo semplice e mantieni sempre il profilo del locale in ordine.</p>
     <h2>Dashboard Ristoratore</h2>
   </div>
   <div id="contentArea"></div>
