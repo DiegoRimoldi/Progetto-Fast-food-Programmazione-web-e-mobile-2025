@@ -220,6 +220,18 @@
           <div class="metric-value">€<span id="avgOrderValue">...</span></div>
         </div>
       </div>
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="metric-card">
+          <div class="metric-label">Ordini consegnati</div>
+          <div class="metric-value" id="totalDeliveredOrders">...</div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="metric-card">
+          <div class="metric-label">Ricavo ordini consegnati</div>
+          <div class="metric-value">€<span id="deliveredRevenue">...</span></div>
+        </div>
+      </div>
     </div>
 
     <div class="row g-3 mt-2">
@@ -249,6 +261,11 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div id="emptyNotice" class="empty-state d-none d-flex flex-column justify-content-center align-items-center text-center p-4 mt-3">
+      <h5 class="mb-2">Nessun ordine disponibile</h5>
+      <p class="mb-0">Le statistiche verranno popolate automaticamente quando inizierai a ricevere ordini.</p>
     </div>
   </div>
 </div>
@@ -305,6 +322,8 @@
       var emptyNotice = document.getElementById("emptyNotice");
       var totalOrders = typeof stats.totalOrders === "number" ? stats.totalOrders : 0;
       var totalRevenue = typeof stats.totalRevenue === "number" ? stats.totalRevenue : 0;
+      var totalDeliveredOrders = typeof stats.totalDeliveredOrders === "number" ? stats.totalDeliveredOrders : 0;
+      var deliveredRevenue = typeof stats.deliveredRevenue === "number" ? stats.deliveredRevenue : 0;
 
       if (totalOrders === 0) {
         emptyNotice.classList.remove("d-none");
@@ -314,6 +333,8 @@
 
       document.getElementById("totalOrders").innerText = totalOrders;
       document.getElementById("totalRevenue").innerText = totalRevenue.toFixed(2);
+      document.getElementById("totalDeliveredOrders").innerText = totalDeliveredOrders;
+      document.getElementById("deliveredRevenue").innerText = deliveredRevenue.toFixed(2);
 
       var averageOrderValue = totalOrders > 0
         ? (totalRevenue / totalOrders).toFixed(2)
@@ -336,7 +357,14 @@
       trendContainer.innerHTML = Object.entries(stats.ordersTrend || {})
         .sort(function(a, b) { return new Date(b[0]) - new Date(a[0]); })
         .map(function(entry) {
-          return renderListItem(formatDateLabel(entry[0]), entry[1], "ordini");
+          var deliveredValue = ((stats.deliveredOrdersTrend || {})[entry[0]]) || 0;
+          return '<div class="list-item">' +
+            '<span>' + formatDateLabel(entry[0]) + '</span>' +
+            '<span class="d-flex gap-2">' +
+              '<span class="badge-soft">' + entry[1] + ' ordini</span>' +
+              '<span class="badge-soft">' + deliveredValue + ' consegnati</span>' +
+            '</span>' +
+          '</div>';
         }).join("") || '<p class="text-muted mb-0">Nessun dato disponibile.</p>';
     } catch (err) {
       console.error("Errore nel caricamento delle statistiche:", err);

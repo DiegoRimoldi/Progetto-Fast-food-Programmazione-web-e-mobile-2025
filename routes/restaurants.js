@@ -6,6 +6,29 @@ import { validateAddressWithOpenStreetMap } from "../utils/addressValidation.js"
 
 const router = express.Router();
 
+function parseOrderDateToDate(rawValue) {
+  if (!rawValue) return null;
+
+  const normalized = String(rawValue).trim();
+  const italianPattern = normalized.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s*-\s*(\d{2}):(\d{2}))?$/);
+
+  if (italianPattern) {
+    const day = Number(italianPattern[1]);
+    const month = Number(italianPattern[2]) - 1;
+    const year = Number(italianPattern[3]);
+    const hour = Number(italianPattern[4] || 0);
+    const minute = Number(italianPattern[5] || 0);
+    return new Date(year, month, day, hour, minute);
+  }
+
+  const genericDate = new Date(normalized);
+  return Number.isNaN(genericDate.getTime()) ? null : genericDate;
+}
+
+function getYyyyMmDd(dateValue) {
+  return dateValue.toISOString().slice(0, 10);
+}
+
 /**
  * GET /restaurants/search
  * Ricerca ristoranti per nome e indirizzo (parziale, case insensitive)
@@ -118,27 +141,69 @@ router.get("/statistics", authenticateUser, authorizeRistoratore, async (req, re
     }
 
     const orders = await db.collection("orders").find({ ristorante_id: new ObjectId(ristorante._id) }).toArray();
+    const deliveredOrders = orders.filter((order) => order.stato === "consegnato");
 
-    let totalOrders = orders.length;
+    const totalOrders = orders.length;
+    const totalDeliveredOrders = deliveredOrders.length;
     let totalRevenue = 0;
+    let deliveredRevenue = 0;
     let ordersByState = {};
     let mealCount = {};
     let ordersTrend = {};
+    let deliveredOrdersTrend = {};
+    const statusOrder = ["ordinato", "in preparazione", "in consegna", "consegnato"];
 
     orders.forEach(({ totale, stato, meals, data_ordine }) => {
-      totalRevenue += totale;
+      const orderTotal = Number(totale) || 0;
+      totalRevenue += orderTotal;
       ordersByState[stato] = (ordersByState[stato] || 0) + 1;
-      meals.forEach(({ nome, quantita }) => mealCount[nome] = (mealCount[nome] || 0) + quantita);
-      let date = data_ordine.split(" - ")[0];
-      ordersTrend[date] = (ordersTrend[date] || 0) + 1;
+      if (stato === "consegnato") {
+        deliveredRevenue += orderTotal;
+      }
+
+      if (Array.isArray(meals)) {
+        meals.forEach(({ nome, quantita }) => {
+          if (!nome) return;
+          mealCount[nome] = (mealCount[nome] || 0) + (Number(quantita) || 0);
+        });
+      }
+
+      const parsedDate = parseOrderDateToDate(data_ordine);
+      if (!parsedDate) return;
+      const dateKey = getYyyyMmDd(parsedDate);
+      ordersTrend[dateKey] = (ordersTrend[dateKey] || 0) + 1;
+      if (stato === "consegnato") {
+        deliveredOrdersTrend[dateKey] = (deliveredOrdersTrend[dateKey] || 0) + 1;
+      }
     });
+
+    statusOrder.forEach((status) => {
+      ordersByState[status] = ordersByState[status] || 0;
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - 29);
+
+    const ordersTrendLast30Days = {};
+    const deliveredOrdersTrendLast30Days = {};
+
+    for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+      const key = getYyyyMmDd(d);
+      ordersTrendLast30Days[key] = ordersTrend[key] || 0;
+      deliveredOrdersTrendLast30Days[key] = deliveredOrdersTrend[key] || 0;
+    }
 
     res.json({
       totalOrders,
+      totalDeliveredOrders,
       totalRevenue,
+      deliveredRevenue,
       ordersByState,
       topMeals: Object.entries(mealCount).sort((a, b) => b[1] - a[1]).slice(0, 5),
-      ordersTrend
+      ordersTrend: ordersTrendLast30Days,
+      deliveredOrdersTrend: deliveredOrdersTrendLast30Days
     });
 
   } catch (err) {
