@@ -356,7 +356,7 @@
 
         if (["ordinato", "in preparazione"].includes(order.stato)) {
           var updateBtn = document.createElement("button");
-          updateBtn.className = "btn btn-warning";
+          updateBtn.className = "btn btn-primary";
           updateBtn.innerText = "Avanza Stato";
           updateBtn.onclick = () => cambiaStatoOrdine(order._id, order.stato, order.metodo_consegna);
           orderDiv.querySelector(".order-actions").appendChild(updateBtn);
