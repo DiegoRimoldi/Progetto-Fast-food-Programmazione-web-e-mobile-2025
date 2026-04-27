@@ -104,12 +104,39 @@
       border-radius: 1rem;
       box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
       overflow: hidden;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, outline-color 0.2s ease;
+      cursor: pointer;
+      outline: 2px solid transparent;
     }
 
     .menu-card:hover {
       transform: translateY(-3px);
       box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+    }
+
+    .menu-card.is-active {
+      outline-color: rgba(13, 110, 253, 0.55);
+      box-shadow: 0 18px 34px rgba(13, 110, 253, 0.22);
+    }
+
+    .menu-card.is-selected {
+      outline-color: rgba(25, 135, 84, 0.65);
+      box-shadow: 0 18px 34px rgba(25, 135, 84, 0.2);
+    }
+
+    .meal-selector-wrap {
+      position: absolute;
+      top: 0.85rem;
+      right: 0.85rem;
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 999px;
+      padding: 0.18rem 0.55rem;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+    }
+
+    .menu-card-cover {
+      position: relative;
     }
 
     .menu-card img {
@@ -132,6 +159,13 @@
       background: linear-gradient(120deg, #ffffff 0%, #f8fbff 100%);
       box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
       color: var(--muted);
+    }
+
+    .detail-card {
+      border: none;
+      border-radius: 1rem;
+      background: linear-gradient(120deg, #ffffff 0%, #f8fbff 100%);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
     }
   </style>
 </head>
@@ -168,8 +202,18 @@
     </div>
 
     <div id="menuStats" class="alert alert-primary d-none" role="status"></div>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <button id="deleteSelectedBtn" class="btn btn-outline-danger d-none" type="button">Elimina selezionati (0)</button>
+    </div>
 
     <div id="menuContainer" class="row g-4"></div>
+
+    <div id="mealDetailsCard" class="card detail-card mt-4 d-none">
+      <div class="card-body p-4">
+        <h3 class="h5 text-primary mb-3">Dettagli piatto</h3>
+        <div id="mealDetailsContent" class="text-muted mb-0"></div>
+      </div>
+    </div>
 
     <div id="emptyState" class="empty-state d-none">
       <h3 class="h5">Il tuo menù è ancora vuoto</h3>
@@ -182,6 +226,9 @@
     var token = localStorage.getItem("token");
     var userId = localStorage.getItem("userId");
     var mioRistorante = null;
+    var piattiMenuCache = [];
+    var selectedMealIds = new Set();
+    var activeMealId = null;
 
     function getIdAsString(idValue) {
       if (!idValue) return "";
@@ -241,10 +288,19 @@
       var badgeLabel = isPersonalizzato ? "Personalizzato" : "Generico";
       var ingredienti = Array.isArray(piatto.ingredients) ? piatto.ingredients.slice(0, 4).join(", ") : "";
       var prezzo = Number(piatto.prezzo || 0).toFixed(2);
+      var mealId = getIdAsString(piatto._id);
+      var isChecked = selectedMealIds.has(mealId) ? "checked" : "";
+      var activeClass = activeMealId === mealId ? "is-active" : "";
+      var selectedClass = selectedMealIds.has(mealId) ? "is-selected" : "";
 
       cardWrapper.innerHTML =
-        '<article class="card menu-card h-100">' +
-          '<img src="' + (piatto.strMealThumb || "../assets/logo.png") + '" class="card-img-top" alt="' + (piatto.strMeal || "Piatto") + '">' +
+        '<article class="card menu-card h-100 ' + activeClass + " " + selectedClass + '" data-meal-id="' + mealId + '">' +
+          '<div class="menu-card-cover">' +
+            '<div class="meal-selector-wrap form-check form-switch">' +
+              '<input class="form-check-input meal-selector" type="checkbox" data-meal-id="' + mealId + '" ' + isChecked + '>' +
+            '</div>' +
+            '<img src="' + (piatto.strMealThumb || "../assets/logo.png") + '" class="card-img-top" alt="' + (piatto.strMeal || "Piatto") + '">' +
+          '</div>' +
           '<div class="card-body d-flex flex-column gap-2">' +
             '<div class="d-flex justify-content-between align-items-start gap-2">' +
               '<h5 class="card-title text-primary mb-0">' + (piatto.strMeal || "Piatto senza nome") + '</h5>' +
@@ -256,18 +312,130 @@
           '</div>' +
         '</article>';
 
+      var article = cardWrapper.querySelector(".menu-card");
+      var checkbox = cardWrapper.querySelector(".meal-selector");
+      article.addEventListener("click", function() {
+        activeMealId = mealId;
+        mostraDettagliPiatto(mealId);
+        renderizzaMenu();
+      });
+
+      checkbox.addEventListener("click", function(event) {
+        event.stopPropagation();
+      });
+      checkbox.addEventListener("change", function(event) {
+        toggleMealSelection(mealId, event.target.checked);
+      });
+
       return cardWrapper;
     }
 
-    async function caricaMenu() {
+    function mostraDettagliPiatto(mealId) {
+      var detailsCard = document.getElementById("mealDetailsCard");
+      var detailsContent = document.getElementById("mealDetailsContent");
+      var restaurantId = getIdAsString(mioRistorante && mioRistorante._id);
+      var piatto = piattiMenuCache.find(function(meal) {
+        return getIdAsString(meal._id) === mealId;
+      });
+
+      if (!piatto) {
+        detailsCard.classList.add("d-none");
+        detailsContent.innerHTML = "";
+        return;
+      }
+
+      var badgeClass = getIdAsString(piatto.ristorante_id) === restaurantId
+        ? "bg-success-subtle text-success-emphasis"
+        : "bg-primary-subtle text-primary-emphasis";
+      var badgeLabel = getIdAsString(piatto.ristorante_id) === restaurantId ? "Personalizzato" : "Generico";
+      var ingredientiDettaglio = Array.isArray(piatto.ingredients) && piatto.ingredients.length
+        ? piatto.ingredients.join(", ")
+        : "Non specificati";
+      var misureDettaglio = Array.isArray(piatto.measures) && piatto.measures.length
+        ? piatto.measures.join(", ")
+        : "Non specificate";
+
+      detailsContent.innerHTML =
+        '<div class="d-flex justify-content-between align-items-start gap-3 mb-3">' +
+          '<div>' +
+            '<h4 class="h5 text-dark mb-1">' + (piatto.strMeal || "Piatto senza nome") + '</h4>' +
+            '<p class="mb-0 small text-muted">ID: ' + mealId + '</p>' +
+          '</div>' +
+          '<span class="type-badge ' + badgeClass + '">' + badgeLabel + '</span>' +
+        '</div>' +
+        '<p class="mb-2"><strong>Categoria:</strong> ' + (piatto.strCategory || "-") + '</p>' +
+        '<p class="mb-2"><strong>Area:</strong> ' + (piatto.strArea || "-") + '</p>' +
+        '<p class="mb-2"><strong>Prezzo:</strong> € ' + Number(piatto.prezzo || 0).toFixed(2) + '</p>' +
+        '<p class="mb-2"><strong>Tempo preparazione:</strong> ' + (piatto.tempo_preparazione || "-") + ' minuti</p>' +
+        '<p class="mb-2"><strong>Ingredienti:</strong> ' + ingredientiDettaglio + '</p>' +
+        '<p class="mb-2"><strong>Quantità:</strong> ' + misureDettaglio + '</p>' +
+        '<p class="mb-0"><strong>Istruzioni:</strong> ' + (piatto.strInstructions || "Nessuna istruzione disponibile.") + '</p>';
+
+      detailsCard.classList.remove("d-none");
+    }
+
+    function toggleMealSelection(mealId, isSelected) {
+      if (isSelected) {
+        selectedMealIds.add(mealId);
+      } else {
+        selectedMealIds.delete(mealId);
+      }
+      updateDeleteButtonLabel();
+      renderizzaMenu();
+    }
+
+    function updateDeleteButtonLabel() {
+      var deleteBtn = document.getElementById("deleteSelectedBtn");
+      if (!deleteBtn) return;
+
+      deleteBtn.textContent = "Elimina selezionati (" + selectedMealIds.size + ")";
+      deleteBtn.classList.toggle("d-none", selectedMealIds.size === 0);
+    }
+
+    function renderizzaMenu() {
       var menuContainer = document.getElementById("menuContainer");
       var emptyState = document.getElementById("emptyState");
       var statsBox = document.getElementById("menuStats");
+      var detailsCard = document.getElementById("mealDetailsCard");
+
+      if (!piattiMenuCache.length) {
+        menuContainer.innerHTML = "";
+        emptyState.classList.remove("d-none");
+        statsBox.classList.add("d-none");
+        detailsCard.classList.add("d-none");
+        updateDeleteButtonLabel();
+        return;
+      }
+
+      menuContainer.innerHTML = "";
+      emptyState.classList.add("d-none");
+
+      var restaurantId = getIdAsString(mioRistorante._id);
+      var personalizzatiCount = 0;
+
+      piattiMenuCache.forEach(function (meal) {
+        if (getIdAsString(meal.ristorante_id) === restaurantId) {
+          personalizzatiCount += 1;
+        }
+        menuContainer.appendChild(creaCardPiatto(meal, restaurantId));
+      });
+
+      var genericiCount = piattiMenuCache.length - personalizzatiCount;
+      statsBox.textContent = "Totale piatti nel menù: " + piattiMenuCache.length + " • Generici: " + genericiCount + " • Personalizzati: " + personalizzatiCount;
+      statsBox.classList.remove("d-none");
+      updateDeleteButtonLabel();
+    }
+
+    async function caricaMenu() {
+      var emptyState = document.getElementById("emptyState");
 
       var menuIds = Array.isArray(mioRistorante.menu) ? mioRistorante.menu.map(getIdAsString) : [];
       if (menuIds.length === 0) {
+        piattiMenuCache = [];
+        selectedMealIds.clear();
+        activeMealId = null;
+        renderizzaMenu();
         emptyState.classList.remove("d-none");
-        statsBox.classList.add("d-none");
         return;
       }
 
@@ -278,36 +446,76 @@
 
       var allMeals = await responseMeals.json();
       var menuSet = new Set(menuIds);
-      var piattiMenu = allMeals.filter(function (meal) {
+      piattiMenuCache = allMeals.filter(function (meal) {
         return menuSet.has(getIdAsString(meal._id));
       });
 
-      if (piattiMenu.length === 0) {
+      selectedMealIds = new Set(Array.from(selectedMealIds).filter(function (mealId) {
+        return piattiMenuCache.some(function (meal) { return getIdAsString(meal._id) === mealId; });
+      }));
+
+      if (!activeMealId && piattiMenuCache.length > 0) {
+        activeMealId = getIdAsString(piattiMenuCache[0]._id);
+      }
+      if (activeMealId && !piattiMenuCache.some(function(meal) { return getIdAsString(meal._id) === activeMealId; })) {
+        activeMealId = piattiMenuCache.length ? getIdAsString(piattiMenuCache[0]._id) : null;
+      }
+
+      if (piattiMenuCache.length === 0) {
         emptyState.classList.remove("d-none");
-        statsBox.classList.add("d-none");
+        renderizzaMenu();
         return;
       }
 
-      menuContainer.innerHTML = "";
-      emptyState.classList.add("d-none");
+      renderizzaMenu();
+      mostraDettagliPiatto(activeMealId);
+    }
 
-      var restaurantId = getIdAsString(mioRistorante._id);
-      var personalizzatiCount = 0;
+    async function eliminaPiattiSelezionati() {
+      if (!selectedMealIds.size) {
+        alert("Seleziona almeno un piatto prima di eliminarlo dal menù.");
+        return;
+      }
 
-      piattiMenu.forEach(function (meal) {
-        if (getIdAsString(meal.ristorante_id) === restaurantId) {
-          personalizzatiCount += 1;
-        }
-        menuContainer.appendChild(creaCardPiatto(meal, restaurantId));
+      var conferma = confirm("Vuoi davvero eliminare dal menù i " + selectedMealIds.size + " piatti selezionati?");
+      if (!conferma) return;
+
+      var menuCorrente = Array.isArray(mioRistorante.menu) ? mioRistorante.menu.map(getIdAsString) : [];
+      var nuovoMenu = menuCorrente.filter(function(mealId) {
+        return !selectedMealIds.has(mealId);
       });
 
-      var genericiCount = piattiMenu.length - personalizzatiCount;
-      statsBox.textContent = "Totale piatti nel menù: " + piattiMenu.length + " • Generici: " + genericiCount + " • Personalizzati: " + personalizzatiCount;
-      statsBox.classList.remove("d-none");
+      try {
+        var updateRes = await fetchConControlloToken(apiBase + "/restaurants/" + getIdAsString(mioRistorante._id), {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({
+            menu: nuovoMenu,
+            updatedAt: new Date()
+          })
+        });
+
+        if (!updateRes || !updateRes.ok) {
+          var errorText = updateRes ? await updateRes.text() : "Nessuna risposta dal server";
+          throw new Error("Errore nella rimozione dei piatti: " + errorText);
+        }
+
+        mioRistorante.menu = nuovoMenu;
+        selectedMealIds.clear();
+        await caricaMenu();
+        alert("Piatti rimossi dal menù con successo.");
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Errore durante la rimozione dal menù.");
+      }
     }
 
     (async function init() {
       try {
+        document.getElementById("deleteSelectedBtn").addEventListener("click", eliminaPiattiSelezionati);
         await caricaRistorante();
         await caricaMenu();
       } catch (error) {
