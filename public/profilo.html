@@ -146,17 +146,17 @@
           <form id="profileForm">
             <div class="mb-3">
               <label for="username" class="form-label">Username *</label>
-              <input type="text" id="username" class="form-control" placeholder="Es. mario_rossi89 (3-20 caratteri: lettere, numeri, _)" required>
+              <input type="text" id="username" class="form-control" placeholder="es. mario_rossi89 (3-20 caratteri: lettere, numeri, _)" required>
             </div>
 
             <div class="mb-3">
               <label for="email" class="form-label">Email *</label>
-              <input type="email" id="email" class="form-control" placeholder="Es. nome.cognome@email.it" required>
+              <input type="email" id="email" class="form-control" placeholder="es. nome.cognome@email.it" required>
             </div>
 
             <div class="mb-3">
               <label for="numero_di_telefono" class="form-label">Numero di Telefono *</label>
-              <input type="text" id="numero_di_telefono" class="form-control" placeholder="Es. +39 333 123 4567 oppure 3331234567" required>
+              <input type="text" id="numero_di_telefono" class="form-control" placeholder="es. +39 333 123 4567 oppure 3331234567" required>
             </div>
 
             <div id="campiCliente" style="display: none;">
@@ -202,12 +202,7 @@
 
             <div class="mb-3">
               <label for="newPassword" class="form-label">Nuova Password *</label>
-              <input type="password" id="newPassword" class="form-control" placeholder="Es. M1lano!2026 (min 8, almeno 1 lettera, 1 numero e 1 simbolo)" required>
-            </div>
-
-            <div class="mb-3">
-              <label for="confirmPassword" class="form-label">Conferma Nuova Password *</label>
-              <input type="password" id="confirmPassword" class="form-control" placeholder="Ripeti la nuova password" required>
+              <input type="password" id="newPassword" class="form-control" placeholder="es. M1lano!2026 (min 8, almeno 1 lettera, 1 numero e 1 simbolo)" required>
             </div>
 
             <button type="submit" class="btn btn-primary">Modifica Password</button>
@@ -288,6 +283,11 @@
       if (alertBox) {
         alertBox.innerHTML = "";
       }
+    }
+
+    function mostraEsitoAggiornamentoProfilo(testo, tipo) {
+      mostraMessaggio("profileAlert", testo, tipo);
+      window.alert(testo);
     }
 
     function validaEmail(email) {
@@ -399,45 +399,45 @@
       }
 
       if (!payload.username || !payload.email || !payload.numero_di_telefono) {
-        mostraMessaggio("profileAlert", "Modifica non effettuata: username, email e numero di telefono sono obbligatori.", "errore");
+        mostraEsitoAggiornamentoProfilo("Modifica non effettuata: username, email e numero di telefono sono obbligatori.", "errore");
         return;
       }
 
       if (!validaUsername(payload.username)) {
-        mostraMessaggio("profileAlert", "Modifica non effettuata: username non valido. Usa 3-20 caratteri tra lettere, numeri e underscore (_).", "errore");
+        mostraEsitoAggiornamentoProfilo("Modifica non effettuata: username non valido. Usa 3-20 caratteri tra lettere, numeri e underscore (_).", "errore");
         return;
       }
 
       if (!validaEmail(payload.email)) {
-        mostraMessaggio("profileAlert", "Modifica non effettuata: email non valida. Inserisci un formato corretto, ad esempio nome.cognome@email.it.", "errore");
+        mostraEsitoAggiornamentoProfilo("Modifica non effettuata: email non valida. Inserisci un formato corretto, ad esempio nome.cognome@email.it.", "errore");
         return;
       }
 
       if (!validaTelefono(payload.numero_di_telefono)) {
-        mostraMessaggio("profileAlert", "Modifica non effettuata: numero di telefono non valido. Usa solo cifre, spazi o trattini (es. +39 333 123 4567).", "errore");
+        mostraEsitoAggiornamentoProfilo("Modifica non effettuata: numero di telefono non valido. Usa solo cifre, spazi o trattini (es. +39 333 123 4567).", "errore");
         return;
       }
 
       if (ruoloUtente === "cliente") {
         if (!payload.indirizzo || !payload.metodo_pagamento) {
-          mostraMessaggio("profileAlert", "Modifica non effettuata: per il cliente indirizzo e metodo di pagamento sono obbligatori.", "errore");
+          mostraEsitoAggiornamentoProfilo("Modifica non effettuata: per il cliente indirizzo e metodo di pagamento sono obbligatori.", "errore");
           return;
         }
       }
 
       if (ruoloUtente === "ristoratore") {
         if (!payload.piva) {
-          mostraMessaggio("profileAlert", "Modifica non effettuata: per il ristoratore la partita IVA è obbligatoria.", "errore");
+          mostraEsitoAggiornamentoProfilo("Modifica non effettuata: per il ristoratore la partita IVA è obbligatoria.", "errore");
           return;
         }
         if (!validaPiva(payload.piva)) {
-          mostraMessaggio("profileAlert", "Modifica non effettuata: partita IVA non valida. Deve contenere esattamente 11 cifre.", "errore");
+          mostraEsitoAggiornamentoProfilo("Modifica non effettuata: partita IVA non valida. Deve contenere esattamente 11 cifre.", "errore");
           return;
         }
       }
 
       if (!trovaDifferenze(payload)) {
-        mostraMessaggio("profileAlert", "Nessuna modifica salvata: i dati inseriti sono identici a quelli già presenti nel profilo.", "warning");
+        mostraEsitoAggiornamentoProfilo("Nessuna modifica salvata: i dati inseriti sono identici a quelli già presenti nel profilo.", "warning");
         return;
       }
 
@@ -452,14 +452,14 @@
 
         var data = await response.json();
         if (!response.ok) {
-          mostraMessaggio("profileAlert", "Modifica non effettuata: " + (data.error || "errore durante l'aggiornamento del profilo."), "errore");
+          mostraEsitoAggiornamentoProfilo("Modifica non effettuata: " + (data.error || "errore durante l'aggiornamento del profilo."), "errore");
           return;
         }
 
         profiloOriginale = Object.assign({}, profiloOriginale || {}, payload);
-        mostraMessaggio("profileAlert", "Profilo modificato con successo.", "successo");
+        mostraEsitoAggiornamentoProfilo("Profilo modificato con successo.", "successo");
       } catch (err) {
-        mostraMessaggio("profileAlert", "Modifica non effettuata: errore di rete durante l'aggiornamento del profilo.", "errore");
+        mostraEsitoAggiornamentoProfilo("Modifica non effettuata: errore di rete durante l'aggiornamento del profilo.", "errore");
       }
     });
 
@@ -469,9 +469,8 @@
 
       var oldPassword = document.getElementById("oldPassword").value;
       var newPassword = document.getElementById("newPassword").value;
-      var confirmPassword = document.getElementById("confirmPassword").value;
 
-      if (!oldPassword || !newPassword || !confirmPassword) {
+      if (!oldPassword || !newPassword) {
         mostraMessaggio("passwordAlert", "Modifica password non effettuata: compila tutti i campi richiesti.", "errore");
         return;
       }
@@ -483,11 +482,6 @@
 
       if (!validaPassword(newPassword)) {
         mostraMessaggio("passwordAlert", "Modifica password non effettuata: la nuova password deve avere almeno 8 caratteri, almeno 1 lettera, 1 numero e 1 simbolo.", "errore");
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        mostraMessaggio("passwordAlert", "Modifica password non effettuata: conferma password non corrispondente.", "errore");
         return;
       }
 
