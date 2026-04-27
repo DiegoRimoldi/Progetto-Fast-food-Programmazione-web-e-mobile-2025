@@ -261,6 +261,19 @@
 
         var contentArea = document.getElementById("contentArea");
 
+        function confrontaValori(a, b) {
+          return (a || "").toString().trim() === (b || "").toString().trim();
+        }
+
+        function nessunaModificaRistorante(payload, originale) {
+          return confrontaValori(payload.name, originale.name) &&
+            confrontaValori(payload.address, originale.address) &&
+            confrontaValori(payload.numero_di_telefono, originale.numero_di_telefono) &&
+            confrontaValori(payload.piva, originale.piva) &&
+            confrontaValori(payload.description, originale.description) &&
+            confrontaValori(payload.image, originale.image);
+        }
+
         if (mioRistorante) {
           contentArea.innerHTML +=
             '<div class="page-shell">' +
@@ -326,6 +339,12 @@
               image: image
             };
 
+            if (nessunaModificaRistorante(payload, mioRistorante)) {
+              document.getElementById("message").innerHTML = '<div class="alert alert-warning">Nessuna modifica salvata: i dati inseriti sono identici a quelli già presenti nel profilo.</div>';
+              alert("Nessuna modifica salvata: i dati inseriti sono identici a quelli già presenti nel profilo.");
+              return;
+            }
+
             try {
               var updateRes = await fetchConControlloToken(apiBase + "/restaurants/" + mioRistorante._id, {
                 method: "PUT",
@@ -343,6 +362,7 @@
 
               document.getElementById("message").innerHTML = '<div class="alert alert-success">Ristorante aggiornato con successo!</div>';
               alert("Il Ristorante è stato aggiornato con successo.");
+              mioRistorante = Object.assign({}, mioRistorante, payload);
             } catch (err) {
               console.error("Errore:", err);
               document.getElementById("message").innerHTML = '<div class="alert alert-danger">' + err.message + '</div>';

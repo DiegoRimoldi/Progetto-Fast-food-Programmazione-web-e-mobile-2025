@@ -196,6 +196,7 @@
     var mioRistorante = null;
     var piattiPersonalizzati = [];
     var selectedMealId = null;
+    var piattoOriginale = null;
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
@@ -278,6 +279,17 @@
         }
 
         selectedMealId = piatto._id;
+        piattoOriginale = {
+          strMeal: piatto.strMeal || "",
+          strCategory: piatto.strCategory || "",
+          strArea: piatto.strArea || "",
+          prezzo: piatto.prezzo != null ? Number(piatto.prezzo) : null,
+          tempo_preparazione: piatto.tempo_preparazione != null ? Number(piatto.tempo_preparazione) : null,
+          ingredients: (piatto.ingredients || []).map(function(i) { return i.toString().trim(); }),
+          measures: (piatto.measures || []).map(function(m) { return m.toString().trim(); }),
+          strMealThumb: piatto.strMealThumb || "",
+          strInstructions: piatto.strInstructions || ""
+        };
         popolaForm(piatto);
         renderCards();
       } catch (err) {
@@ -350,6 +362,22 @@
         return;
       }
 
+      var nessunaModifica = piattoOriginale &&
+        (payload.strMeal || "") === (piattoOriginale.strMeal || "") &&
+        (payload.strCategory || "") === (piattoOriginale.strCategory || "") &&
+        (payload.strArea || "") === (piattoOriginale.strArea || "") &&
+        (Number.isNaN(payload.prezzo) ? null : payload.prezzo) === piattoOriginale.prezzo &&
+        (Number.isNaN(payload.tempo_preparazione) ? null : payload.tempo_preparazione) === piattoOriginale.tempo_preparazione &&
+        JSON.stringify(payload.ingredients) === JSON.stringify(piattoOriginale.ingredients || []) &&
+        JSON.stringify(payload.measures) === JSON.stringify(piattoOriginale.measures || []) &&
+        (payload.strMealThumb || "") === (piattoOriginale.strMealThumb || "") &&
+        (payload.strInstructions || "") === (piattoOriginale.strInstructions || "");
+
+      if (nessunaModifica) {
+        alert("Nessuna modifica salvata: i dati inseriti sono identici a quelli già presenti nel profilo.");
+        return;
+      }
+
       try {
         var response = await fetchConControlloToken(apiBase + "/meals/" + selectedMealId, {
           method: "PUT",
@@ -369,6 +397,10 @@
         if (index !== -1) {
           piattiPersonalizzati[index] = Object.assign({}, piattiPersonalizzati[index], payload);
         }
+        piattoOriginale = Object.assign({}, piattoOriginale || {}, payload, {
+          ingredients: payload.ingredients.slice(),
+          measures: payload.measures.slice()
+        });
         renderCards();
 
         alert("Piatto modificato con successo!");
@@ -407,6 +439,7 @@
         });
 
         selectedMealId = null;
+        piattoOriginale = null;
         document.getElementById("piattoPersonalizzato").reset();
         document.getElementById("piattoPersonalizzato").style.display = "none";
         renderCards();
