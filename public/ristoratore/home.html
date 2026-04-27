@@ -10,17 +10,16 @@
   <link rel="stylesheet" href="../assets/modern-theme.css">
 
   <style>
-    body {
+    body.dashboard-home {
       margin: 0;
       padding: 0;
-      background-color: #dbe1e7;
+      background-color: #f6f8fb;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       min-height: 100vh;
     }
 
-    /* SIDEBAR */
-    .sidebar {
+    .dashboard-home .sidebar {
       width: clamp(180px, 22vw, 250px);
       flex: 0 0 clamp(180px, 22vw, 250px);
       background-color: #ffffff;
@@ -35,25 +34,25 @@
       overflow-y: auto;
     }
 
-    .sidebar-header {
+    .dashboard-home .sidebar-header {
       text-align: center;
       margin-bottom: 1rem;
     }
 
-    .sidebar-logo-link {
+    .dashboard-home .sidebar-logo-link {
       display: inline-block;
       transition: transform 0.2s ease;
     }
 
-    .sidebar-logo-link:hover {
+    .dashboard-home .sidebar-logo-link:hover {
       transform: scale(1.03);
     }
 
-    .sidebar-header img {
+    .dashboard-home .sidebar-header img {
       max-width: 150px;
     }
 
-    .sidebar a.nav-link {
+    .dashboard-home .sidebar a.nav-link {
       color: #555;
       padding: 0.75rem 1rem;
       border-radius: 0.5rem;
@@ -62,32 +61,155 @@
       transition: background-color 0.3s, color 0.3s;
     }
 
-    .sidebar a.nav-link.active {
+    .dashboard-home .sidebar a.nav-link.active {
       background-color: #0d6efd;
       color: #fff;
     }
 
-    .sidebar a.nav-link:hover {
+    .dashboard-home .sidebar a.nav-link:hover {
       background-color: #0b5ed7;
       color: #fff;
     }
 
-    /* MAIN */
-    .main-content {
+    .dashboard-home .main-content {
       flex: 1;
       padding: 2rem;
       display: flex;
       flex-direction: column;
+      gap: 1.2rem;
     }
 
-    .main-content h2 {
+    .dashboard-home .main-content h2 {
       color: #0d6efd;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0;
       font-size: 1.4rem;
     }
 
-    /* EMPTY STATE */
-    .empty-state-wrapper {
+    .dashboard-home .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .dashboard-home .dashboard-card {
+      border: 1px solid #e9eef5;
+      border-radius: 1rem;
+      background-color: #ffffff;
+      box-shadow: 0 8px 18px rgba(8, 38, 78, 0.08);
+      height: 100%;
+    }
+
+    .dashboard-home .dashboard-card .card-header {
+      border-radius: 1rem 1rem 0 0;
+      background: #fecd4c;
+      border-bottom: 1px solid #f0d783;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .dashboard-home .info-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.65rem;
+    }
+
+    .dashboard-home .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      border: 1px solid #edf1f5;
+      border-radius: 0.7rem;
+      padding: 0.6rem 0.8rem;
+      background: #fafcff;
+    }
+
+    .dashboard-home .info-label {
+      color: #6c757d;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04rem;
+      margin: 0;
+    }
+
+    .dashboard-home .info-value {
+      color: #1f2937;
+      margin: 0;
+      font-size: 0.95rem;
+      word-break: break-word;
+    }
+
+    .dashboard-home .orders-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      max-height: 460px;
+      overflow-y: auto;
+      padding-right: 0.2rem;
+    }
+
+    .dashboard-home .order-row {
+      border: 1px solid #edf1f5;
+      border-radius: 0.7rem;
+      padding: 0.7rem 0.8rem;
+      background: #fafcff;
+    }
+
+    .dashboard-home .order-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.6rem;
+      align-items: center;
+      margin-bottom: 0.45rem;
+    }
+
+    .dashboard-home .order-title {
+      margin: 0;
+      font-size: 0.98rem;
+      color: #0d2f6f;
+    }
+
+    .dashboard-home .status-pill {
+      border-radius: 999px;
+      font-size: 0.78rem;
+      padding: 0.2rem 0.55rem;
+      font-weight: 700;
+      text-transform: capitalize;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .dashboard-home .status-pill.ordinato,
+    .dashboard-home .status-pill.in-preparazione {
+      background-color: #fff4d6;
+      color: #8f5f00;
+      border-color: #f6de8d;
+    }
+
+    .dashboard-home .status-pill.in-consegna {
+      background-color: #e7f1ff;
+      color: #0d58ca;
+      border-color: #9cc1ff;
+    }
+
+    .dashboard-home .status-pill.consegnato {
+      background-color: #ddf6e8;
+      color: #0f5132;
+      border-color: #99ddb7;
+    }
+
+    .dashboard-home .order-meta,
+    .dashboard-home .order-meals {
+      margin: 0;
+      color: #495057;
+      font-size: 0.88rem;
+    }
+
+    .dashboard-home .empty-text {
+      color: #6c757d;
+      margin: 0;
+    }
+
+    .dashboard-home .empty-state-wrapper {
       flex: 1;
       display: flex;
       align-items: center;
@@ -96,16 +218,16 @@
       padding: 2rem;
     }
 
-    .empty-state-card {
+    .dashboard-home .empty-state-card {
       width: 100%;
       max-width: 800px;
       border: none;
       border-radius: 1rem;
-      background-color: #ffffff; /* 👈 bianco */
+      background-color: #ffffff;
       box-shadow: 0 6px 18px rgba(30, 42, 56, 0.08);
     }
 
-    .empty-state-icon {
+    .dashboard-home .empty-state-icon {
       width: 160px;
       height: 160px;
       padding-bottom: 20px;
@@ -114,24 +236,24 @@
       align-items: center;
       justify-content: center;
       background: #e4ebf7;
-      font-size: 6.0rem;
-      margin-bottom: 2.0rem;
+      font-size: 6rem;
+      margin-bottom: 2rem;
     }
 
-    .empty-state-title {
+    .dashboard-home .empty-state-title {
       font-size: 2.3rem;
       font-weight: 600;
       color: #0f213a;
       margin-bottom: 0.5rem;
     }
 
-    .empty-state-subtitle {
+    .dashboard-home .empty-state-subtitle {
       font-size: 1.15rem;
       color: #6c757d;
       margin-bottom: 1.5rem;
     }
 
-    .empty-state-btn {
+    .dashboard-home .empty-state-btn {
       border: none;
       font-size: 1.1rem;
       font-weight: 600;
@@ -142,24 +264,28 @@
       transition: 0.2s;
     }
 
-    .empty-state-btn:hover {
+    .dashboard-home .empty-state-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 22px rgba(31, 111, 229, 0.3);
     }
 
+    @media (max-width: 992px) {
+      .dashboard-home .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 
   <link rel="icon" type="image/png" href="../assets/Favicon.png">
   <script src="../assets/auth.js"></script>
 </head>
 
-<body>
+<body class="dashboard-home">
 
 <script>
   window.ensureAuthenticatedRole("ristoratore");
 </script>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sidebar-header">
     <a href="../index.html" class="sidebar-logo-link" aria-label="Torna alla home">
@@ -178,7 +304,6 @@
   <a href="../logout.html" class="nav-link">Logout</a>
 </div>
 
-<!-- MAIN -->
 <div class="main-content">
   <h2 id="dashboardTitle">Dashboard Ristoratore</h2>
   <div id="contentArea"></div>
@@ -189,64 +314,156 @@
   var token = localStorage.getItem("token");
   var userId = localStorage.getItem("userId");
 
-  async function fetchConControlloToken(url, options = {}) {
-    if (!token) return;
-
-    options.headers = options.headers || {};
-    options.headers["Authorization"] = "Bearer " + token;
-
-    let response = await fetch(url, options);
-
-    if (response.status === 401) {
+  async function fetchConControlloToken(url, options) {
+    if (!token) {
       window.handleAuthIssue("sessione non valida");
+      return null;
     }
 
-    return response;
+    var requestOptions = options || {};
+    requestOptions.headers = requestOptions.headers || {};
+    requestOptions.headers["Authorization"] = "Bearer " + token;
+
+    try {
+      var response = await fetch(url, requestOptions);
+      if (response.status === 401) {
+        window.handleAuthIssue("sessione non valida");
+      }
+      return response;
+    } catch (error) {
+      console.error("Errore API:", error);
+      return null;
+    }
+  }
+
+  function formatEuro(value) {
+    return "€" + Number(value || 0).toFixed(2);
+  }
+
+
+  function estraiTimestampOrdine(order) {
+    if (!order || !order.data_ordine) return 0;
+
+    var raw = String(order.data_ordine).trim();
+    var m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})\s*-\s*(\d{2}):(\d{2})$/);
+
+    if (m) {
+      return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5])).getTime();
+    }
+
+    var ts = new Date(raw).getTime();
+    return Number.isNaN(ts) ? 0 : ts;
+  }
+
+  function normalizeStatusClass(stato) {
+    return String(stato || "").toLowerCase().trim().replace(/\s+/g, "-");
+  }
+
+  function renderRestaurantCard(restaurant) {
+    var menuCount = Array.isArray(restaurant.menu) ? restaurant.menu.length : 0;
+
+    return '<div class="card dashboard-card">' +
+      '<div class="card-header">Il tuo ristorante</div>' +
+      '<div class="card-body">' +
+      '<div class="info-list">' +
+      '<div class="info-item"><p class="info-label">Nome</p><p class="info-value">' + (restaurant.name || "N/D") + '</p></div>' +
+      '<div class="info-item"><p class="info-label">Indirizzo</p><p class="info-value">' + (restaurant.address || "N/D") + '</p></div>' +
+      '<div class="info-item"><p class="info-label">Telefono</p><p class="info-value">' + (restaurant.numero_di_telefono || "N/D") + '</p></div>' +
+      '<div class="info-item"><p class="info-label">Partita IVA</p><p class="info-value">' + (restaurant.piva || "N/D") + '</p></div>' +
+      '<div class="info-item"><p class="info-label">Descrizione</p><p class="info-value">' + (restaurant.description || "Nessuna descrizione inserita") + '</p></div>' +
+      '<div class="info-item"><p class="info-label">Piatti nel menu</p><p class="info-value">' + menuCount + '</p></div>' +
+      '</div>' +
+      '</div>' +
+      '</div>';
+  }
+
+  function renderOrdersCard(orders) {
+    if (!orders.length) {
+      return '<div class="card dashboard-card">' +
+        '<div class="card-header">Ordini in corso</div>' +
+        '<div class="card-body"><p class="empty-text">Nessun ordine in corso al momento.</p></div>' +
+        '</div>';
+    }
+
+    var orderRows = orders.map(function(order) {
+      var mealsCount = Array.isArray(order.meals)
+        ? order.meals.reduce(function(total, meal) { return total + Number(meal.quantita || 0); }, 0)
+        : 0;
+
+      return '<div class="order-row">' +
+        '<div class="order-head">' +
+        '<p class="order-title">Ordine #' + (order._id || "-") + '</p>' +
+        '<span class="status-pill ' + normalizeStatusClass(order.stato) + '">' + (order.stato || "N/D") + '</span>' +
+        '</div>' +
+        '<p class="order-meta">Cliente: ' + (order.cliente_nome || "N/D") + '</p>' +
+        '<p class="order-meta">Data: ' + (order.data_ordine || "N/D") + '</p>' +
+        '<p class="order-meta">Metodo: ' + (order.metodo_consegna || "N/D") + '</p>' +
+        '<p class="order-meta">Totale: ' + formatEuro(order.totale) + '</p>' +
+        '<p class="order-meals">Piatti totali: ' + mealsCount + '</p>' +
+        '</div>';
+    }).join("");
+
+    return '<div class="card dashboard-card">' +
+      '<div class="card-header">Ordini in corso (' + orders.length + ')</div>' +
+      '<div class="card-body"><div class="orders-list">' + orderRows + '</div></div>' +
+      '</div>';
+  }
+
+  function renderDashboard(restaurant, orders) {
+    var contentArea = document.getElementById("contentArea");
+    contentArea.innerHTML =
+      '<div class="dashboard-grid">' +
+      '<div>' + renderRestaurantCard(restaurant) + '</div>' +
+      '<div>' + renderOrdersCard(orders) + '</div>' +
+      '</div>';
   }
 
   async function caricaDatiRistorante() {
-    let response = await fetchConControlloToken(apiBase + "/restaurants");
+    var restaurantsResponse = await fetchConControlloToken(apiBase + "/restaurants");
 
-    if (!response || !response.ok) return;
+    if (!restaurantsResponse || !restaurantsResponse.ok) return;
 
-    let restaurants = await response.json();
+    var restaurants = await restaurantsResponse.json();
+    var mioRistorante = restaurants.find(function(r) {
+      return String(r.ristoratore_id) === String(userId);
+    });
 
-    let mioRistorante = restaurants.find(r =>
-      r.ristoratore_id == userId
-    );
-
-    let contentArea = document.getElementById("contentArea");
-    let dashboardTitle = document.getElementById("dashboardTitle");
+    var contentArea = document.getElementById("contentArea");
+    var dashboardTitle = document.getElementById("dashboardTitle");
 
     if (!mioRistorante) {
       dashboardTitle.style.display = "none";
-
-      contentArea.innerHTML = `
-        <div class="empty-state-wrapper">
-          <div class="card empty-state-card">
-            <div class="card-body text-center py-5 px-4">
-              <div class="empty-state-icon">🍔</div>
-              <h3 class="empty-state-title">Non hai ancora creato un ristorante</h3>
-              <p class="empty-state-subtitle">
-                Inizia adesso configurando il tuo ristorante e rendilo visibile ai clienti.
-              </p>
-              <a href="creaRistorante.html" class="btn text-white empty-state-btn">
-                Crea Ristorante
-              </a>
-            </div>
-          </div>
-        </div>
-      `;
+      contentArea.innerHTML =
+        '<div class="empty-state-wrapper">' +
+        '<div class="card empty-state-card">' +
+        '<div class="card-body text-center py-5 px-4">' +
+        '<div class="empty-state-icon">🍔</div>' +
+        '<h3 class="empty-state-title">Non hai ancora creato un ristorante</h3>' +
+        '<p class="empty-state-subtitle">Inizia adesso configurando il tuo ristorante e rendilo visibile ai clienti.</p>' +
+        '<a href="creaRistorante.html" class="btn text-white empty-state-btn">Crea Ristorante</a>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
       return;
     }
 
     dashboardTitle.style.display = "block";
 
-    contentArea.innerHTML = `
-      <div class="card p-3">
-        <h5>${mioRistorante.name}</h5>
-      </div>
-    `;
+    var ordersResponse = await fetchConControlloToken(apiBase + "/orders");
+    var inCorso = [];
+
+    if (ordersResponse && ordersResponse.ok) {
+      var allOrders = await ordersResponse.json();
+      inCorso = allOrders
+        .filter(function(order) {
+          return String(order.ristorante_id) === String(mioRistorante._id) && order.stato !== "consegnato";
+        })
+        .sort(function(a, b) {
+          return estraiTimestampOrdine(b) - estraiTimestampOrdine(a);
+        });
+    }
+
+    renderDashboard(mioRistorante, inCorso);
   }
 
   caricaDatiRistorante();
