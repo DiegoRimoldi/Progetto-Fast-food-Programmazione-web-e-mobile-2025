@@ -150,7 +150,6 @@ router.get("/statistics", authenticateUser, authorizeRistoratore, async (req, re
     let ordersByState = {};
     let mealCount = {};
     let ordersTrend = {};
-    let deliveredOrdersTrend = {};
     const statusOrder = ["ordinato", "in preparazione", "in consegna", "consegnato"];
 
     orders.forEach(({ totale, stato, meals, data_ordine }) => {
@@ -172,28 +171,19 @@ router.get("/statistics", authenticateUser, authorizeRistoratore, async (req, re
       if (!parsedDate) return;
       const dateKey = getYyyyMmDd(parsedDate);
       ordersTrend[dateKey] = (ordersTrend[dateKey] || 0) + 1;
-      if (stato === "consegnato") {
-        deliveredOrdersTrend[dateKey] = (deliveredOrdersTrend[dateKey] || 0) + 1;
-      }
     });
 
     statusOrder.forEach((status) => {
       ordersByState[status] = ordersByState[status] || 0;
     });
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - 29);
-
-    const ordersTrendLast30Days = {};
-    const deliveredOrdersTrendLast30Days = {};
-
-    for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
-      const key = getYyyyMmDd(d);
-      ordersTrendLast30Days[key] = ordersTrend[key] || 0;
-      deliveredOrdersTrendLast30Days[key] = deliveredOrdersTrend[key] || 0;
-    }
+    const ordersTrendLast30Days = Object.entries(ordersTrend)
+      .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+      .slice(-30)
+      .reduce((acc, [date, count]) => {
+        acc[date] = count;
+        return acc;
+      }, {});
 
     res.json({
       totalOrders,
@@ -202,8 +192,7 @@ router.get("/statistics", authenticateUser, authorizeRistoratore, async (req, re
       deliveredRevenue,
       ordersByState,
       topMeals: Object.entries(mealCount).sort((a, b) => b[1] - a[1]).slice(0, 5),
-      ordersTrend: ordersTrendLast30Days,
-      deliveredOrdersTrend: deliveredOrdersTrendLast30Days
+      ordersTrend: ordersTrendLast30Days
     });
 
   } catch (err) {
