@@ -131,8 +131,16 @@
       z-index: 2;
       background: rgba(255, 255, 255, 0.9);
       border-radius: 999px;
-      padding: 0.18rem 0.55rem;
+      padding: 0.24rem;
       box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+    }
+
+    .meal-selector-btn {
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.25rem 0.68rem;
+      border-width: 1px;
     }
 
     .menu-card-cover {
@@ -289,15 +297,17 @@
       var ingredienti = Array.isArray(piatto.ingredients) ? piatto.ingredients.slice(0, 4).join(", ") : "";
       var prezzo = Number(piatto.prezzo || 0).toFixed(2);
       var mealId = getIdAsString(piatto._id);
-      var isChecked = selectedMealIds.has(mealId) ? "checked" : "";
+      var isSelected = selectedMealIds.has(mealId);
+      var selectorClass = isSelected ? "btn-primary" : "btn-outline-primary";
+      var selectorLabel = isSelected ? "Selezionato" : "Seleziona";
       var activeClass = activeMealId === mealId ? "is-active" : "";
-      var selectedClass = selectedMealIds.has(mealId) ? "is-selected" : "";
+      var selectedClass = isSelected ? "is-selected" : "";
 
       cardWrapper.innerHTML =
         '<article class="card menu-card h-100 ' + activeClass + " " + selectedClass + '" data-meal-id="' + mealId + '">' +
           '<div class="menu-card-cover">' +
-            '<div class="meal-selector-wrap form-check form-switch">' +
-              '<input class="form-check-input meal-selector" type="checkbox" data-meal-id="' + mealId + '" ' + isChecked + '>' +
+            '<div class="meal-selector-wrap">' +
+              '<button class="btn btn-sm meal-selector-btn ' + selectorClass + '" type="button" aria-pressed="' + (isSelected ? "true" : "false") + '" data-meal-id="' + mealId + '">' + selectorLabel + '</button>' +
             '</div>' +
             '<img src="' + (piatto.strMealThumb || "../assets/logo.png") + '" class="card-img-top" alt="' + (piatto.strMeal || "Piatto") + '">' +
           '</div>' +
@@ -313,18 +323,16 @@
         '</article>';
 
       var article = cardWrapper.querySelector(".menu-card");
-      var checkbox = cardWrapper.querySelector(".meal-selector");
+      var selectorButton = cardWrapper.querySelector(".meal-selector-btn");
       article.addEventListener("click", function() {
         activeMealId = mealId;
         mostraDettagliPiatto(mealId);
         renderizzaMenu();
       });
 
-      checkbox.addEventListener("click", function(event) {
+      selectorButton.addEventListener("click", function(event) {
         event.stopPropagation();
-      });
-      checkbox.addEventListener("change", function(event) {
-        toggleMealSelection(mealId, event.target.checked);
+        toggleMealSelection(mealId, !selectedMealIds.has(mealId));
       });
 
       return cardWrapper;
