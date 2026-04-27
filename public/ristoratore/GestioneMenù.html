@@ -197,6 +197,7 @@
     <div id="menuStats" class="alert alert-primary d-none" role="status"></div>
     <div class="d-flex flex-wrap gap-2 mb-3">
       <button id="deleteSelectedBtn" class="btn btn-outline-danger d-none" type="button">Elimina selezionati (0)</button>
+      <button id="restoreSelectedBtn" class="btn btn-outline-secondary d-none" type="button">Ripristina selezionati (0)</button>
     </div>
 
     <div id="menuContainer" class="row g-4"></div>
@@ -312,6 +313,11 @@
         activeMealId = mealId;
         mostraDettagliPiatto(mealId);
         renderizzaMenu();
+
+        var detailsCard = document.getElementById("mealDetailsCard");
+        if (detailsCard) {
+          detailsCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       });
 
       selectorCheckbox.addEventListener("click", function(event) {
@@ -380,12 +386,27 @@
       renderizzaMenu();
     }
 
+    function ripristinaPiattiSelezionati() {
+      if (!selectedMealIds.size) {
+        return;
+      }
+
+      selectedMealIds.clear();
+      updateDeleteButtonLabel();
+      renderizzaMenu();
+    }
+
     function updateDeleteButtonLabel() {
       var deleteBtn = document.getElementById("deleteSelectedBtn");
-      if (!deleteBtn) return;
+      var restoreBtn = document.getElementById("restoreSelectedBtn");
+      if (!deleteBtn || !restoreBtn) return;
 
+      var hasSelections = selectedMealIds.size > 0;
       deleteBtn.textContent = "Elimina selezionati (" + selectedMealIds.size + ")";
-      deleteBtn.classList.toggle("d-none", selectedMealIds.size === 0);
+      restoreBtn.textContent = "Ripristina selezionati (" + selectedMealIds.size + ")";
+
+      deleteBtn.classList.toggle("d-none", !hasSelections);
+      restoreBtn.classList.toggle("d-none", !hasSelections);
     }
 
     function renderizzaMenu() {
@@ -415,6 +436,8 @@
         }
         menuContainer.appendChild(creaCardPiatto(meal, restaurantId));
       });
+
+      updateDeleteButtonLabel();
     }
 
     async function caricaMenu() {
@@ -507,6 +530,7 @@
     (async function init() {
       try {
         document.getElementById("deleteSelectedBtn").addEventListener("click", eliminaPiattiSelezionati);
+        document.getElementById("restoreSelectedBtn").addEventListener("click", ripristinaPiattiSelezionati);
         await caricaRistorante();
         await caricaMenu();
       } catch (error) {
