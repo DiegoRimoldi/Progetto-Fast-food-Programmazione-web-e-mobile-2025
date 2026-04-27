@@ -415,11 +415,6 @@
         }
         menuContainer.appendChild(creaCardPiatto(meal, restaurantId));
       });
-
-      var genericiCount = piattiMenuCache.length - personalizzatiCount;
-      statsBox.textContent = "Totale piatti nel menù: " + piattiMenuCache.length + " • Generici: " + genericiCount + " • Personalizzati: " + personalizzatiCount;
-      statsBox.classList.remove("d-none");
-      updateDeleteButtonLabel();
     }
 
     async function caricaMenu() {
