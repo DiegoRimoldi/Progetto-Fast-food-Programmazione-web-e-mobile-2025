@@ -1,6 +1,6 @@
 :root {
   --brand-primary: #0d6efd;
-  --brand-accent:  #0d6efd;
+  --brand-accent:  #6ea8fe;
   --surface: #ffffff;
   --surface-soft: #f8fbff;
   --text: #1f2937;
@@ -107,7 +107,7 @@ textarea:focus {
 
 .btn-warning,
 .btn-outline-warning:hover {
-  background: linear-gradient(120deg, var(--brand-accent) 0%, #0d6efd 100%) !important;
+  background: linear-gradient(120deg, var(--brand-accent) 0%, #6ea8fe 100%) !important;
   color: #111827 !important;
   border-color: #0d6efd !important;
 }
