@@ -200,6 +200,11 @@
     <p>Monitora performance, ordini e piatti più richiesti in modo semplice e immediato.</p>
   </div>
 
+  <div id="emptyNotice" class="alert alert-warning d-none mb-3" role="alert">
+    Non hai ancora completato ordini.
+    <a href="ordini.html" class="alert-link">Vai alla pagina ordini</a>
+  </div>
+
   <div id="contentArea">
     <div class="row g-3 mb-1">
       <div class="col-12 col-md-6 col-xl-4">
@@ -302,23 +307,22 @@
       if (!response || !response.ok) return;
 
       var stats = await response.json();
-      var contentArea = document.getElementById("contentArea");
+      var emptyNotice = document.getElementById("emptyNotice");
+      var totalOrders = typeof stats.totalOrders === "number" ? stats.totalOrders : 0;
+      var totalRevenue = typeof stats.totalRevenue === "number" ? stats.totalRevenue : 0;
 
-      if (stats.totalOrders === 0) {
-        contentArea.innerHTML =
-          '<div class="empty-state d-flex flex-column justify-content-center align-items-center">' +
-          '<p class="fs-4 mb-3">Non hai ancora completato ordini</p>' +
-          '<a href="ordini.html" class="btn btn-warning">Vai alla pagina ordini</a>' +
-          '</div>';
-        return;
+      if (totalOrders === 0) {
+        emptyNotice.classList.remove("d-none");
+      } else {
+        emptyNotice.classList.add("d-none");
       }
 
-      document.getElementById("totalOrders").innerText = stats.totalOrders;
-      document.getElementById("totalRevenue").innerText = stats.totalRevenue?.toFixed(2) ?? "N/A";
+      document.getElementById("totalOrders").innerText = totalOrders;
+      document.getElementById("totalRevenue").innerText = totalRevenue.toFixed(2);
 
-      var averageOrderValue = stats.totalOrders > 0 && typeof stats.totalRevenue === "number"
-        ? (stats.totalRevenue / stats.totalOrders).toFixed(2)
-        : "N/A";
+      var averageOrderValue = totalOrders > 0
+        ? (totalRevenue / totalOrders).toFixed(2)
+        : "0.00";
       document.getElementById("avgOrderValue").innerText = averageOrderValue;
 
       var stateContainer = document.getElementById("ordersByState");
