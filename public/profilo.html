@@ -146,17 +146,17 @@
           <form id="profileForm">
             <div class="mb-3">
               <label for="username" class="form-label">Username *</label>
-              <input type="text" id="username" class="form-control" placeholder="3-20 caratteri, solo lettere/numeri/_ (es. mario_rossi89)" required>
+              <input type="text" id="username" class="form-control" placeholder="Es. mario_rossi89 (3-20 caratteri: lettere, numeri, _)" required>
             </div>
 
             <div class="mb-3">
               <label for="email" class="form-label">Email *</label>
-              <input type="email" id="email" class="form-control" placeholder="Inserisci una mail valida (es. nome.cognome@email.it)" required>
+              <input type="email" id="email" class="form-control" placeholder="Es. nome.cognome@email.it" required>
             </div>
 
             <div class="mb-3">
               <label for="numero_di_telefono" class="form-label">Numero di Telefono *</label>
-              <input type="text" id="numero_di_telefono" class="form-control" placeholder="Numero italiano con prefisso o senza spazi (es. +393331234567)" required>
+              <input type="text" id="numero_di_telefono" class="form-control" placeholder="Es. +39 333 123 4567 oppure 3331234567" required>
             </div>
 
             <div id="campiCliente" style="display: none;">
@@ -167,18 +167,19 @@
 
               <div class="mb-3">
                 <label for="metodo_pagamento" class="form-label">Metodo di Pagamento</label>
-                <input type="text" id="metodo_pagamento" class="form-control" placeholder="Cliente: specifica metodo usato (es. Carta Visa **** 1234 / Contanti alla consegna)">
+                <input type="text" id="metodo_pagamento" class="form-control" placeholder="Cliente: es. Carta Visa **** 1234 / Contanti alla consegna">
               </div>
             </div>
 
             <div id="campiRistoratore" style="display: none;">
               <div class="mb-3">
                 <label for="piva" class="form-label">Partita IVA *</label>
-                <input type="text" id="piva" class="form-control" placeholder="Ristoratore: 11 cifre senza spazi (es. 12345678901)">
+                <input type="text" id="piva" class="form-control" placeholder="Ristoratore: 11 cifre (es. 12345678901)">
               </div>
             </div>
 
             <button type="submit" class="btn btn-primary">Aggiorna Profilo</button>
+            <div id="profileAlert" class="mt-3"></div>
           </form>
         </div>
       </div>
@@ -201,10 +202,16 @@
 
             <div class="mb-3">
               <label for="newPassword" class="form-label">Nuova Password *</label>
-              <input type="password" id="newPassword" class="form-control" placeholder="Minimo 8 caratteri con almeno 1 numero (es. FastFood2026)" required>
+              <input type="password" id="newPassword" class="form-control" placeholder="Es. M1lano!2026 (min 8, almeno 1 lettera, 1 numero e 1 simbolo)" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="confirmPassword" class="form-label">Conferma Nuova Password *</label>
+              <input type="password" id="confirmPassword" class="form-control" placeholder="Ripeti la nuova password" required>
             </div>
 
             <button type="submit" class="btn btn-primary">Modifica Password</button>
+            <div id="passwordAlert" class="mt-3"></div>
           </form>
         </div>
       </div>
@@ -228,6 +235,8 @@
     var apiBase = "http://localhost:3000";
     var token = localStorage.getItem("token");
     var userId = localStorage.getItem("userId");
+    var ruoloUtente = "";
+    var profiloOriginale = null;
 
     function goBack() {
       if (window.history.length > 1) {
@@ -262,13 +271,59 @@
       }
     }
 
-    function mostraMessaggio(testo, tipo) {
-      alert(testo);
-      if (tipo === "errore") {
-        console.error(testo);
-      } else {
-        console.log(testo);
+    function mostraMessaggio(targetId, testo, tipo) {
+      var alertBox = document.getElementById(targetId);
+      if (!alertBox) return;
+
+      var classe = "alert-info";
+      if (tipo === "errore") classe = "alert-danger";
+      if (tipo === "successo") classe = "alert-success";
+      if (tipo === "warning") classe = "alert-warning";
+
+      alertBox.innerHTML = '<div class="alert ' + classe + ' mb-0" role="alert">' + testo + "</div>";
+    }
+
+    function pulisciMessaggio(targetId) {
+      var alertBox = document.getElementById(targetId);
+      if (alertBox) {
+        alertBox.innerHTML = "";
       }
+    }
+
+    function validaEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function validaUsername(username) {
+      return /^[a-zA-Z0-9_]{3,20}$/.test(username);
+    }
+
+    function validaTelefono(telefono) {
+      return /^\+?[0-9][0-9\s-]{7,16}$/.test(telefono);
+    }
+
+    function validaPiva(piva) {
+      return /^\d{11}$/.test(piva);
+    }
+
+    function validaPassword(password) {
+      return /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password);
+    }
+
+    function trovaDifferenze(payload) {
+      if (!profiloOriginale) return true;
+
+      var campiDaConfrontare = ["username", "email", "numero_di_telefono", "indirizzo", "metodo_pagamento", "piva"];
+      for (var i = 0; i < campiDaConfrontare.length; i++) {
+        var campo = campiDaConfrontare[i];
+        var originale = (profiloOriginale[campo] || "").toString().trim();
+        var attuale = (payload[campo] || "").toString().trim();
+        if (originale !== attuale) {
+          return true;
+        }
+      }
+
+      return false;
     }
 
     async function caricaDatiProfilo() {
@@ -290,20 +345,31 @@
           localStorage.setItem("userId", userId);
         }
 
-        document.getElementById("username").value = profile.username;
-        document.getElementById("email").value = profile.email;
-        document.getElementById("numero_di_telefono").value = profile.numero_di_telefono;
+        ruoloUtente = profile.role || "";
+
+        document.getElementById("username").value = profile.username || "";
+        document.getElementById("email").value = profile.email || "";
+        document.getElementById("numero_di_telefono").value = profile.numero_di_telefono || "";
 
         if (profile.role === "cliente") {
-          document.getElementById("indirizzo").value = profile.indirizzo;
-          document.getElementById("metodo_pagamento").value = profile.metodo_pagamento;
+          document.getElementById("indirizzo").value = profile.indirizzo || "";
+          document.getElementById("metodo_pagamento").value = profile.metodo_pagamento || "";
           document.getElementById("campiCliente").style.display = "block";
         }
 
         if (profile.role === "ristoratore") {
-          document.getElementById("piva").value = profile.piva;
+          document.getElementById("piva").value = profile.piva || "";
           document.getElementById("campiRistoratore").style.display = "block";
         }
+
+        profiloOriginale = {
+          username: profile.username || "",
+          email: profile.email || "",
+          numero_di_telefono: profile.numero_di_telefono || "",
+          indirizzo: profile.indirizzo || "",
+          metodo_pagamento: profile.metodo_pagamento || "",
+          piva: profile.piva || ""
+        };
 
       } catch (err) {
         console.error("Errore nel caricamento del profilo:", err);
@@ -312,6 +378,7 @@
 
     document.getElementById("profileForm").addEventListener("submit", async function (event) {
       event.preventDefault();
+      pulisciMessaggio("profileAlert");
 
       var payload = {
         username: document.getElementById("username").value.trim(),
@@ -331,6 +398,49 @@
         payload.piva = document.getElementById("piva").value.trim();
       }
 
+      if (!payload.username || !payload.email || !payload.numero_di_telefono) {
+        mostraMessaggio("profileAlert", "Modifica non effettuata: username, email e numero di telefono sono obbligatori.", "errore");
+        return;
+      }
+
+      if (!validaUsername(payload.username)) {
+        mostraMessaggio("profileAlert", "Modifica non effettuata: username non valido. Usa 3-20 caratteri tra lettere, numeri e underscore (_).", "errore");
+        return;
+      }
+
+      if (!validaEmail(payload.email)) {
+        mostraMessaggio("profileAlert", "Modifica non effettuata: email non valida. Inserisci un formato corretto, ad esempio nome.cognome@email.it.", "errore");
+        return;
+      }
+
+      if (!validaTelefono(payload.numero_di_telefono)) {
+        mostraMessaggio("profileAlert", "Modifica non effettuata: numero di telefono non valido. Usa solo cifre, spazi o trattini (es. +39 333 123 4567).", "errore");
+        return;
+      }
+
+      if (ruoloUtente === "cliente") {
+        if (!payload.indirizzo || !payload.metodo_pagamento) {
+          mostraMessaggio("profileAlert", "Modifica non effettuata: per il cliente indirizzo e metodo di pagamento sono obbligatori.", "errore");
+          return;
+        }
+      }
+
+      if (ruoloUtente === "ristoratore") {
+        if (!payload.piva) {
+          mostraMessaggio("profileAlert", "Modifica non effettuata: per il ristoratore la partita IVA è obbligatoria.", "errore");
+          return;
+        }
+        if (!validaPiva(payload.piva)) {
+          mostraMessaggio("profileAlert", "Modifica non effettuata: partita IVA non valida. Deve contenere esattamente 11 cifre.", "errore");
+          return;
+        }
+      }
+
+      if (!trovaDifferenze(payload)) {
+        mostraMessaggio("profileAlert", "Nessuna modifica salvata: i dati inseriti sono identici a quelli già presenti nel profilo.", "warning");
+        return;
+      }
+
       try {
         var response = await fetchConControlloToken(apiBase + "/users/me", {
           method: "PUT",
@@ -342,24 +452,42 @@
 
         var data = await response.json();
         if (!response.ok) {
-          mostraMessaggio(data.error || "Errore durante l'aggiornamento del profilo.", "errore");
+          mostraMessaggio("profileAlert", "Modifica non effettuata: " + (data.error || "errore durante l'aggiornamento del profilo."), "errore");
           return;
         }
 
-        mostraMessaggio("Profilo aggiornato con successo.", "successo");
+        profiloOriginale = Object.assign({}, profiloOriginale || {}, payload);
+        mostraMessaggio("profileAlert", "Profilo modificato con successo.", "successo");
       } catch (err) {
-        mostraMessaggio("Errore di rete durante l'aggiornamento del profilo.", "errore");
+        mostraMessaggio("profileAlert", "Modifica non effettuata: errore di rete durante l'aggiornamento del profilo.", "errore");
       }
     });
 
     document.getElementById("passwordForm").addEventListener("submit", async function (event) {
       event.preventDefault();
+      pulisciMessaggio("passwordAlert");
 
       var oldPassword = document.getElementById("oldPassword").value;
       var newPassword = document.getElementById("newPassword").value;
+      var confirmPassword = document.getElementById("confirmPassword").value;
 
-      if (!oldPassword || !newPassword) {
-        mostraMessaggio("Compila tutti i campi della password.", "errore");
+      if (!oldPassword || !newPassword || !confirmPassword) {
+        mostraMessaggio("passwordAlert", "Modifica password non effettuata: compila tutti i campi richiesti.", "errore");
+        return;
+      }
+
+      if (newPassword === oldPassword) {
+        mostraMessaggio("passwordAlert", "Modifica password non effettuata: la nuova password deve essere diversa da quella attuale.", "errore");
+        return;
+      }
+
+      if (!validaPassword(newPassword)) {
+        mostraMessaggio("passwordAlert", "Modifica password non effettuata: la nuova password deve avere almeno 8 caratteri, almeno 1 lettera, 1 numero e 1 simbolo.", "errore");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        mostraMessaggio("passwordAlert", "Modifica password non effettuata: conferma password non corrispondente.", "errore");
         return;
       }
 
@@ -374,20 +502,20 @@
 
         var data = await response.json();
         if (!response.ok) {
-          mostraMessaggio(data.error || "Errore durante la modifica della password.", "errore");
+          mostraMessaggio("passwordAlert", "Modifica password non effettuata: " + (data.error || "errore durante la modifica della password."), "errore");
           return;
         }
 
         document.getElementById("passwordForm").reset();
-        mostraMessaggio("Password modificata con successo.", "successo");
+        mostraMessaggio("passwordAlert", "Password modificata con successo.", "successo");
       } catch (err) {
-        mostraMessaggio("Errore di rete durante la modifica della password.", "errore");
+        mostraMessaggio("passwordAlert", "Modifica password non effettuata: errore di rete durante la richiesta.", "errore");
       }
     });
 
     document.getElementById("deleteBtn").addEventListener("click", async function () {
       if (!userId) {
-        mostraMessaggio("ID utente non disponibile. Ricarica la pagina.", "errore");
+        mostraMessaggio("profileAlert", "Eliminazione non effettuata: ID utente non disponibile, ricarica la pagina.", "errore");
         return;
       }
 
@@ -406,17 +534,17 @@
 
         var data = await response.json();
         if (!response.ok) {
-          mostraMessaggio(data.error || "Errore durante l'eliminazione del profilo.", "errore");
+          mostraMessaggio("profileAlert", "Eliminazione non effettuata: " + (data.error || "errore durante l'eliminazione del profilo."), "errore");
           return;
         }
 
         localStorage.removeItem("token");
         localStorage.removeItem("userId");
         localStorage.removeItem("role");
-        mostraMessaggio("Profilo eliminato correttamente.", "successo");
+        mostraMessaggio("profileAlert", "Profilo eliminato correttamente.", "successo");
         window.location.href = "/index.html";
       } catch (err) {
-        mostraMessaggio("Errore di rete durante l'eliminazione del profilo.", "errore");
+        mostraMessaggio("profileAlert", "Eliminazione non effettuata: errore di rete durante la richiesta.", "errore");
       }
     });
 

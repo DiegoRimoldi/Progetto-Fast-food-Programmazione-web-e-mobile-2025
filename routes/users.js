@@ -181,6 +181,52 @@ usersRouter.put("/me", authenticateUser, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const userId = req.user._id;
+    const role = req.user.role;
+    const {
+      username,
+      email,
+      numero_di_telefono,
+      indirizzo = "",
+      metodo_pagamento = "",
+      piva = ""
+    } = req.body;
+
+    if (!username || !email || !numero_di_telefono) {
+      return res.status(400).json({ error: "username, email e numero di telefono sono obbligatori" });
+    }
+
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      return res.status(400).json({ error: "Username non valido: usa 3-20 caratteri tra lettere, numeri e underscore (_)" });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Email non valida" });
+    }
+
+    if (!/^\+?[0-9][0-9\s-]{7,16}$/.test(numero_di_telefono)) {
+      return res.status(400).json({ error: "Numero di telefono non valido" });
+    }
+
+    if (role === "cliente" && (!indirizzo || !metodo_pagamento)) {
+      return res.status(400).json({ error: "Indirizzo e metodo di pagamento sono obbligatori" });
+    }
+
+    if (role === "cliente") {
+      const addressValidation = await validateAddressWithOpenStreetMap(indirizzo);
+      if (!addressValidation.valid) {
+        return res.status(400).json({
+          error: `Indirizzo cliente non valido. ${addressValidation.reason}`
+        });
+      }
+    }
+
+    if (role === "ristoratore" && !piva) {
+      return res.status(400).json({ error: "Partita IVA obbligatoria" });
+    }
+
+    if (role === "ristoratore" && !/^\d{11}$/.test(piva)) {
+      return res.status(400).json({ error: "Partita IVA non valida: deve contenere 11 cifre" });
+    }
 
     // impedisce inserimento nuova mail o username, se non è univoco per il db.
     if (req.body.email || req.body.username) {
@@ -225,6 +271,14 @@ usersRouter.put("/me/password", authenticateUser, async (req, res) => {
 
     if (!oldPassword || !newPassword) {
       return res.status(400).json({ error: "Errore durante l'analisi dei parametri" });
+    }
+    
+    if (newPassword === oldPassword) {
+      return res.status(400).json({ error: "La nuova password deve essere diversa dalla vecchia password" });
+    }
+
+    if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(newPassword)) {
+      return res.status(400).json({ error: "Nuova password non valida: minimo 8 caratteri, almeno una lettera, un numero e un simbolo" });
     }
 
     const passwordMatch = await bcrypt.compare(oldPassword,user.password);
