@@ -100,6 +100,66 @@
       font-weight: 600;
       margin-bottom: 0.9rem;
     }
+    /* EMPTY STATE */
+    .empty-state-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 2rem;
+    }
+
+    .empty-state-card {
+      width: 100%;
+      max-width: 800px;
+      border: none;
+      border-radius: 1rem;
+      background-color: #ffffff;
+      box-shadow: 0 6px 18px rgba(30, 42, 56, 0.08);
+    }
+
+    .empty-state-icon {
+      width: 160px;
+      height: 160px;
+      padding-bottom: 20px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #e4ebf7;
+      font-size: 6rem;
+      margin-bottom: 2rem;
+    }
+
+    .empty-state-title {
+      font-size: 2.3rem;
+      font-weight: 600;
+      color: #0f213a;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state-subtitle {
+      font-size: 1.15rem;
+      color: #6c757d;
+      margin-bottom: 1.5rem;
+    }
+
+    .empty-state-btn {
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 0.75rem;
+      padding: 0.7rem 1.8rem;
+      background: linear-gradient(90deg, #1f6fe5 0%, #64a3f9 100%);
+      box-shadow: 0 6px 16px rgba(31, 111, 229, 0.25);
+      transition: 0.2s;
+    }
+
+    .empty-state-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(31, 111, 229, 0.3);
+    }
 
   </style>
     <link rel="icon" type="image/png" href="../assets/Favicon.png">
@@ -130,7 +190,7 @@
 
 
 <div class="main-content">
-  <h2>Dashboard Ristoratore</h2>
+  <h2 id="dashboardTitle">Dashboard Ristoratore</h2>
   <div id="contentArea"></div>
 </div>
 
@@ -178,19 +238,30 @@
         return r.ristoratore_id && (r.ristoratore_id === userId || r.ristoratore_id.toString() === userId);
       });
       var contentArea = document.getElementById("contentArea");
+      var dashboardTitle = document.getElementById("dashboardTitle");
 
       if (!mioRistorante) {
-        contentArea.innerHTML =
-          '<div class="card empty-state-card">' +
-            '<div class="card-body text-center p-4 p-md-5">' +
-              '<div class="empty-state-icon">🍔</div>' +
-              '<h4 class="fw-semibold mb-2">Non hai ancora creato un ristorante</h4>' +
-              '<p class="text-muted mb-4">Inizia adesso configurando il tuo ristorante e rendilo visibile ai clienti.</p>' +
-              '<a href="creaRistorante.html" class="btn btn-primary btn-lg px-4">Crea Ristorante</a>' +
-            '</div>' +
-          '</div>';
+        dashboardTitle.style.display = "none";
+        contentArea.innerHTML = `
+          <div class="empty-state-wrapper">
+            <div class="card empty-state-card">
+              <div class="card-body text-center py-5 px-4">
+                <div class="empty-state-icon">🍔</div>
+                <h3 class="empty-state-title">Non hai ancora creato un ristorante</h3>
+                <p class="empty-state-subtitle">
+                  Inizia adesso configurando il tuo ristorante e rendilo visibile ai clienti.
+                </p>
+                <a href="creaRistorante.html" class="btn text-white empty-state-btn">
+                  Crea Ristorante
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
         return;
       }
+
+      dashboardTitle.style.display = "";
 
       contentArea.innerHTML = `
         <div class="row g-4">
