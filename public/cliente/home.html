@@ -11,7 +11,7 @@
     body {
       margin: 0;
       padding: 0;
-      background-color: #ffffff;
+      background: linear-gradient(165deg, #f6f9ff 0%, #ffffff 45%, #f4f8ff 100%);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       min-height: 100vh;
@@ -71,7 +71,8 @@
     }
     .main-content h2 {
       color: #0d6efd;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.1rem;
+      font-weight: 700;
     }
 
     .search-bar {
@@ -89,27 +90,47 @@
     }
 
     .ristorante-card {
-      transition: transform 0.3s, box-shadow 0.3s;
-      border: 1px solid #e8eef8;
-      border-radius: 0.8rem;
-      box-shadow: 0 8px 22px rgba(13, 110, 253, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 1px solid #dde7f8;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 12px 28px rgba(13, 110, 253, 0.12);
       max-width: 460px;
       margin: 0 auto;
+      background: #fff;
     }
     .ristorante-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 32px rgba(13, 110, 253, 0.2);
+    }
+    .ristorante-card .ristorante-photo-wrapper {
+      position: relative;
     }
     .ristorante-card img {
-      height: 260px;
+      height: 220px;
       object-fit: cover;
-      border-top-left-radius: 0.375rem;
-      border-top-right-radius: 0.375rem;
+      width: 100%;
+    }
+    .ristorante-card .photo-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(7, 19, 38, 0.08) 0%, rgba(7, 19, 38, 0.6) 100%);
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-start;
+      padding: 0.9rem;
+    }
+    .ristorante-card .photo-badge {
+      background: rgba(255, 255, 255, 0.92);
+      color: #0d6efd;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 0.2rem 0.65rem;
+      border: 1px solid rgba(13, 110, 253, 0.2);
     }
     .ristorante-card .card-body {
       background-color: #fff;
-      border-bottom-left-radius: 0.375rem;
-      border-bottom-right-radius: 0.375rem;
       padding: 1.25rem;
     }
     .ristorante-card .card-title {
@@ -119,17 +140,21 @@
       margin-bottom: 0.8rem;
     }
     .ristorante-card .card-text {
-      font-size: 1rem;
+      font-size: 0.96rem;
       margin-bottom: 1.1rem;
+      color: #4b5563;
     }
     .ristorante-card .btn {
-      background-color: #0d6efd;
+      background: linear-gradient(135deg, #0d6efd, #1c7dff);
       color: #fff;
       border: none;
-      border-radius: 0.375rem;
+      border-radius: 0.55rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      padding: 0.55rem 0.9rem;
     }
     .ristorante-card .btn:hover {
-      background-color: #0b5ed7;
+      background: linear-gradient(135deg, #0b5ed7, #176ce0);
     }
   </style>
     <link rel="icon" type="image/png" href="../assets/Favicon.png">
@@ -165,6 +190,7 @@
 
   <script>
     var apiBase = "http://localhost:3000";
+    var defaultRestaurantImage = "../assets/restaurant-placeholder.svg";
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
@@ -210,7 +236,10 @@
         var col = document.createElement("div");
         col.className = "col-12 col-md-10 col-lg-6 col-xxl-4";
         col.innerHTML = '<div class="card ristorante-card h-100">' +
-                          '<img src="' + (r.image) + '" class="card-img-top" alt="' + r.name + '">' +
+                          '<div class="ristorante-photo-wrapper">' +
+                            '<img src="' + (r.image || defaultRestaurantImage) + '" class="card-img-top" alt="Foto del ristorante ' + r.name + '" onerror="this.src=\'' + defaultRestaurantImage + '\'">' +
+                            '<div class="photo-overlay"><span class="photo-badge">Ristorante</span></div>' +
+                          '</div>' +
                           '<div class="card-body d-flex flex-column">' +
                             '<h5 class="card-title">' + r.name + '</h5>' +
                             '<p class="card-text">' + (r.address || "Indirizzo non disponibile.") + '</p>' +
