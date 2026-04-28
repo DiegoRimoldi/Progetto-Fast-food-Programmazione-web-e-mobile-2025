@@ -17,6 +17,11 @@ function sanitizePreferenze(preferenze) {
   )];
 }
 
+function sanitizeMetodoPagamento(metodoPagamento) {
+  if (typeof metodoPagamento !== "string") return "";
+  return metodoPagamento.trim();
+}
+
 // GET /users - Lista utenti (filtrabile per ruolo), senza campi sensibili
 usersRouter.get("/", async (req, res) => {
   try {
@@ -52,6 +57,8 @@ usersRouter.post("/register", async (req, res) => {
   try {
     const db = req.app.locals.db;
     const {
+      nome,
+      cognome,
       username,
       email,
       password,
@@ -63,8 +70,8 @@ usersRouter.post("/register", async (req, res) => {
       role
     } = req.body;
 
-    if (!username || !email || !password || !numero_di_telefono) {
-      return res.status(400).json({ error: "username, email, password e numero di telefono sono obbligatori" });
+    if (!nome || !cognome || !username || !email || !password || !numero_di_telefono) {
+      return res.status(400).json({ error: "nome, cognome, username, email, password e numero di telefono sono obbligatori" });
     }
 
     if (!["cliente", "ristoratore"].includes(role)) {
@@ -100,11 +107,14 @@ usersRouter.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const preferenzeSanificate = sanitizePreferenze(preferenze);
+    const metodoPagamentoSanificato = sanitizeMetodoPagamento(metodo_pagamento);
 
     let newUser={};
 
     if(role=="ristoratore"){
       newUser = {
+        nome: nome.trim(),
+        cognome: cognome.trim(),
         username,
         email,
         password: hashedPassword,
@@ -114,12 +124,14 @@ usersRouter.post("/register", async (req, res) => {
       };
     }else{
       newUser = {
+        nome: nome.trim(),
+        cognome: cognome.trim(),
         username,
         email,
         password: hashedPassword,
         numero_di_telefono,
         indirizzo,
-        metodo_pagamento,
+        metodo_pagamento: metodoPagamentoSanificato,
         preferenze: preferenzeSanificate,
         role,
       };
@@ -195,16 +207,19 @@ usersRouter.put("/me", authenticateUser, async (req, res) => {
     const userId = req.user._id;
     const role = req.user.role;
     const {
+      nome,
+      cognome,
       username,
       email,
       numero_di_telefono,
       indirizzo = "",
       metodo_pagamento = "",
+      preferenze = [],
       piva = ""
     } = req.body;
 
-    if (!username || !email || !numero_di_telefono) {
-      return res.status(400).json({ error: "username, email e numero di telefono sono obbligatori" });
+    if (!nome || !cognome || !username || !email || !numero_di_telefono) {
+      return res.status(400).json({ error: "nome, cognome, username, email e numero di telefono sono obbligatori" });
     }
 
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
@@ -256,9 +271,27 @@ usersRouter.put("/me", authenticateUser, async (req, res) => {
         }
       }
     }
+    const updatePayload = {
+      nome: nome.trim(),
+      cognome: cognome.trim(),
+      username: username.trim(),
+      email: email.trim(),
+      numero_di_telefono: numero_di_telefono.trim()
+    };
+
+    if (role === "cliente") {
+      updatePayload.indirizzo = indirizzo.trim();
+      updatePayload.metodo_pagamento = sanitizeMetodoPagamento(metodo_pagamento);
+      updatePayload.preferenze = sanitizePreferenze(preferenze);
+    }
+
+    if (role === "ristoratore") {
+      updatePayload.piva = piva.trim();
+    }
+
     const updatedUser = await db.collection("users").findOneAndUpdate(
       { _id: new ObjectId(userId) },
-      { $set: req.body },
+      { $set: updatePayload },
       { returnDocument: "after", projection: { password: 0 } }
     );
 
@@ -312,19 +345,15 @@ usersRouter.put("/me/password", authenticateUser, async (req, res) => {
   }
 });
 
-//DELETE /:id - Elimina utente autenticato:
+//DELETE /me - Elimina utente autenticato:
 //Se l'utente è un cliente, vengono eliminati anche il carrello e tutti gli ordini ancora attivi (quelli già consegnati, rimangono nel DB per statistiche ristorante)
 //Se l'utente è un ristoratore, vengono eliminati anche il suo ristorante, e tutti gli ordini di quel ristorante.
-usersRouter.delete("/:id", authenticateUser, async (req, res) => {
+usersRouter.delete("/me", authenticateUser, async (req, res) => {
   const db = req.app.locals.db;
-  const userId = req.params.id;
+  const userId = req.user._id;
 
   if (!ObjectId.isValid(userId)) {
     return res.status(400).json({ error: "ID utente non valido" });
-  }
-
-  if (req.user._id.toString() !== userId.toString()) {
-    return res.status(403).json({ error: "Non puoi eliminare un altro utente" });
   }
 
   try {

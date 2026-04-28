@@ -145,6 +145,16 @@
 
           <form id="profileForm">
             <div class="mb-3">
+              <label for="nome" class="form-label">Nome *</label>
+              <input type="text" id="nome" class="form-control" placeholder="es. Mario" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="cognome" class="form-label">Cognome *</label>
+              <input type="text" id="cognome" class="form-control" placeholder="es. Rossi" required>
+            </div>
+
+            <div class="mb-3">
               <label for="username" class="form-label">Username *</label>
               <input type="text" id="username" class="form-control" placeholder="es. mario_rossi89 (3-20 caratteri: lettere, numeri, _)" required>
             </div>
@@ -168,6 +178,36 @@
               <div class="mb-3">
                 <label for="metodo_pagamento" class="form-label">Metodo di Pagamento</label>
                 <input type="text" id="metodo_pagamento" class="form-control" placeholder="Cliente: es. Carta Visa **** 1234 / Contanti alla consegna">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Preferenze</label>
+                <div id="preferenzeContainer" class="d-flex flex-wrap gap-2">
+                  <div class="form-check">
+                    <input class="form-check-input preferenza-checkbox" type="checkbox" value="Beef" id="prefBeef">
+                    <label class="form-check-label" for="prefBeef">Beef</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input preferenza-checkbox" type="checkbox" value="Chicken" id="prefChicken">
+                    <label class="form-check-label" for="prefChicken">Chicken</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input preferenza-checkbox" type="checkbox" value="Pasta" id="prefPasta">
+                    <label class="form-check-label" for="prefPasta">Pasta</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input preferenza-checkbox" type="checkbox" value="Seafood" id="prefSeafood">
+                    <label class="form-check-label" for="prefSeafood">Seafood</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input preferenza-checkbox" type="checkbox" value="Vegetarian" id="prefVegetarian">
+                    <label class="form-check-label" for="prefVegetarian">Vegetarian</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input preferenza-checkbox" type="checkbox" value="Dessert" id="prefDessert">
+                    <label class="form-check-label" for="prefDessert">Dessert</label>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -313,7 +353,7 @@
     function trovaDifferenze(payload) {
       if (!profiloOriginale) return true;
 
-      var campiDaConfrontare = ["username", "email", "numero_di_telefono", "indirizzo", "metodo_pagamento", "piva"];
+      var campiDaConfrontare = ["nome", "cognome", "username", "email", "numero_di_telefono", "indirizzo", "metodo_pagamento", "piva"];
       for (var i = 0; i < campiDaConfrontare.length; i++) {
         var campo = campiDaConfrontare[i];
         var originale = (profiloOriginale[campo] || "").toString().trim();
@@ -321,6 +361,10 @@
         if (originale !== attuale) {
           return true;
         }
+      }
+
+      if ((profiloOriginale.preferenze || []).join("|") !== (payload.preferenze || []).join("|")) {
+        return true;
       }
 
       return false;
@@ -347,6 +391,8 @@
 
         ruoloUtente = profile.role || "";
 
+        document.getElementById("nome").value = profile.nome || "";
+        document.getElementById("cognome").value = profile.cognome || "";
         document.getElementById("username").value = profile.username || "";
         document.getElementById("email").value = profile.email || "";
         document.getElementById("numero_di_telefono").value = profile.numero_di_telefono || "";
@@ -355,6 +401,10 @@
           document.getElementById("indirizzo").value = profile.indirizzo || "";
           document.getElementById("metodo_pagamento").value = profile.metodo_pagamento || "";
           document.getElementById("campiCliente").style.display = "block";
+          var preferenzeAttive = Array.isArray(profile.preferenze) ? profile.preferenze : [];
+          document.querySelectorAll(".preferenza-checkbox").forEach(function (checkbox) {
+            checkbox.checked = preferenzeAttive.includes(checkbox.value);
+          });
         }
 
         if (profile.role === "ristoratore") {
@@ -363,12 +413,15 @@
         }
 
         profiloOriginale = {
+          nome: profile.nome || "",
+          cognome: profile.cognome || "",
           username: profile.username || "",
           email: profile.email || "",
           numero_di_telefono: profile.numero_di_telefono || "",
           indirizzo: profile.indirizzo || "",
           metodo_pagamento: profile.metodo_pagamento || "",
-          piva: profile.piva || ""
+          piva: profile.piva || "",
+          preferenze: Array.isArray(profile.preferenze) ? profile.preferenze : []
         };
 
       } catch (err) {
@@ -381,6 +434,8 @@
       pulisciMessaggio("profileAlert");
 
       var payload = {
+        nome: document.getElementById("nome").value.trim(),
+        cognome: document.getElementById("cognome").value.trim(),
         username: document.getElementById("username").value.trim(),
         email: document.getElementById("email").value.trim(),
         numero_di_telefono: document.getElementById("numero_di_telefono").value.trim()
@@ -392,14 +447,17 @@
       if (campiClienteVisibili) {
         payload.indirizzo = document.getElementById("indirizzo").value.trim();
         payload.metodo_pagamento = document.getElementById("metodo_pagamento").value.trim();
+        payload.preferenze = Array.from(document.querySelectorAll(".preferenza-checkbox:checked")).map(function (checkbox) {
+          return checkbox.value;
+        });
       }
 
       if (campiRistoratoreVisibili) {
         payload.piva = document.getElementById("piva").value.trim();
       }
 
-      if (!payload.username || !payload.email || !payload.numero_di_telefono) {
-        mostraEsitoAggiornamentoProfilo("Modifica non effettuata: username, email e numero di telefono sono obbligatori.", "errore");
+      if (!payload.nome || !payload.cognome || !payload.username || !payload.email || !payload.numero_di_telefono) {
+        mostraEsitoAggiornamentoProfilo("Modifica non effettuata: nome, cognome, username, email e numero di telefono sono obbligatori.", "errore");
         return;
       }
 
@@ -519,7 +577,7 @@
       }
 
       try {
-        var response = await fetchConControlloToken(apiBase + "/users/" + userId, {
+        var response = await fetchConControlloToken(apiBase + "/users/me", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" }
         });

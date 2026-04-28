@@ -65,6 +65,14 @@
     <h2>Registrazione</h2>
     <form id="registerForm" novalidate>
       <div class="mb-3">
+        <label for="nome" class="form-label">Nome *</label>
+        <input type="text" class="form-control" id="nome" placeholder="es. Mario"/>
+      </div>
+      <div class="mb-3">
+        <label for="cognome" class="form-label">Cognome *</label>
+        <input type="text" class="form-control" id="cognome" placeholder="es. Rossi"/>
+      </div>
+      <div class="mb-3">
         <label for="username" class="form-label">Username *</label>
         <input type="text" class="form-control" id="username" placeholder="es. mario.rossi"/>
       </div>
@@ -165,6 +173,8 @@
       e.preventDefault();
 
       const username = document.getElementById('username').value.trim();
+      const nome = document.getElementById('nome').value.trim();
+      const cognome = document.getElementById('cognome').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const numero_di_telefono = document.getElementById('numero_di_telefono').value.trim();
@@ -176,7 +186,7 @@
         : [];
       const piva = role === 'ristoratore' ? document.getElementById('piva').value.trim() : "";
 
-      const payload = { username, email, password, numero_di_telefono, role, indirizzo, metodo_pagamento, preferenze, piva };
+      const payload = { nome, cognome, username, email, password, numero_di_telefono, role, indirizzo, metodo_pagamento, preferenze, piva };
       alertDiv.innerHTML = "";
 
       try {
