@@ -18,6 +18,16 @@ import { validateAddressWithOpenStreetMap } from "../utils/addressValidation.js"
 // Esegue: const usersRouter = express.Router();
 const usersRouter = express.Router();
 
+function sanitizePreferenze(preferenze) {
+  if (!Array.isArray(preferenze)) return [];
+  return [...new Set(
+    preferenze
+      .filter((item) => typeof item === "string")
+      .map((item) => item.trim())
+      .filter(Boolean)
+  )];
+}
+
 // GET /users - Lista utenti (filtrabile per ruolo), senza campi sensibili
 // Esegue: usersRouter.get("/", async (req, res) => {
 usersRouter.get("/", async (req, res) => {
@@ -166,6 +176,8 @@ usersRouter.post("/register", async (req, res) => {
     // Esegue: const hashedPassword = await bcrypt.hash(password, 10);
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const preferenzeSanificate = sanitizePreferenze(preferenze);
+
     // Esegue: let newUser={};
     let newUser={};
 
@@ -204,7 +216,7 @@ usersRouter.post("/register", async (req, res) => {
         // Esegue: metodo_pagamento,
         metodo_pagamento,
         // Esegue: preferenze: Array.isArray(preferenze) ? preferenze : [],
-        preferenze: Array.isArray(preferenze) ? preferenze : [],
+        preferenze: preferenzeSanificate,
         // Esegue: role,
         role,
       // Esegue: };
