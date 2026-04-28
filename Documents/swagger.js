@@ -2,8 +2,8 @@ import swaggerAutogen from 'swagger-autogen';
 
 const doc = {
     info: {
-      title: 'FastFood API - Ingenito Emiddio',
-      description: 'Documentazione endpoint API REST, per il progetto "FastFood" del corso di Programmazione Web e Mobile - A.A. 2025/2026'
+      title: 'Fast Food API - Rimoldi Diego',
+      description: 'Documentazione endpoint API REST, per il progetto "Fast-Food" del corso di Programmazione Web e Mobile - A.A. 2025/2026'
     },
     host: 'localhost:3000'
   };
