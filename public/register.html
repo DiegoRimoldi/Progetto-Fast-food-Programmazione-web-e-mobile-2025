@@ -1,3 +1,4 @@
+<!-- Analisi file: register.html. -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -97,6 +98,36 @@
           <label for="metodo_pagamento" class="form-label">Metodo di pagamento*</label>
           <input type="text" class="form-control" id="metodo_pagamento" placeholder="es. Carta di credito (Visa)"/>
         </div>
+        <div class="mb-3">
+          <label class="form-label">Preferenze alimentari (facoltative)</label>
+          <div id="preferenzeContainer" class="d-flex flex-wrap gap-2">
+            <div class="form-check">
+              <input class="form-check-input preferenza-checkbox" type="checkbox" value="Beef" id="prefBeef">
+              <label class="form-check-label" for="prefBeef">Beef</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input preferenza-checkbox" type="checkbox" value="Chicken" id="prefChicken">
+              <label class="form-check-label" for="prefChicken">Chicken</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input preferenza-checkbox" type="checkbox" value="Pasta" id="prefPasta">
+              <label class="form-check-label" for="prefPasta">Pasta</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input preferenza-checkbox" type="checkbox" value="Seafood" id="prefSeafood">
+              <label class="form-check-label" for="prefSeafood">Seafood</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input preferenza-checkbox" type="checkbox" value="Vegetarian" id="prefVegetarian">
+              <label class="form-check-label" for="prefVegetarian">Vegetarian</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input preferenza-checkbox" type="checkbox" value="Dessert" id="prefDessert">
+              <label class="form-check-label" for="prefDessert">Dessert</label>
+            </div>
+          </div>
+          <div class="form-text">Le offerte in bacheca saranno personalizzate in base alle categorie selezionate.</div>
+        </div>
       </div>
 
       <div id="ristoratoreFields">
@@ -141,9 +172,12 @@
       const role = roleSelect.value;
       const indirizzo = role === 'cliente' ? document.getElementById('indirizzo').value.trim() : "";
       const metodo_pagamento = role === 'cliente' ? document.getElementById('metodo_pagamento').value.trim() : "";
+      const preferenze = role === 'cliente'
+        ? Array.from(document.querySelectorAll('.preferenza-checkbox:checked')).map((checkbox) => checkbox.value)
+        : [];
       const piva = role === 'ristoratore' ? document.getElementById('piva').value.trim() : "";
 
-      const payload = { username, email, password, numero_di_telefono, role, indirizzo, metodo_pagamento, piva };
+      const payload = { username, email, password, numero_di_telefono, role, indirizzo, metodo_pagamento, preferenze, piva };
       alertDiv.innerHTML = "";
 
       try {
