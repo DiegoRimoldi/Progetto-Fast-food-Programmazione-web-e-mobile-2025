@@ -223,4 +223,3 @@ E’ disponibile un video dimostrazione del funzionamento del progetto, al link
 - `GET /meals?ingredients=ingrediente1,ingrediente2`: ricerca piatti contenenti tutti gli ingredienti richiesti.
 - `GET /meals?allergens=allergene1,allergene2`: ricerca piatti escludendo ingredienti allergenici indicati.
 - `POST /orders` con `metodo_consegna: "Consegna a domicilio"`: calcolo automatico di distanza e costo consegna usando OpenStreetMap (Nominatim) a partire da indirizzo ristorante e indirizzo cliente/consegna.
-
