@@ -59,7 +59,13 @@ mealsRouter.get("/", async (req, res) => {
     const filter = {};
 
     // Esegue: if (strCategory) filter.strCategory = strCategory;
-    if (strCategory) filter.strCategory = strCategory;
+    if (strCategory) {
+      if (Array.isArray(strCategory)) {
+        filter.strCategory = { $in: strCategory.filter(Boolean) };
+      } else {
+        filter.strCategory = strCategory;
+      }
+    }
     // Esegue: if (strArea) filter.strArea = strArea;
     if (strArea) filter.strArea = strArea;
     // Esegue: if (nome) {
