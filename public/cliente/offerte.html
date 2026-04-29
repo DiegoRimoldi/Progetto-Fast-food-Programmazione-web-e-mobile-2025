@@ -177,11 +177,6 @@
     var apiBase = "http://localhost:3000";
     var params = new URLSearchParams(window.location.search); //estraggo id ristorante dalla query string
     var restaurantId = params.get("id");
-    if (!restaurantId) {
-      alert("Nessun ristorante selezionato.");
-      window.location.href = "home.html";
-    }
-
     var restaurant = null;
     var allDishes = [];
 
@@ -212,17 +207,36 @@
 
     async function caricaMenu() {
       try {
-        var resRisto = await fetchConControlloToken(apiBase + "/restaurants/" + restaurantId);
-        restaurant = await resRisto.json();
+        var offerteLocali = JSON.parse(localStorage.getItem("offerteBacheca") || "[]").filter(function(p) {
+          return p && p.in_offerta;
+        });
 
-        if (restaurant.name) {
+        if (!restaurantId) {
+          document.getElementById("restaurantName").textContent = "Offerte del ristorante";
+          allDishes = offerteLocali;
+          generaCategorie(allDishes);
+          mostraOffertePerCategoria(allDishes);
+          return;
+        }
+
+        var resRisto = await fetchConControlloToken(apiBase + "/restaurants/" + restaurantId);
+        restaurant = resRisto && resRisto.ok ? await resRisto.json() : null;
+
+        if (restaurant && restaurant.name) {
           document.getElementById("restaurantName").textContent = "Offerte di " + restaurant.name;
         }
 
         var response = await fetchConControlloToken(apiBase + "/meals?ristorante_id=" + restaurantId);
         var meals = response && response.ok ? await response.json() : [];
-        allDishes = (Array.isArray(meals) ? meals : []).filter(function(p) { return p && p.in_offerta; });
+        var offerteBackend = (Array.isArray(meals) ? meals : []).filter(function(p) { return p && p.in_offerta; });
 
+        var offerteMap = new Map();
+        offerteBackend.concat(offerteLocali).forEach(function(piatto) {
+          if (!piatto || !piatto._id) return;
+          offerteMap.set(String(piatto._id), piatto);
+        });
+
+        allDishes = Array.from(offerteMap.values());
         generaCategorie(allDishes);
         mostraOffertePerCategoria(allDishes);
       } catch (err) {
