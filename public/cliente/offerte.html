@@ -180,6 +180,17 @@
     var restaurant = null;
     var allDishes = [];
 
+    function getMealIdAsString(piatto) {
+      if (!piatto) return "";
+
+      var id = piatto._id || piatto.id || piatto.idMeal;
+      if (!id) return "";
+      if (typeof id === "object" && id.$oid) {
+        return String(id.$oid);
+      }
+      return String(id);
+    }
+
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
 
@@ -231,9 +242,12 @@
         var offerteBackend = (Array.isArray(meals) ? meals : []).filter(function(p) { return p && p.in_offerta; });
 
         var offerteMap = new Map();
-        offerteBackend.concat(offerteLocali).forEach(function(piatto) {
-          if (!piatto || !piatto._id) return;
-          offerteMap.set(String(piatto._id), piatto);
+        offerteBackend.concat(offerteLocali).forEach(function(piatto, index) {
+          if (!piatto) return;
+
+          var mealId = getMealIdAsString(piatto);
+          var fallbackId = [piatto.strMeal || "meal", piatto.prezzo || "0", index].join("-");
+          offerteMap.set(mealId || fallbackId, piatto);
         });
 
         allDishes = Array.from(offerteMap.values());
@@ -285,7 +299,7 @@
                               '<p class="mb-1 old-price">€ ' + Number(p.prezzo || 0).toFixed(2) + '</p>' +
                               '<p class="discount-price">€ ' + discounted.toFixed(2) + ' <small class="text-success">(-' + discount + '%)</small></p>' +
                               '<div class="input-group mt-auto">' +
-                                '<input type="number" id="qty-' + p._id + '" class="form-control" value="1" min="1" />' +
+                                '<input type="number" id="qty-' + (getMealIdAsString(p) || 'meal') + '" class="form-control" value="1" min="1" />' +
                                 '<button class="btn btn-outline-secondary" onclick=\'addToCart(' + JSON.stringify(p) + ')\'>Aggiungi</button>' +
                               '</div>' +
                             '</div>' +
