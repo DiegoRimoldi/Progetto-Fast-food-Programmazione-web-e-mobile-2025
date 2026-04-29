@@ -211,8 +211,8 @@
     </div>
 
     <div id="emptyState" class="empty-state d-none">
-      <h3 class="h5">Il tuo menù è ancora vuoto</h3>
-      <p class="mb-0">Vai su “Aggiungi Piatto Generico” o “Aggiungi Piatto Personalizzato” per iniziare a popolarlo.</p>
+      <h3 class="h5">La bacheca è ancora vuota</h3>
+      <p class="mb-0">Vai su “Gestione Menù” e usa il bottone “Aggiungi in Bacheca” per popolarla.</p>
     </div>
   </main>
 
@@ -457,8 +457,8 @@
     async function caricaMenu() {
       var emptyState = document.getElementById("emptyState");
 
-      var menuIds = Array.isArray(mioRistorante.menu) ? mioRistorante.menu.map(getIdAsString) : [];
-      if (menuIds.length === 0) {
+      var bachecaIds = JSON.parse(localStorage.getItem("gestioneBachecaMealIds") || "[]");
+      if (!Array.isArray(bachecaIds) || bachecaIds.length === 0) {
         piattiMenuCache = [];
         selectedMealIds.clear();
         activeMealId = null;
@@ -473,9 +473,9 @@
       }
 
       var allMeals = await responseMeals.json();
-      var menuSet = new Set(menuIds);
+      var bachecaSet = new Set(bachecaIds.map(getIdAsString));
       piattiMenuCache = allMeals.filter(function (meal) {
-        return menuSet.has(getIdAsString(meal._id));
+        return bachecaSet.has(getIdAsString(meal._id));
       });
 
       selectedMealIds = new Set(Array.from(selectedMealIds).filter(function (mealId) {
