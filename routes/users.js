@@ -8,13 +8,11 @@ import { validateAddressWithOpenStreetMap } from "../utils/addressValidation.js"
 const usersRouter = express.Router();
 
 function sanitizePreferenze(preferenze) {
-  const allowedPreferences = new Set(["vegetariano", "carne", "pesce"]);
   if (!Array.isArray(preferenze)) return [];
   return [...new Set(
     preferenze
       .filter((item) => typeof item === "string")
-      .map((item) => item.trim().toLowerCase())
-      .filter((item) => allowedPreferences.has(item))
+      .map((item) => item.trim())
       .filter(Boolean)
   )];
 }
