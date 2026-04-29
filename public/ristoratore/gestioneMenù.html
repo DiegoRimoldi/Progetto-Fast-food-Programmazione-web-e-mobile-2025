@@ -509,7 +509,10 @@
         return;
       }
 
-      var conferma = confirm("Vuoi davvero eliminare dal menù i " + selectedMealIds.size + " piatti selezionati?");
+      var messaggioConferma = selectedMealIds.size === 1
+        ? "Vuoi davvero eliminare dal Menù il piatto selezionato?"
+        : "Vuoi davvero eliminare dal Menù i piatti selezionati?";
+      var conferma = confirm(messaggioConferma);
       if (!conferma) return;
 
       var menuCorrente = Array.isArray(mioRistorante.menu) ? mioRistorante.menu.map(getIdAsString) : [];
