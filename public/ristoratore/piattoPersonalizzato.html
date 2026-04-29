@@ -135,6 +135,10 @@
           <label for="strMealThumb" class="form-label">URL Immagine *</label>
           <input type="url" id="strMealThumb" class="form-control" placeholder="es. https://images.unsplash.com/photo-1568901346375-23c9450c58cd" required>
         </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="in_offerta">
+          <label class="form-check-label" for="in_offerta">Metti questo piatto in offerta (sconto casuale 10%-50%)</label>
+        </div>
         <div class="mb-3">
           <label for="strInstructions" class="form-label">Istruzioni</label>
           <textarea id="strInstructions" class="form-control" rows="4" placeholder="es. Griglia il burger 4 minuti per lato, tosta il pane e assembla con gli ingredienti."></textarea>
@@ -212,7 +216,8 @@
         ingredients: document.getElementById("ingredients").value.split(",").map(i => i.trim()).filter(Boolean),
         measures: document.getElementById("measures").value.split(",").map(m => m.trim()).filter(Boolean),
         strMealThumb: document.getElementById("strMealThumb").value.trim(),
-        strInstructions: document.getElementById("strInstructions").value.trim()
+        strInstructions: document.getElementById("strInstructions").value.trim(),
+        in_offerta: document.getElementById("in_offerta").checked
     };
 
 

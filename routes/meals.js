@@ -125,6 +125,7 @@ mealsRouter.post("/", authenticateUser, authorizeRistoratore, async (req, res) =
       measures,
       prezzo,
       tempo_preparazione,
+      in_offerta
     } = req.body;
 
     if (!strMeal || typeof strMeal !== "string") {
@@ -147,6 +148,12 @@ mealsRouter.post("/", authenticateUser, authorizeRistoratore, async (req, res) =
       return res.status(400).json({ error: "tempo_preparazione richiesto e deve essere un numero >= 0" });
     }
 
+    const isInOfferta = Boolean(in_offerta);
+    const randomDiscount = isInOfferta ? Math.floor(Math.random() * 41) + 10 : 0;
+    const discountedPrice = isInOfferta
+      ? Number((prezzo * (1 - randomDiscount / 100)).toFixed(2))
+      : null;
+
     const newMeal = {
       strMeal,
       strCategory,
@@ -157,6 +164,9 @@ mealsRouter.post("/", authenticateUser, authorizeRistoratore, async (req, res) =
       measures,
       prezzo,
       tempo_preparazione,
+      in_offerta: isInOfferta,
+      sconto_percentuale: randomDiscount || null,
+      prezzo_scontato: discountedPrice,
       ristorante_id: restaurant._id,
     };
 
@@ -230,6 +240,25 @@ mealsRouter.put("/:id", authenticateUser, authorizeRistoratore, async (req, res)
 
     if (Object.keys(updateFields).length === 0) {
       return res.status(400).json({ error: "Nessun campo valido da aggiornare" });
+    }
+
+    if (updateFields.in_offerta === true) {
+      const discount = Math.floor(Math.random() * 41) + 10;
+      const basePrice = typeof updateFields.prezzo === "number" ? updateFields.prezzo : meal.prezzo;
+      updateFields.sconto_percentuale = discount;
+      updateFields.prezzo_scontato = Number((basePrice * (1 - discount / 100)).toFixed(2));
+    }
+
+    if (updateFields.in_offerta === false) {
+      updateFields.sconto_percentuale = null;
+      updateFields.prezzo_scontato = null;
+    }
+
+    if (updateFields.prezzo !== undefined && meal.in_offerta && updateFields.in_offerta !== false) {
+      const discount = typeof updateFields.sconto_percentuale === "number" ? updateFields.sconto_percentuale : meal.sconto_percentuale;
+      if (typeof discount === "number") {
+        updateFields.prezzo_scontato = Number((updateFields.prezzo * (1 - discount / 100)).toFixed(2));
+      }
     }
 
     const result = await db.collection("meals").updateOne(
