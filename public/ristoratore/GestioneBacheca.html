@@ -416,7 +416,7 @@
       if (!deleteBtn || !restoreBtn) return;
 
       var hasSelections = selectedMealIds.size > 0;
-      deleteBtn.textContent = "Elimina selezionati (" + selectedMealIds.size + ")";
+      deleteBtn.textContent = "Aggiungi alle Offerte (" + selectedMealIds.size + ")";
       restoreBtn.textContent = "Ripristina selezionati (" + selectedMealIds.size + ")";
 
       deleteBtn.classList.toggle("d-none", !hasSelections);
@@ -499,51 +499,28 @@
       mostraDettagliPiatto(activeMealId);
     }
 
-    async function eliminaPiattiSelezionati() {
+    function aggiungiPiattiAlleOfferte() {
       if (!selectedMealIds.size) {
-        alert("Seleziona almeno un piatto prima di eliminarlo dal menù.");
+        alert("Seleziona almeno un piatto da aggiungere alle offerte.");
         return;
       }
 
-      var conferma = confirm("Vuoi davvero eliminare dal menù i " + selectedMealIds.size + " piatti selezionati?");
-      if (!conferma) return;
-
-      var menuCorrente = Array.isArray(mioRistorante.menu) ? mioRistorante.menu.map(getIdAsString) : [];
-      var nuovoMenu = menuCorrente.filter(function(mealId) {
-        return !selectedMealIds.has(mealId);
+        var piattiSelezionati = piattiMenuCache.filter(function(meal) {
+        return selectedMealIds.has(getIdAsString(meal._id));
       });
 
-      try {
-        var updateRes = await fetchConControlloToken(apiBase + "/restaurants/" + getIdAsString(mioRistorante._id), {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-          },
-          body: JSON.stringify({
-            menu: nuovoMenu,
-            updatedAt: new Date()
-          })
-        });
-
-        if (!updateRes || !updateRes.ok) {
-          var errorText = updateRes ? await updateRes.text() : "Nessuna risposta dal server";
-          throw new Error("Errore nella rimozione dei piatti: " + errorText);
-        }
-
-        mioRistorante.menu = nuovoMenu;
-        selectedMealIds.clear();
-        await caricaMenu();
-        alert("Piatti rimossi dal menù con successo.");
-      } catch (error) {
-        console.error(error);
-        alert(error.message || "Errore durante la rimozione dal menù.");
+      if (!piattiSelezionati.length) {
+        alert("Nessun piatto valido selezionato.");
+        return;
       }
+
+      localStorage.setItem("offerteBacheca", JSON.stringify(piattiSelezionati));
+      window.location.href = "../cliente/offerte.html";
     }
 
     (async function init() {
       try {
-        document.getElementById("deleteSelectedBtn").addEventListener("click", eliminaPiattiSelezionati);
+        document.getElementById("deleteSelectedBtn").addEventListener("click", aggiungiPiattiAlleOfferte);
         document.getElementById("restoreSelectedBtn").addEventListener("click", ripristinaPiattiSelezionati);
         document.addEventListener("click", function(event) {
           if (event.target.closest("button") || event.target.closest(".menu-card")) {
