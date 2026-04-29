@@ -515,6 +515,7 @@
       var conferma = confirm(messaggioConferma);
       if (!conferma) return;
 
+      var numeroSelezionati = selectedMealIds.size;
       var menuCorrente = Array.isArray(mioRistorante.menu) ? mioRistorante.menu.map(getIdAsString) : [];
       var nuovoMenu = menuCorrente.filter(function(mealId) {
         return !selectedMealIds.has(mealId);
@@ -541,7 +542,10 @@
         mioRistorante.menu = nuovoMenu;
         selectedMealIds.clear();
         await caricaMenu();
-        alert("Piatti rimossi dal menù con successo.");
+        var messaggioSuccesso = numeroSelezionati === 1
+          ? "Piatto rimosso dal Menù con successo."
+          : "Piatti rimossi dal Menù con successo.";
+        alert(messaggioSuccesso);
       } catch (error) {
         console.error(error);
         alert(error.message || "Errore durante la rimozione dal menù.");
