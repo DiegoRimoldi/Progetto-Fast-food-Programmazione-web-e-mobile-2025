@@ -576,7 +576,10 @@
         return;
       }
 
-      var conferma = confirm("Vuoi davvero eliminare dalla bacheca i " + selectedMealIds.size + " piatti selezionati?");
+      var messaggioConferma = selectedMealIds.size === 1
+        ? "Vuoi davvero eliminare dalla Bacheca il piatto selezionato?"
+        : "Vuoi davvero eliminare dalla Bacheca i piatti selezionati?";
+      var conferma = confirm(messaggioConferma);
       if (!conferma) return;
 
       var bachecaCorrente = JSON.parse(localStorage.getItem("gestioneBachecaMealIds") || "[]");
