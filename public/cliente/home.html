@@ -297,7 +297,7 @@
         var restaurantsResponse = await fetchConControlloToken(apiBase + "/restaurants");
         if (restaurantsResponse && restaurantsResponse.ok) {
           var restaurantsData = await restaurantsResponse.json();
-          var listaRistoranti = Array.isArray(restaurantsData.restaurants) ? restaurantsData.restaurants : [];
+          var listaRistoranti = Array.isArray(restaurantsData) ? restaurantsData : [];
           listaRistoranti.forEach(function(r) {
             if (r && r._id) {
               restaurantsById[r._id] = r;
