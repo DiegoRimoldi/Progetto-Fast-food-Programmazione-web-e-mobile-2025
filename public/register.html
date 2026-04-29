@@ -107,8 +107,10 @@
         </div>
         <div class="mb-3">
           <label class="form-label" for="preferenze">Preferenze Alimentari (facoltative)</label>
-          <select id="preferenze" class="form-select" multiple></select>
-          <div class="form-text">Scegli una o più categorie: useremo queste preferenze per mostrarti offerte su misura.</div>
+          <select id="preferenze" class="form-select">
+            <option value="" selected>Tutte le categorie</option>
+          </select>
+          <div class="form-text">Scegli una categoria: useremo questa preferenza per mostrarti offerte su misura.</div>
         </div>
       </div>
 
@@ -149,7 +151,7 @@
         if (!res.ok) return;
         const meals = await res.json();
         const categorie = [...new Set((Array.isArray(meals) ? meals : []).map(m => m.strCategory).filter(Boolean))].sort();
-        document.getElementById('preferenze').innerHTML = categorie.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        document.getElementById('preferenze').innerHTML = '<option value="" selected>Tutte le categorie</option>' + categorie.map(cat => `<option value="${cat}">${cat}</option>`).join('');
       } catch (e) {
         console.error('Errore caricamento categorie preferenze', e);
       }
@@ -170,7 +172,7 @@
       const indirizzo = role === 'cliente' ? document.getElementById('indirizzo').value.trim() : "";
       const metodo_pagamento = role === 'cliente' ? document.getElementById('metodo_pagamento').value.trim() : "";
       const preferenze = role === 'cliente'
-        ? Array.from(document.getElementById('preferenze').selectedOptions).map((option) => option.value)
+        ? Array.from(document.getElementById('preferenze').selectedOptions).map((option) => option.value).filter(Boolean)
         : [];
       const piva = role === 'ristoratore' ? document.getElementById('piva').value.trim() : "";
 
