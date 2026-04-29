@@ -499,13 +499,27 @@
       mostraDettagliPiatto(activeMealId);
     }
 
+    function calcolaOffertaPiatto(piatto) {
+      var percentualiDisponibili = [15, 20, 25, 30];
+      var randomIndex = Math.floor(Math.random() * percentualiDisponibili.length);
+      var sconto = percentualiDisponibili[randomIndex];
+      var prezzoBase = Number(piatto.prezzo || 0);
+      var prezzoScontato = Number((prezzoBase * (1 - sconto / 100)).toFixed(2));
+
+      return Object.assign({}, piatto, {
+        in_offerta: true,
+        sconto_percentuale: sconto,
+        prezzo_scontato: prezzoScontato
+      });
+    }
+
     function aggiungiPiattiAlleOfferte() {
       if (!selectedMealIds.size) {
         alert("Seleziona almeno un piatto da aggiungere alle offerte.");
         return;
       }
 
-        var piattiSelezionati = piattiMenuCache.filter(function(meal) {
+      var piattiSelezionati = piattiMenuCache.filter(function(meal) {
         return selectedMealIds.has(getIdAsString(meal._id));
       });
 
@@ -514,8 +528,25 @@
         return;
       }
 
-      localStorage.setItem("offerteBacheca", JSON.stringify(piattiSelezionati));
-      window.location.href = "../cliente/offerte.html";
+      var offerteEsistenti = JSON.parse(localStorage.getItem("offerteBacheca") || "[]");
+      var offerteMap = new Map(offerteEsistenti.map(function(meal) {
+        return [getIdAsString(meal._id), meal];
+      }));
+
+      var offerteAggiornate = 0;
+      piattiSelezionati.forEach(function(piatto) {
+        var mealId = getIdAsString(piatto._id);
+        if (!offerteMap.has(mealId)) {
+          offerteMap.set(mealId, calcolaOffertaPiatto(piatto));
+          offerteAggiornate += 1;
+        }
+      });
+
+      localStorage.setItem("offerteBacheca", JSON.stringify(Array.from(offerteMap.values())));
+      alert("Hai aggiunto " + offerteAggiornate + " piatto/i alle offerte del ristorante.");
+      selectedMealIds.clear();
+      updateDeleteButtonLabel();
+      renderizzaMenu();
     }
 
     (async function init() {
