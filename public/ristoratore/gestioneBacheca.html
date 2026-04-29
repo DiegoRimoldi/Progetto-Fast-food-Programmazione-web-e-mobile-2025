@@ -196,7 +196,7 @@
     </div>
 
     <div id="menuStats" class="alert alert-primary d-none" role="status"></div>
-    <div class="d-flex flex-wrap gap-2 mb-3">
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
       <button id="deleteSelectedBtn" class="btn btn-primary d-none" type="button">Aggiungi alle Offerte (0)</button>
       <button id="restoreSelectedBtn" class="btn btn-outline-danger d-none" type="button">Ripristina selezionati (0)</button>
     </div>
@@ -533,17 +533,34 @@
         return [getIdAsString(meal._id), meal];
       }));
 
-      var offerteAggiornate = 0;
+      var piattiAggiunti = [];
+      var piattiGiaInOfferta = [];
+
       piattiSelezionati.forEach(function(piatto) {
         var mealId = getIdAsString(piatto._id);
+        var nomePiatto = (piatto.nome || "Piatto senza nome").trim();
+
         if (!offerteMap.has(mealId)) {
           offerteMap.set(mealId, calcolaOffertaPiatto(piatto));
-          offerteAggiornate += 1;
+          piattiAggiunti.push(nomePiatto);
+          return;
         }
+
+        piattiGiaInOfferta.push(nomePiatto);
       });
 
       localStorage.setItem("offerteBacheca", JSON.stringify(Array.from(offerteMap.values())));
-      alert("Hai aggiunto " + offerteAggiornate + " piatto/i alle offerte del ristorante.");
+
+      if (piattiAggiunti.length && !piattiGiaInOfferta.length) {
+        alert("Hai aggiunto alle offerte i seguenti piatti: " + piattiAggiunti.join(", ") + ".");
+      } else if (piattiAggiunti.length && piattiGiaInOfferta.length) {
+        alert(
+          "Piatti aggiunti alle offerte: " + piattiAggiunti.join(", ") +
+          ".\nGià presenti nelle offerte: " + piattiGiaInOfferta.join(", ") + "."
+        );
+      } else {
+        alert("I piatti selezionati sono già presenti nelle offerte: " + piattiGiaInOfferta.join(", ") + ".");
+      }
       selectedMealIds.clear();
       updateDeleteButtonLabel();
       renderizzaMenu();
