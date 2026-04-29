@@ -103,6 +103,26 @@
     .meal-card .btn:hover {
       background-color: #0b5ed7;
     }
+
+    .offer-card {
+      border: 2px solid #ffc107;
+      box-shadow: 0 8px 20px rgba(255, 193, 7, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .offer-badge {
+      position: absolute;
+      top: 10px;
+      right: -35px;
+      background: #dc3545;
+      color: #fff;
+      font-weight: 700;
+      padding: 0.35rem 2.5rem;
+      transform: rotate(35deg);
+      z-index: 2;
+    }
+    .old-price { text-decoration: line-through; color: #6c757d; }
+    .discount-price { color: #dc3545; font-weight: 700; font-size: 1.1rem; }
   </style>
     <link rel="icon" type="image/png" href="../assets/Favicon.png">
   <script src="../assets/auth.js"></script>
@@ -127,7 +147,8 @@
   </div>
 
   <div class="main-content">
-    <h2 id="restaurantName">Menu</h2>
+    <h2 id="restaurantName">Offerte</h2>
+    <div id="offersByCategory"></div>
 
     <div class="filter-panel row mb-4">
       <div class="col-md-4 mb-2">
@@ -149,8 +170,7 @@
       </div>
     </div>
 
-    <div id="mealsContainer" class="row g-4">
-    </div>
+    <div id="mealsContainer" class="row g-4"></div>
   </div>
 
   <script>
@@ -196,99 +216,78 @@
         restaurant = await resRisto.json();
 
         if (restaurant.name) {
-          document.getElementById("restaurantName").textContent = "Menù di " + restaurant.name;
+          document.getElementById("restaurantName").textContent = "Offerte di " + restaurant.name;
         }
-        if (restaurant.menu && Array.isArray(restaurant.menu) && restaurant.menu.length > 0) {
-          var promises = restaurant.menu.map(function(idMeal) {
-            return fetchConControlloToken(apiBase + "/meals/" + idMeal).then(function(res) {
-              return res.json();
-            });
-          });
-          allDishes = await Promise.all(promises);
-        } else {
-          allDishes = [];
-        }
+
+        var response = await fetchConControlloToken(apiBase + "/meals?ristorante_id=" + restaurantId);
+        var meals = response && response.ok ? await response.json() : [];
+        allDishes = (Array.isArray(meals) ? meals : []).filter(function(p) { return p && p.in_offerta; });
+
         generaCategorie(allDishes);
-        mostraPiatti(allDishes);
+        mostraOffertePerCategoria(allDishes);
       } catch (err) {
-        console.error("Errore nel caricamento del menu:", err);
-        document.getElementById("mealsContainer").innerHTML =
-          '<div class="alert alert-danger">Errore durante il caricamento dei piatti.</div>';
+        console.error("Errore nel caricamento delle offerte:", err);
+        document.getElementById("offersByCategory").innerHTML =
+          '<div class="alert alert-danger">Errore durante il caricamento delle offerte.</div>';
       }
     }
 
-    //genero le cards con i piatti
-    function mostraPiatti(lista) {
-      var container = document.getElementById("mealsContainer");
-      container.innerHTML = "";
-      if (lista.length === 0) {
-        container.innerHTML = '<p class="text-muted">Nessun piatto trovato.</p>';
+    function mostraOffertePerCategoria(lista) {
+      var wrapper = document.getElementById("offersByCategory");
+      wrapper.innerHTML = "";
+
+      if (!lista.length) {
+        wrapper.innerHTML = '<p class="text-muted">Al momento il ristoratore non ha impostato piatti in offerta.</p>';
         return;
       }
-      lista.forEach(function(p) {
-        p.strInstructions = p.strInstructions.replace(/'/g, "").trim(); //l'apostrofo da noia durante il passaggio della descrizione
-        var col = document.createElement("div");
-        col.className = "col-md-4";
-        col.innerHTML = '<div class="card meal-card h-100">' +
-                          '<img src="' + (p.strMealThumb) + '" class="card-img-top" alt="' + p.strMeal + '">' +
-                          '<div class="card-body d-flex flex-column">' +
-                            '<h5 class="card-title">' + p.strMeal + '</h5>' +
-                            '<p class="card-text">' + "<b>Category: </b>" + (p.strCategory || "") + '</p>' +
-                            '<p class="card-text">'+ "<b>Area: </b>" + (p.strArea || "") + '</p>' +
-                            '<p class="card-text">'+ "<b>Ingredients: </b>"  + (p.ingredients || "") + '</p>' +
-                            '<p class="card-text"><strong>€ ' + p.prezzo.toFixed(2) + '</strong></p>' +
-                            '<div class="input-group mb-2">' +
-                              '<input type="number" id="qty-' + p._id + '" class="form-control" value="1" min="1" />' +
-                              '<button class="btn btn-outline-secondary" onclick=\'addToCart(' + JSON.stringify(p) + ')\'>Aggiungi</button>' +
+
+      var grouped = lista.reduce(function(acc, meal) {
+        var cat = meal.strCategory || "Altre categorie";
+        acc[cat] = acc[cat] || [];
+        acc[cat].push(meal);
+        return acc;
+      }, {});
+
+      Object.keys(grouped).sort().forEach(function(category) {
+        var section = document.createElement("section");
+        section.className = "mb-4";
+        section.innerHTML = '<h4 class="mb-3 text-primary">' + category + '</h4>';
+
+        var row = document.createElement("div");
+        row.className = "row g-4";
+
+        grouped[category].forEach(function(p) {
+          var discount = Number(p.sconto_percentuale || 0);
+          var discounted = Number(p.prezzo_scontato || p.prezzo);
+          var col = document.createElement("div");
+          col.className = "col-md-4";
+          col.innerHTML = '<div class="card meal-card offer-card h-100">' +
+                            '<span class="offer-badge">-' + discount + '%</span>' +
+                            '<img src="' + (p.strMealThumb || '../assets/logo.png') + '" class="card-img-top" alt="' + p.strMeal + '">' +
+                            '<div class="card-body d-flex flex-column">' +
+                              '<h5 class="card-title">' + p.strMeal + '</h5>' +
+                              '<p class="card-text"><b>Area:</b> ' + (p.strArea || "") + '</p>' +
+                              '<p class="card-text"><b>Ingredienti:</b> ' + (p.ingredients || "") + '</p>' +
+                              '<p class="mb-1 old-price">€ ' + Number(p.prezzo || 0).toFixed(2) + '</p>' +
+                              '<p class="discount-price">€ ' + discounted.toFixed(2) + ' <small class="text-success">(-' + discount + '%)</small></p>' +
+                              '<div class="input-group mt-auto">' +
+                                '<input type="number" id="qty-' + p._id + '" class="form-control" value="1" min="1" />' +
+                                '<button class="btn btn-outline-secondary" onclick=\'addToCart(' + JSON.stringify(p) + ')\'>Aggiungi</button>' +
+                              '</div>' +
                             '</div>' +
-                          '</div>' +
                           '</div>';
-        container.appendChild(col);
+          row.appendChild(col);
+        });
+
+        section.appendChild(row);
+        wrapper.appendChild(section);
       });
     }
 
-    async function addToCart(piatto) {
-      var qtyEl = document.getElementById("qty-" + piatto._id);
-      var quantita = parseInt(qtyEl.value) || 1;
-
-      var payload = {
-        meal_id: piatto._id,
-        nome: piatto.strMeal,
-        quantita: quantita,
-        prezzo_unitario: piatto.prezzo,
-        ristorante_id: piatto.ristorante_id || restaurantId
-      };
-
-      try {
-        var response = await fetchConControlloToken(apiBase + "/carts/add", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + localStorage.getItem("token")
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-          var errorText = await response.text();
-          throw new Error("Errore HTTP " + response.status + " - " + errorText);
-        }
-
-        alert(`"${piatto.strMeal}" aggiunto al carrello!`);
-      } catch (err) {
-        console.error("Errore nell'aggiunta al carrello:", err);
-        alert("Errore durante l'aggiunta al carrello.");
-      }
-    }
-
-
-        function generaCategorie(piatti) {
+    function generaCategorie(piatti) {
       var select = document.getElementById("filterCategory");
       select.innerHTML = '<option value="">Tutte le categorie</option>';
-      var categorie = Array.from(new Set(piatti.map(function(p) {
-        return p.strCategory;
-      }).filter(Boolean)));
-      categorie.forEach(function(cat) {
+      Array.from(new Set(piatti.map(function(p) { return p.strCategory; }).filter(Boolean))).forEach(function(cat) {
         var opt = document.createElement("option");
         opt.value = cat;
         opt.textContent = cat;
@@ -305,10 +304,10 @@
       var filtrati = allDishes.filter(function(p) {
         var nomeMatch = nome === "" || (p.strMeal && p.strMeal.toLowerCase().includes(nome));
         var categoriaMatch = categoria === "" || p.strCategory === categoria;
-        var prezzoMatch = p.prezzo >= prezzoMin && p.prezzo <= prezzoMax;
+        var prezzoMatch = Number(p.prezzo_scontato || p.prezzo) >= prezzoMin && Number(p.prezzo_scontato || p.prezzo) <= prezzoMax;
         return nomeMatch && categoriaMatch && prezzoMatch;
       });
-      mostraPiatti(filtrati);
+      mostraOffertePerCategoria(filtrati);
     }
 
     document.getElementById("applyFilter").addEventListener("click", applicaFiltri);

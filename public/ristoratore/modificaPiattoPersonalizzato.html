@@ -177,6 +177,10 @@
         <label for="strMealThumb" class="form-label">URL Immagine</label>
         <input type="url" id="strMealThumb" class="form-control" required>
       </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="in_offerta">
+        <label class="form-check-label" for="in_offerta">Metti questo piatto in offerta (sconto casuale 10%-50%)</label>
+      </div>
       <div class="mb-3">
         <label for="strInstructions" class="form-label">Istruzioni</label>
         <textarea id="strInstructions" class="form-control" rows="4" required></textarea>
@@ -259,6 +263,7 @@
       document.getElementById("measures").value = piatto.measures ? piatto.measures.join(", ") : "";
       document.getElementById("strMealThumb").value = piatto.strMealThumb || "";
       document.getElementById("strInstructions").value = piatto.strInstructions || "";
+      document.getElementById("in_offerta").checked = Boolean(piatto.in_offerta);
       document.getElementById("piattoPersonalizzato").style.display = "block";
     }
 
@@ -289,7 +294,8 @@
           ingredients: (piatto.ingredients || []).map(function(i) { return i.toString().trim(); }),
           measures: (piatto.measures || []).map(function(m) { return m.toString().trim(); }),
           strMealThumb: piatto.strMealThumb || "",
-          strInstructions: piatto.strInstructions || ""
+          strInstructions: piatto.strInstructions || "",
+          in_offerta: Boolean(piatto.in_offerta)
         };
         popolaForm(piatto);
         renderCards();
@@ -355,7 +361,8 @@
         ingredients: document.getElementById("ingredients").value.split(",").map(function(i) { return i.trim(); }).filter(Boolean),
         measures: document.getElementById("measures").value.split(",").map(function(m) { return m.trim(); }).filter(Boolean),
         strMealThumb: document.getElementById("strMealThumb").value.trim(),
-        strInstructions: document.getElementById("strInstructions").value.trim()
+        strInstructions: document.getElementById("strInstructions").value.trim(),
+        in_offerta: document.getElementById("in_offerta").checked
       };
 
       if (payload.ingredients.length !== payload.measures.length) {
@@ -372,7 +379,8 @@
         JSON.stringify(payload.ingredients) === JSON.stringify(piattoOriginale.ingredients || []) &&
         JSON.stringify(payload.measures) === JSON.stringify(piattoOriginale.measures || []) &&
         (payload.strMealThumb || "") === (piattoOriginale.strMealThumb || "") &&
-        (payload.strInstructions || "") === (piattoOriginale.strInstructions || "");
+        (payload.strInstructions || "") === (piattoOriginale.strInstructions || "") &&
+        Boolean(payload.in_offerta) === Boolean(piattoOriginale.in_offerta);
 
       if (nessunaModifica) {
         alert("Nessuna modifica salvata: i dati inseriti sono identici a quelli già presenti nel profilo.");
