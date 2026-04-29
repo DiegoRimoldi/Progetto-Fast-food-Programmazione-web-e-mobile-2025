@@ -198,6 +198,7 @@
     <div id="menuStats" class="alert alert-primary d-none" role="status"></div>
     <div class="d-flex flex-wrap gap-2 mb-3">
       <button id="deleteSelectedBtn" class="btn btn-outline-danger d-none" type="button">Elimina selezionati (0)</button>
+      <button id="addToBachecaBtn" class="btn btn-primary d-none" type="button">Aggiungi in Bacheca (0)</button>
       <button id="restoreSelectedBtn" class="btn btn-primary d-none" type="button">Ripristina selezionati (0)</button>
     </div>
 
@@ -412,14 +413,17 @@
 
     function updateDeleteButtonLabel() {
       var deleteBtn = document.getElementById("deleteSelectedBtn");
+      var addToBachecaBtn = document.getElementById("addToBachecaBtn");
       var restoreBtn = document.getElementById("restoreSelectedBtn");
-      if (!deleteBtn || !restoreBtn) return;
+      if (!deleteBtn || !restoreBtn || !addToBachecaBtn) return;
 
       var hasSelections = selectedMealIds.size > 0;
       deleteBtn.textContent = "Elimina selezionati (" + selectedMealIds.size + ")";
+      addToBachecaBtn.textContent = "Aggiungi in Bacheca (" + selectedMealIds.size + ")";
       restoreBtn.textContent = "Ripristina selezionati (" + selectedMealIds.size + ")";
 
       deleteBtn.classList.toggle("d-none", !hasSelections);
+      addToBachecaBtn.classList.toggle("d-none", !hasSelections);
       restoreBtn.classList.toggle("d-none", !hasSelections);
     }
 
@@ -541,9 +545,50 @@
       }
     }
 
+    function aggiungiPiattiInBacheca() {
+      if (!selectedMealIds.size) {
+        alert("Seleziona almeno un piatto prima di aggiungerlo in bacheca.");
+        return;
+      }
+
+      var piattiSelezionati = piattiMenuCache.filter(function(meal) {
+        return selectedMealIds.has(getIdAsString(meal._id));
+      });
+
+      if (!piattiSelezionati.length) {
+        alert("Nessun piatto valido selezionato.");
+        return;
+      }
+
+      var bachecaEsistente = JSON.parse(localStorage.getItem("gestioneBachecaMealIds") || "[]");
+      var bachecaSet = new Set(bachecaEsistente);
+      var nomiAggiunti = [];
+
+      piattiSelezionati.forEach(function(piatto) {
+        var mealId = getIdAsString(piatto._id);
+        if (!bachecaSet.has(mealId)) {
+          bachecaSet.add(mealId);
+          nomiAggiunti.push(piatto.strMeal || "Piatto senza nome");
+        }
+      });
+
+      localStorage.setItem("gestioneBachecaMealIds", JSON.stringify(Array.from(bachecaSet)));
+
+      if (!nomiAggiunti.length) {
+        alert("I piatti selezionati sono già presenti in bacheca.");
+        return;
+      }
+
+      alert("Aggiunto in bacheca: " + nomiAggiunti.join(", "));
+      selectedMealIds.clear();
+      updateDeleteButtonLabel();
+      renderizzaMenu();
+    }
+
     (async function init() {
       try {
         document.getElementById("deleteSelectedBtn").addEventListener("click", eliminaPiattiSelezionati);
+        document.getElementById("addToBachecaBtn").addEventListener("click", aggiungiPiattiInBacheca);
         document.getElementById("restoreSelectedBtn").addEventListener("click", ripristinaPiattiSelezionati);
         document.addEventListener("click", function(event) {
           if (event.target.closest("button") || event.target.closest(".menu-card")) {
