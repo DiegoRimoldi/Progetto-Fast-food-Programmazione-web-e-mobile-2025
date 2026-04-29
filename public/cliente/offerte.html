@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fast Food - Offerte</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/responsive.css" />
+  <link rel="stylesheet" href="../assets/modern-theme.css" />
+  <link rel="icon" type="image/png" href="../assets/Favicon.png" />
+  <script src="../assets/auth.js"></script>
+</head>
+<body class="bg-light">
+  <script>
+    window.ensureAuthenticatedRole("cliente");
+  </script>
+
+  <main class="container py-4 py-md-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3 text-primary mb-0">Bacheca Offerte</h1>
+      <a class="btn btn-outline-primary" href="home.html">Torna alla home cliente</a>
+    </div>
+
+    <div id="emptyState" class="alert alert-info d-none">Nessuna offerta disponibile al momento.</div>
+    <div id="offerteContainer" class="row g-4"></div>
+  </main>
+
+  <script>
+    function renderOfferte() {
+      var container = document.getElementById("offerteContainer");
+      var emptyState = document.getElementById("emptyState");
+      var offerteRaw = localStorage.getItem("offerteBacheca");
+      var offerte = [];
+
+      try {
+        offerte = offerteRaw ? JSON.parse(offerteRaw) : [];
+      } catch (error) {
+        offerte = [];
+      }
+
+      if (!Array.isArray(offerte) || offerte.length === 0) {
+        emptyState.classList.remove("d-none");
+        container.innerHTML = "";
+        return;
+      }
+
+      emptyState.classList.add("d-none");
+      container.innerHTML = "";
+
+      offerte.forEach(function (piatto) {
+        var prezzo = Number(piatto.prezzo || 0).toFixed(2);
+        var ingredienti = Array.isArray(piatto.ingredients) && piatto.ingredients.length
+          ? piatto.ingredients.join(", ")
+          : "Non specificati";
+
+        var card = document.createElement("div");
+        card.className = "col-12 col-md-6 col-xl-4";
+        card.innerHTML =
+          '<article class="card h-100 border-0 shadow-sm">' +
+            '<img src="' + (piatto.strMealThumb || "../assets/logo.png") + '" class="card-img-top" alt="' + (piatto.strMeal || "Piatto") + '" style="height:220px; object-fit:cover;">' +
+            '<div class="card-body d-flex flex-column gap-2">' +
+              '<span class="badge text-bg-danger align-self-start">Offerta</span>' +
+              '<h2 class="h5 text-primary mb-0">' + (piatto.strMeal || "Piatto senza nome") + '</h2>' +
+              '<p class="text-muted mb-1"><strong>Categoria:</strong> ' + (piatto.strCategory || "-") + '</p>' +
+              '<p class="text-muted mb-1"><strong>Prezzo:</strong> € ' + prezzo + '</p>' +
+              '<p class="text-secondary small mb-0"><strong>Ingredienti:</strong> ' + ingredienti + '</p>' +
+            '</div>' +
+          '</article>';
+
+        container.appendChild(card);
+      });
+    }
+
+    renderOfferte();
+  </script>
+</body>
+</html>
