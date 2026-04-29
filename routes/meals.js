@@ -209,7 +209,7 @@ mealsRouter.put("/:id", authenticateUser, authorizeRistoratore, async (req, res)
     const allowedFields = [
       "strMeal", "strCategory", "strArea", "strInstructions",
       "strMealThumb", "ingredients", "measures",
-      "prezzo", "tempo_preparazione"
+      "prezzo", "tempo_preparazione", "in_offerta", "sconto_percentuale"
     ];
 
     const updateFields = {};
