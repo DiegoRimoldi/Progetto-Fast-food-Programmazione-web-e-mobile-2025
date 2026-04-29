@@ -257,6 +257,19 @@
       }
     }
 
+
+    function inferenzaTipologiaPiatto(piatto) {
+      var categoria = String((piatto && piatto.strCategory) || "").toLowerCase();
+      var ingredienti = Array.isArray(piatto && piatto.ingredients)
+        ? piatto.ingredients.join(" ").toLowerCase()
+        : "";
+
+      if (/fish|seafood|salmon|tuna|shrimp|prawn|cod|octopus|sard/i.test(categoria + " " + ingredienti)) return "pesce";
+      if (/vegetarian|vegan|pasta|dessert|salad|risotto|tofu|mushroom|cheese|eggplant|zucchini/i.test(categoria + " " + ingredienti)) return "vegetariano";
+      if (/beef|chicken|lamb|pork|goat|meat|bacon|ham|sausage/i.test(categoria + " " + ingredienti)) return "carne";
+      return null;
+    }
+
     function mostraOffertePersonalizzate(piatti) {
       var container = document.getElementById("offerteContainer");
       container.innerHTML = "";
@@ -311,10 +324,7 @@
           return;
         }
 
-        var query = userPreferences.map(function(pref) {
-          return "strCategory=" + encodeURIComponent(pref);
-        }).join("&");
-        var offersResponse = await fetchConControlloToken(apiBase + "/meals?" + query);
+        var offersResponse = await fetchConControlloToken(apiBase + "/meals");
         if (!offersResponse || !offersResponse.ok) throw new Error("Impossibile recuperare le offerte.");
         var offers = await offersResponse.json();
 
@@ -322,6 +332,8 @@
         var visti = new Set();
         (Array.isArray(offers) ? offers : []).forEach(function(p) {
           if (!p || !p._id || visti.has(p._id)) return;
+          var tipologia = inferenzaTipologiaPiatto(p);
+          if (!tipologia || userPreferences.indexOf(tipologia) === -1) return;
           visti.add(p._id);
           offerteUniche.push(p);
         });
