@@ -612,6 +612,23 @@
       return response.json();
     }
 
+
+    async function aggiornaOffertaMeal(mealId, payload) {
+      var response = await fetchConControlloToken(apiBase + "/meals/" + mealId, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response || !response.ok) {
+        throw new Error("Impossibile aggiornare il piatto con ID " + mealId + " nel database.");
+      }
+
+      return response.json();
+    }
+
     function getNomePiatto(piatto) {
       return String(piatto.strMeal || piatto.nome || piatto.name || "Piatto senza nome").trim();
     }
