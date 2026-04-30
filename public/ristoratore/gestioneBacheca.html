@@ -594,6 +594,23 @@
       });
     }
 
+
+    async function aggiornaOffertaMeal(mealId, payload) {
+      var response = await fetchConControlloToken(apiBase + "/meals/" + mealId, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response || !response.ok) {
+        throw new Error("Impossibile aggiornare il piatto con ID " + mealId + " nel database.");
+      }
+
+      return response.json();
+    }
+
     function getNomePiatto(piatto) {
       return String(piatto.strMeal || piatto.nome || piatto.name || "Piatto senza nome").trim();
     }
@@ -614,7 +631,7 @@
       return "Hai aggiunto alle offerte i seguenti piatti: " + piattiAggiunti.join(", ") + ".";
     }
 
-    function aggiungiPiattiAlleOfferte() {
+    async function aggiungiPiattiAlleOfferte() {
       if (!selectedMealIds.size) {
         alert("Seleziona almeno un piatto da aggiungere alle offerte.");
         return;
@@ -636,6 +653,7 @@
 
       var piattiAggiunti = [];
       var piattiGiaInOfferta = [];
+      var mealIdsAggiunti = [];
 
       piattiSelezionati.forEach(function(piatto) {
         var mealId = getIdAsString(piatto._id);
@@ -644,11 +662,26 @@
         if (!offerteMap.has(mealId)) {
           offerteMap.set(mealId, calcolaOffertaPiatto(piatto));
           piattiAggiunti.push(nomePiatto);
+          mealIdsAggiunti.push(mealId);
           return;
         }
 
         piattiGiaInOfferta.push(nomePiatto);
       });
+
+      try {
+        await Promise.all(mealIdsAggiunti.map(function(mealId) {
+          var offerta = offerteMap.get(mealId);
+          return aggiornaOffertaMeal(mealId, {
+            in_offerta: true,
+            sconto_percentuale: offerta.sconto_percentuale,
+            prezzo_scontato: offerta.prezzo_scontato
+          });
+        }));
+      } catch (err) {
+        alert(err.message || "Errore durante l'aggiornamento delle offerte nel database.");
+        return;
+      }
 
       localStorage.setItem("offerteBacheca", JSON.stringify(Array.from(offerteMap.values())));
 
@@ -669,7 +702,7 @@
 
 
 
-    function rimuoviPiattiDalleOfferte() {
+    async function rimuoviPiattiDalleOfferte() {
       if (!selectedMealIds.size) {
         alert("Seleziona almeno un piatto da rimuovere dalle offerte.");
         return;
@@ -688,6 +721,8 @@
       var piattiRimossi = [];
       var piattiNonInOfferta = [];
 
+      var mealIdsDaRimuovere = [];
+
       selectedMealIds.forEach(function(mealId) {
         var piatto = piattiMenuCache.find(function(meal) {
           return getIdAsString(meal._id) === mealId;
@@ -696,11 +731,25 @@
 
         if (offerteMap.has(mealId)) {
           offerteMap.delete(mealId);
+          mealIdsDaRimuovere.push(mealId);
           piattiRimossi.push(nomePiatto);
         } else {
           piattiNonInOfferta.push(nomePiatto);
         }
       });
+
+      try {
+        await Promise.all(mealIdsDaRimuovere.map(function(mealId) {
+          return aggiornaOffertaMeal(mealId, {
+            in_offerta: false,
+            sconto_percentuale: null,
+            prezzo_scontato: null
+          });
+        }));
+      } catch (err) {
+        alert(err.message || "Errore durante la rimozione delle offerte dal database.");
+        return;
+      }
 
       localStorage.setItem("offerteBacheca", JSON.stringify(Array.from(offerteMap.values())));
 
