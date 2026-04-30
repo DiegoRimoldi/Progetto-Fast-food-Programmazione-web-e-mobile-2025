@@ -514,6 +514,26 @@
       });
     }
 
+    function getNomePiatto(piatto) {
+      return String(piatto.strMeal || piatto.nome || piatto.name || "Piatto senza nome").trim();
+    }
+
+    function getMessaggioPiattiGiaInOfferta(piattiGiaInOfferta) {
+      if (piattiGiaInOfferta.length === 1) {
+        return "Il piatto selezionato è già presente nelle offerte: " + piattiGiaInOfferta[0] + ".";
+      }
+
+      return "I piatti selezionati sono già presenti nelle offerte: " + piattiGiaInOfferta.join(", ") + ".";
+    }
+
+    function getMessaggioPiattiAggiunti(piattiAggiunti) {
+      if (piattiAggiunti.length === 1) {
+        return "Hai aggiunto alle offerte il seguente piatto: " + piattiAggiunti[0] + ".";
+      }
+
+      return "Hai aggiunto alle offerte i seguenti piatti: " + piattiAggiunti.join(", ") + ".";
+    }
+
     function aggiungiPiattiAlleOfferte() {
       if (!selectedMealIds.size) {
         alert("Seleziona almeno un piatto da aggiungere alle offerte.");
@@ -539,7 +559,7 @@
 
       piattiSelezionati.forEach(function(piatto) {
         var mealId = getIdAsString(piatto._id);
-        var nomePiatto = (piatto.nome || "Piatto senza nome").trim();
+        var nomePiatto = getNomePiatto(piatto);
 
         if (!offerteMap.has(mealId)) {
           offerteMap.set(mealId, calcolaOffertaPiatto(piatto));
@@ -553,14 +573,14 @@
       localStorage.setItem("offerteBacheca", JSON.stringify(Array.from(offerteMap.values())));
 
       if (piattiAggiunti.length && !piattiGiaInOfferta.length) {
-        alert("Hai aggiunto alle offerte i seguenti piatti: " + piattiAggiunti.join(", ") + ".");
+        alert(getMessaggioPiattiAggiunti(piattiAggiunti));
       } else if (piattiAggiunti.length && piattiGiaInOfferta.length) {
         alert(
-          "Piatti aggiunti alle offerte: " + piattiAggiunti.join(", ") +
-          ".\nGià presenti nelle offerte: " + piattiGiaInOfferta.join(", ") + "."
+          getMessaggioPiattiAggiunti(piattiAggiunti) +
+          "\n" + getMessaggioPiattiGiaInOfferta(piattiGiaInOfferta)
         );
       } else {
-        alert("I piatti selezionati sono già presenti nelle offerte: " + piattiGiaInOfferta.join(", ") + ".");
+        alert(getMessaggioPiattiGiaInOfferta(piattiGiaInOfferta));
       }
       selectedMealIds.clear();
       updateDeleteButtonLabel();
