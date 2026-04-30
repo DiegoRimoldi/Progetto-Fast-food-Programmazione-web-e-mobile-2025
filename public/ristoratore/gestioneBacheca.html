@@ -593,6 +593,24 @@
         prezzo_scontato: prezzoScontato
       });
     }
+    async function aggiornaOfferteMeals(mealIds, inOfferta) {
+      var response = await fetchConControlloToken(apiBase + "/meals/offerte", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          meal_ids: mealIds,
+          in_offerta: inOfferta
+        })
+      });
+
+      if (!response || !response.ok) {
+        throw new Error("Impossibile aggiornare le offerte nel database.");
+      }
+
+      return response.json();
+    }
 
 
     async function aggiornaOffertaMeal(mealId, payload) {
@@ -670,14 +688,7 @@
       });
 
       try {
-        await Promise.all(mealIdsAggiunti.map(function(mealId) {
-          var offerta = offerteMap.get(mealId);
-          return aggiornaOffertaMeal(mealId, {
-            in_offerta: true,
-            sconto_percentuale: offerta.sconto_percentuale,
-            prezzo_scontato: offerta.prezzo_scontato
-          });
-        }));
+        await aggiornaOfferteMeals(mealIdsAggiunti, true);
       } catch (err) {
         alert(err.message || "Errore durante l'aggiornamento delle offerte nel database.");
         return;
@@ -739,13 +750,7 @@
       });
 
       try {
-        await Promise.all(mealIdsDaRimuovere.map(function(mealId) {
-          return aggiornaOffertaMeal(mealId, {
-            in_offerta: false,
-            sconto_percentuale: null,
-            prezzo_scontato: null
-          });
-        }));
+        await aggiornaOfferteMeals(mealIdsDaRimuovere, false);
       } catch (err) {
         alert(err.message || "Errore durante la rimozione delle offerte dal database.");
         return;
