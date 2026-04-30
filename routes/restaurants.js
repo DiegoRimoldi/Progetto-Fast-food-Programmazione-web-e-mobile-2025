@@ -66,7 +66,7 @@ router.get("/search", async (req, res) => {
 
 /**
  * GET /restaurants/by-meal
- * Ricerca ristoranti che hanno nel menu un piatto che matcha il nome richiesto
+ * Ricerca ristoranti che hanno nel menù un piatto che matcha il nome richiesto
  * Query params:
  *  - meal: stringa da cercare nel nome del piatto
  */
@@ -200,7 +200,7 @@ router.get("/statistics", authenticateUser, authorizeRistoratore, async (req, re
   }
 });
 
-//GET /restaurants/:restaurantID - Informazioni di uno specifico ristorante, menu incluso
+//GET /restaurants/:restaurantID - Informazioni di uno specifico ristorante, menù incluso
 router.get("/:restaurantId", async (req, res) => {
   const db = req.app.locals.db;
   const restaurantId = req.params.restaurantId;

@@ -142,7 +142,7 @@ Le password sono memorizzate mediante hash, utilizzando la libreria `bcrypt`
 
 Ad ogni utente ristoratore, può essere associato un solo ristorante.
 
-Ad ogni ristorante, è associato un solo menu, memorizzato al suo interno come un array di `id` a piatti contenuti nella collection `meals`.
+Ad ogni ristorante, è associato un solo menù, memorizzato al suo interno come un array di `id` a piatti contenuti nella collection `meals`.
 
 Per la ricerca dei piatti, prima scelgo il ristorante, poi dai suoi piatti scelgo cosa voglio mangiare.
 
