@@ -80,6 +80,65 @@ mealsRouter.get("/", async (req, res) => {
 });
 
 
+
+// PUT /meals/offerte - Aggiorna stato offerta per una lista di piatti del menu del ristoratore
+mealsRouter.put("/offerte", authenticateUser, authorizeRistoratore, async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const user = req.user;
+    const { meal_ids, in_offerta } = req.body;
+
+    if (!Array.isArray(meal_ids) || meal_ids.length === 0) {
+      return res.status(400).json({ error: "meal_ids deve essere un array non vuoto" });
+    }
+
+    if (typeof in_offerta !== "boolean") {
+      return res.status(400).json({ error: "in_offerta deve essere boolean" });
+    }
+
+    const invalidId = meal_ids.find((id) => !ObjectId.isValid(id));
+    if (invalidId) {
+      return res.status(400).json({ error: "Uno o più ID pasto non sono validi" });
+    }
+
+    const restaurant = await db.collection("restaurants").findOne({ ristoratore_id: new ObjectId(user._id) });
+    if (!restaurant) {
+      return res.status(404).json({ error: "Ristorante non trovato" });
+    }
+
+    const menuSet = new Set((restaurant.menu || []).map((id) => id.toString()));
+    const nonAutorizzati = meal_ids.filter((id) => !menuSet.has(id));
+    if (nonAutorizzati.length) {
+      return res.status(403).json({ error: "Puoi aggiornare solo piatti presenti nel tuo menu" });
+    }
+
+    const objectIds = meal_ids.map((id) => new ObjectId(id));
+    let update;
+
+    if (in_offerta) {
+      const meals = await db.collection("meals").find({ _id: { $in: objectIds } }).toArray();
+      await Promise.all(meals.map((meal) => {
+        const discount = Math.floor(Math.random() * 41) + 10;
+        const basePrice = Number(meal.prezzo || 0);
+        const prezzoScontato = Number((basePrice * (1 - discount / 100)).toFixed(2));
+        return db.collection("meals").updateOne(
+          { _id: meal._id },
+          { $set: { in_offerta: true, sconto_percentuale: discount, prezzo_scontato: prezzoScontato } }
+        );
+      }));
+    } else {
+      update = await db.collection("meals").updateMany(
+        { _id: { $in: objectIds } },
+        { $set: { in_offerta: false, sconto_percentuale: null, prezzo_scontato: null } }
+      );
+    }
+
+    return res.json({ ok: true, updated: in_offerta ? objectIds.length : update.modifiedCount });
+  } catch (err) {
+    return res.status(500).json({ error: "Errore nell'aggiornamento offerte" });
+  }
+});
+
 // GET /meals/:id - Dettagli singolo piatto, identificato per _id
 mealsRouter.get("/:id", async (req, res) => {
   try {
