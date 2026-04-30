@@ -10,28 +10,22 @@
   <link rel="icon" type="image/png" href="../assets/Favicon.png" />
   <script src="../assets/auth.js"></script>
   <style>
-    body { margin: 0; min-height: 100vh; display: flex; background: #fff; }
-    .sidebar {
-      width: clamp(180px, 22vw, 250px);
-      flex: 0 0 clamp(180px, 22vw, 250px);
-      background-color: #fff;
-      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-      padding: 1rem;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-    }
-    .sidebar-header { text-align: center; margin-bottom: 1rem; }
+    body { margin: 0; min-height: 100vh; display: flex; background: linear-gradient(180deg, #f3f8ff 0%, #eefbf8 100%); }
+    .sidebar { width: clamp(190px, 22vw, 250px); flex: 0 0 clamp(190px, 22vw, 250px); background: #fff; border-right: 1px solid rgba(0,0,0,.05); box-shadow: 2px 0 20px rgba(15,23,42,.08); padding: 1.25rem 1rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+    .sidebar-header { text-align: center; margin-bottom: 1.25rem; }
     .sidebar-header img { max-width: 150px; }
-    .sidebar .nav-link { color: #555; border-radius: .5rem; margin-bottom: .35rem; }
-    .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #0d6efd; color: #fff; }
-    .main-content { flex: 1; padding: 2rem; }
-    .offer-card { border: 2px solid #ffc107; box-shadow: 0 8px 20px rgba(255, 193, 7, 0.2); position: relative; }
-    .offer-badge { position: absolute; top: 10px; right: 10px; background: #dc3545; color: #fff; font-weight: 700; border-radius: 12px; padding: .2rem .65rem; }
-    .old-price { text-decoration: line-through; color: #6c757d; margin-bottom: 0; }
-    .discount-price { color: #dc3545; font-weight: 700; font-size: 1.1rem; margin-bottom: .75rem; }
-    .meal-img { height: 200px; object-fit: cover; }
+    .sidebar .nav-link { color: #4b5563; padding: .72rem .9rem; border-radius: .75rem; margin-bottom: .4rem; font-weight: 500; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { background: linear-gradient(120deg, #0d6efd 0%, #6ea8fe 100%); color: #fff; }
+    .main-content { flex: 1; padding: clamp(1.25rem, 2.5vw, 2.25rem); }
+    .panel-card { border: none; border-radius: 1rem; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); background: linear-gradient(120deg, #ffffff 0%, #f8fbff 100%); }
+    .menu-card { border-radius: 1rem; overflow: hidden; border: none; box-shadow: 0 12px 25px rgba(15,23,42,.09); transition: transform .2s ease, box-shadow .2s ease; }
+    .menu-card:hover { transform: translateY(-3px); box-shadow: 0 18px 34px rgba(15,23,42,.12); }
+    .menu-card.in-offerta { background: linear-gradient(160deg, #ffffff 0%, #f2fff8 100%); outline: 2px solid rgba(25, 135, 84, 0.35); }
+    .menu-card-cover { position: relative; }
+    .menu-card-cover img { height: 210px; object-fit: cover; }
+    .offer-badge { position: absolute; top: .9rem; left: .9rem; background: linear-gradient(120deg, #198754 0%, #20c997 100%); color: #fff; font-weight: 700; font-size: .78rem; border-radius: 999px; padding: .35rem .75rem; }
+    .offer-old-price { text-decoration: line-through; color: #6c757d; font-size: .9rem; margin-bottom: 0; }
+    .offer-new-price { color: #146c43; font-weight: 700; font-size: 1.05rem; margin-bottom: .75rem; }
   </style>
 </head>
 <body>
@@ -50,15 +44,20 @@
   </aside>
 
   <main class="main-content">
-    <h2 id="pageTitle" class="text-primary mb-3">Offerte</h2>
+    <div class="card panel-card mb-4"><div class="card-body p-4">
+      <h2 id="pageTitle" class="h3 text-primary mb-2">Offerte</h2>
+      <p id="preferenceInfo" class="text-muted mb-0"></p>
+    </div></div>
 
-    <div class="row g-2 mb-4">
-      <div class="col-md-4"><input type="text" id="filterName" class="form-control" placeholder="Cerca per nome" /></div>
-      <div class="col-md-3"><select id="filterCategory" class="form-select"><option value="">Tutte le categorie</option></select></div>
-      <div class="col-md-2"><input type="number" id="filterPriceMin" class="form-control" min="0" step="0.01" placeholder="Min €" /></div>
-      <div class="col-md-2"><input type="number" id="filterPriceMax" class="form-control" min="0" step="0.01" placeholder="Max €" /></div>
-      <div class="col-md-1"><button id="applyFilter" class="btn btn-warning w-100">Cerca</button></div>
-    </div>
+    <section class="card panel-card mb-4"><div class="card-body p-4">
+      <div class="row g-2">
+        <div class="col-md-4"><input type="text" id="filterName" class="form-control" placeholder="Cerca per nome" /></div>
+        <div class="col-md-3"><select id="filterCategory" class="form-select"><option value="">Tutte le categorie</option></select></div>
+        <div class="col-md-2"><input type="number" id="filterPriceMin" class="form-control" min="0" step="0.01" placeholder="Min €" /></div>
+        <div class="col-md-2"><input type="number" id="filterPriceMax" class="form-control" min="0" step="0.01" placeholder="Max €" /></div>
+        <div class="col-md-1"><button id="applyFilter" class="btn btn-primary w-100">Cerca</button></div>
+      </div>
+    </div></section>
 
     <div id="feedback"></div>
     <div id="offersByCategory"></div>
@@ -69,6 +68,7 @@
     var params = new URLSearchParams(window.location.search);
     var restaurantId = params.get("id");
     var allOffers = [];
+    var userPreferences = [];
 
     function getMealIdAsString(meal) {
       if (!meal) return "";
@@ -79,19 +79,12 @@
 
     async function fetchWithAuth(url, options) {
       var token = localStorage.getItem("token");
-      if (!token) {
-        window.handleAuthIssue("sessione non valida");
-        return null;
-      }
+      if (!token) { window.handleAuthIssue("sessione non valida"); return null; }
       var finalOptions = options || {};
       finalOptions.headers = finalOptions.headers || {};
       finalOptions.headers.Authorization = "Bearer " + token;
-
       var response = await fetch(url, finalOptions);
-      if (response.status === 401) {
-        window.handleAuthIssue("sessione non valida");
-        return null;
-      }
+      if (response.status === 401) { window.handleAuthIssue("sessione non valida"); return null; }
       return response;
     }
 
@@ -105,13 +98,18 @@
         strMeal: meal.strMeal || "Piatto senza nome",
         strCategory: meal.strCategory || "Altre categorie",
         strArea: meal.strArea || "-",
-        ingredients: meal.ingredients || "Non specificati",
+        ingredients: Array.isArray(meal.ingredients) ? meal.ingredients.join(", ") : (meal.ingredients || "Non specificati"),
         strMealThumb: meal.strMealThumb || "../assets/logo.png",
         prezzo: prezzo,
         sconto_percentuale: sconto,
         prezzo_scontato: prezzoScontato,
         ristorante_id: meal.ristorante_id || restaurantId || ""
       };
+    }
+
+    function isMealAllowedByPreference(meal) {
+      if (!userPreferences.length) return true;
+      return userPreferences.includes(meal.strCategory);
     }
 
     function updateCategories(meals) {
@@ -129,115 +127,34 @@
       var qtyInput = document.getElementById("qty-" + meal._id);
       var quantita = Math.max(1, parseInt(qtyInput.value, 10) || 1);
       qtyInput.value = quantita;
-
-      var payload = {
-        meal_id: meal._id,
-        nome: meal.strMeal,
-        quantita: quantita,
-        prezzo_unitario: meal.prezzo_scontato,
-        ristorante_id: meal.ristorante_id || restaurantId
-      };
-
+      var payload = { meal_id: meal._id, nome: meal.strMeal, quantita: quantita, prezzo_unitario: meal.prezzo_scontato, ristorante_id: meal.ristorante_id || restaurantId };
       try {
-        var response = await fetchWithAuth(apiBase + "/carts/add", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
+        var response = await fetchWithAuth(apiBase + "/carts/add", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         if (!response || !response.ok) throw new Error("Errore durante aggiunta al carrello");
-        alert('"' + meal.strMeal + '" aggiunto al carrello!');
-      } catch (err) {
-        console.error(err);
-        alert("Impossibile aggiungere il prodotto al carrello.");
-      }
+        alert('"' + meal.strMeal + '" aggiunto al carrello al prezzo scontato!');
+      } catch (err) { console.error(err); alert("Impossibile aggiungere il prodotto al carrello."); }
     }
 
     function renderGroupedOffers(meals) {
       var container = document.getElementById("offersByCategory");
       container.innerHTML = "";
-      if (meals.length === 0) {
-        container.innerHTML = '<p class="text-muted">Nessuna offerta trovata.</p>';
-        return;
-      }
-
-      var grouped = meals.reduce(function(acc, meal) {
-        if (!acc[meal.strCategory]) acc[meal.strCategory] = [];
-        acc[meal.strCategory].push(meal);
-        return acc;
-      }, {});
-
+      if (meals.length === 0) { container.innerHTML = '<p class="text-muted">Nessuna offerta trovata con i filtri selezionati.</p>'; return; }
+      var grouped = meals.reduce(function(acc, meal) { (acc[meal.strCategory] ||= []).push(meal); return acc; }, {});
       Object.keys(grouped).sort().forEach(function(category) {
-        var section = document.createElement("section");
-        section.className = "mb-4";
-
-        var heading = document.createElement("h4");
-        heading.className = "text-primary mb-3";
-        heading.textContent = category;
-        section.appendChild(heading);
-
-        var row = document.createElement("div");
-        row.className = "row g-4";
-
+        var section = document.createElement("section"); section.className = "mb-4";
+        section.innerHTML = '<h4 class="text-primary mb-3">' + category + '</h4>';
+        var row = document.createElement("div"); row.className = "row g-4";
         grouped[category].forEach(function(meal) {
-          var col = document.createElement("div");
-          col.className = "col-md-4";
-
-          var card = document.createElement("div");
-          card.className = "card offer-card h-100";
-
-          var badge = document.createElement("span");
-          badge.className = "offer-badge";
-          badge.textContent = "-" + meal.sconto_percentuale + "%";
-          card.appendChild(badge);
-
-          var img = document.createElement("img");
-          img.className = "card-img-top meal-img";
-          img.src = meal.strMealThumb;
-          img.alt = meal.strMeal;
-          card.appendChild(img);
-
-          var body = document.createElement("div");
-          body.className = "card-body d-flex flex-column";
-          body.innerHTML = '<h5 class="card-title text-primary">' + meal.strMeal + '</h5>' +
-                           '<p class="mb-1"><b>Area:</b> ' + meal.strArea + '</p>' +
-                           '<p class="mb-2"><b>Ingredienti:</b> ' + meal.ingredients + '</p>';
-
-          var oldPrice = document.createElement("p");
-          oldPrice.className = "old-price";
-          oldPrice.textContent = "€ " + meal.prezzo.toFixed(2);
-
-          var newPrice = document.createElement("p");
-          newPrice.className = "discount-price";
-          newPrice.textContent = "€ " + meal.prezzo_scontato.toFixed(2);
-
-          var inputGroup = document.createElement("div");
-          inputGroup.className = "input-group mt-auto";
-
-          var qty = document.createElement("input");
-          qty.type = "number";
-          qty.className = "form-control";
-          qty.id = "qty-" + meal._id;
-          qty.min = "1";
-          qty.value = "1";
-
-          var button = document.createElement("button");
-          button.className = "btn btn-outline-secondary";
-          button.textContent = "Aggiungi";
-          button.addEventListener("click", function() { addToCart(meal); });
-
-          inputGroup.appendChild(qty);
-          inputGroup.appendChild(button);
-
-          body.appendChild(oldPrice);
-          body.appendChild(newPrice);
-          body.appendChild(inputGroup);
-          card.appendChild(body);
-          col.appendChild(card);
+          var col = document.createElement("div"); col.className = "col-12 col-md-6 col-xl-4";
+          col.innerHTML = '<article class="card menu-card in-offerta h-100">' +
+            '<div class="menu-card-cover"><span class="offer-badge">-' + meal.sconto_percentuale + '% OFF</span><img src="' + meal.strMealThumb + '" class="card-img-top" alt="' + meal.strMeal + '"></div>' +
+            '<div class="card-body d-flex flex-column"><h5 class="card-title text-primary">' + meal.strMeal + '</h5><p class="mb-1"><b>Area:</b> ' + meal.strArea + '</p><p class="mb-2"><b>Ingredienti:</b> ' + meal.ingredients + '</p>' +
+            '<p class="offer-old-price">€ ' + meal.prezzo.toFixed(2) + '</p><p class="offer-new-price">€ ' + meal.prezzo_scontato.toFixed(2) + '</p>' +
+            '<div class="input-group mt-auto"><input type="number" class="form-control" id="qty-' + meal._id + '" min="1" value="1"><button class="btn btn-outline-secondary" type="button" data-id="' + meal._id + '">Aggiungi</button></div></div></article>';
+          col.querySelector("button").addEventListener("click", function() { addToCart(meal); });
           row.appendChild(col);
         });
-
-        section.appendChild(row);
-        container.appendChild(section);
+        section.appendChild(row); container.appendChild(section);
       });
     }
 
@@ -246,7 +163,6 @@
       var category = document.getElementById("filterCategory").value;
       var min = parseFloat(document.getElementById("filterPriceMin").value);
       var max = parseFloat(document.getElementById("filterPriceMax").value);
-
       var filtered = allOffers.filter(function(meal) {
         var byName = !name || meal.strMeal.toLowerCase().includes(name);
         var byCategory = !category || meal.strCategory === category;
@@ -255,45 +171,50 @@
         var byMax = Number.isNaN(max) || price <= max;
         return byName && byCategory && byMin && byMax;
       });
-
       renderGroupedOffers(filtered);
+    }
+
+    async function loadUserPreferences() {
+      var res = await fetchWithAuth(apiBase + "/users/me");
+      if (!res || !res.ok) return;
+      var user = await res.json();
+      userPreferences = Array.isArray(user.preferenze) ? user.preferenze.filter(Boolean) : [];
+      var info = document.getElementById("preferenceInfo");
+      info.textContent = userPreferences.length
+        ? "Ti mostriamo solo le offerte delle categorie che hai impostato nelle tue preferenze alimentari."
+        : "Non hai ancora preferenze alimentari: visualizzi tutte le offerte disponibili.";
     }
 
     async function loadOffers() {
       var feedback = document.getElementById("feedback");
       feedback.innerHTML = '<div class="alert alert-info">Caricamento offerte...</div>';
       try {
-        var localOffers = JSON.parse(localStorage.getItem("offerteBacheca") || "[]")
-          .filter(function(meal) { return meal && meal.in_offerta; });
-
+        await loadUserPreferences();
+        var localOffers = JSON.parse(localStorage.getItem("offerteBacheca") || "[]").filter(function(meal) { return meal && meal.in_offerta; });
         var backendOffers = [];
         if (restaurantId) {
           var restaurantResponse = await fetchWithAuth(apiBase + "/restaurants/" + restaurantId);
           if (restaurantResponse && restaurantResponse.ok) {
             var restaurant = await restaurantResponse.json();
-            if (restaurant && restaurant.name) {
-              document.getElementById("pageTitle").textContent = "Offerte di " + restaurant.name;
-            }
+            if (restaurant && restaurant.name) document.getElementById("pageTitle").textContent = "Offerte di " + restaurant.name;
           }
-
           var mealsResponse = await fetchWithAuth(apiBase + "/meals?ristorante_id=" + restaurantId);
           if (mealsResponse && mealsResponse.ok) {
             var meals = await mealsResponse.json();
             backendOffers = (Array.isArray(meals) ? meals : []).filter(function(meal) { return meal && meal.in_offerta; });
           }
         }
-
         var unique = new Map();
         backendOffers.concat(localOffers).forEach(function(meal, idx) {
-          var id = getMealIdAsString(meal) || (meal.strMeal + "-" + idx);
-          unique.set(id, normalizeMeal(meal));
+          var normalized = normalizeMeal(meal);
+          if (!isMealAllowedByPreference(normalized)) return;
+          var id = normalized._id || (normalized.strMeal + "-" + idx);
+          unique.set(id, normalized);
         });
-
         allOffers = Array.from(unique.values());
         updateCategories(allOffers);
         renderGroupedOffers(allOffers);
-
-        feedback.innerHTML = allOffers.length ? "" : '<div class="alert alert-warning">Nessuna offerta disponibile.</div>';
+        feedback.innerHTML = allOffers.length ? "" : '<div class="alert alert-warning">Nessuna offerta disponibile per le tue preferenze alimentari.</div>';
       } catch (error) {
         console.error(error);
         feedback.innerHTML = '<div class="alert alert-danger">Errore durante il caricamento delle offerte.</div>';
