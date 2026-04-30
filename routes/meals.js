@@ -24,7 +24,8 @@ mealsRouter.get("/", async (req, res) => {
       prezzoMax,
       ristorante_id,
       ingredients,
-      allergens
+      allergens,
+      in_offerta
     } = req.query;
 
     const filter = {};
@@ -44,6 +45,12 @@ mealsRouter.get("/", async (req, res) => {
       filter.prezzo = {};
       if (prezzoMin) filter.prezzo.$gte = parseFloat(prezzoMin);
       if (prezzoMax) filter.prezzo.$lte = parseFloat(prezzoMax);
+    }
+
+    if (in_offerta !== undefined) {
+      if (String(in_offerta) === "true") filter.in_offerta = true;
+      else if (String(in_offerta) === "false") filter.in_offerta = false;
+      else return res.status(400).json({ error: "in_offerta deve essere true o false" });
     }
     if (ristorante_id) {
       if (!ObjectId.isValid(ristorante_id)) {
