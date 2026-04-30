@@ -463,14 +463,14 @@
       renderizzaMenu();
     }
 
-    function ripristinaPiattiSelezionati() {
+    async function ripristinaPiattiSelezionati() {
       if (!selectedMealIds.size) {
         return;
       }
 
       selectedMealIds.clear();
       updateDeleteButtonLabel();
-      renderizzaMenu();
+      await caricaMenu();
     }
 
     function resetDettagliPiattoAttivo() {
@@ -525,10 +525,11 @@
 
       var restaurantId = getIdAsString(mioRistorante._id);
       var personalizzatiCount = 0;
-      var offerteSalvate = JSON.parse(localStorage.getItem("offerteBacheca") || "[]");
-      offerteBachecaMap = new Map(offerteSalvate.map(function(meal) {
-        return [getIdAsString(meal._id), meal];
-      }));
+      offerteBachecaMap = new Map(
+        piattiMenuCache
+          .filter(function(meal) { return meal.in_offerta; })
+          .map(function(meal) { return [getIdAsString(meal._id), meal]; })
+      );
 
       piattiMenuCache.forEach(function (meal) {
         if (getIdAsString(meal.ristorante_id) === restaurantId) {
@@ -582,17 +583,6 @@
       mostraDettagliPiatto(activeMealId);
     }
 
-    function calcolaOffertaPiatto(piatto) {
-      var sconto = Math.floor(Math.random() * 41) + 10;
-      var prezzoBase = Number(piatto.prezzo || 0);
-      var prezzoScontato = Number((prezzoBase * (1 - sconto / 100)).toFixed(2));
-
-      return Object.assign({}, piatto, {
-        in_offerta: true,
-        sconto_percentuale: sconto,
-        prezzo_scontato: prezzoScontato
-      });
-    }
     async function aggiornaOfferteMeals(mealIds, inOfferta) {
       var response = await fetchConControlloToken(apiBase + "/meals/offerte", {
         method: "PUT",
@@ -664,11 +654,6 @@
         return;
       }
 
-      var offerteEsistenti = JSON.parse(localStorage.getItem("offerteBacheca") || "[]");
-      var offerteMap = new Map(offerteEsistenti.map(function(meal) {
-        return [getIdAsString(meal._id), meal];
-      }));
-
       var piattiAggiunti = [];
       var piattiGiaInOfferta = [];
       var mealIdsAggiunti = [];
@@ -677,8 +662,7 @@
         var mealId = getIdAsString(piatto._id);
         var nomePiatto = getNomePiatto(piatto);
 
-        if (!offerteMap.has(mealId)) {
-          offerteMap.set(mealId, calcolaOffertaPiatto(piatto));
+        if (!piatto.in_offerta) {
           piattiAggiunti.push(nomePiatto);
           mealIdsAggiunti.push(mealId);
           return;
@@ -687,14 +671,14 @@
         piattiGiaInOfferta.push(nomePiatto);
       });
 
-      try {
-        await aggiornaOfferteMeals(mealIdsAggiunti, true);
-      } catch (err) {
-        alert(err.message || "Errore durante l'aggiornamento delle offerte nel database.");
-        return;
+      if (mealIdsAggiunti.length) {
+        try {
+          await aggiornaOfferteMeals(mealIdsAggiunti, true);
+        } catch (err) {
+          alert(err.message || "Errore durante l'aggiornamento delle offerte nel database.");
+          return;
+        }
       }
-
-      localStorage.setItem("offerteBacheca", JSON.stringify(Array.from(offerteMap.values())));
 
       if (piattiAggiunti.length && !piattiGiaInOfferta.length) {
         alert(getMessaggioPiattiAggiunti(piattiAggiunti));
@@ -708,7 +692,7 @@
       }
       selectedMealIds.clear();
       updateDeleteButtonLabel();
-      renderizzaMenu();
+      await caricaMenu();
     }
 
 
@@ -718,16 +702,6 @@
         alert("Seleziona almeno un piatto da rimuovere dalle offerte.");
         return;
       }
-
-      var offerteEsistenti = JSON.parse(localStorage.getItem("offerteBacheca") || "[]");
-      if (!offerteEsistenti.length) {
-        alert("Non ci sono offerte attive da cui rimuovere i piatti selezionati.");
-        return;
-      }
-
-      var offerteMap = new Map(offerteEsistenti.map(function(meal) {
-        return [getIdAsString(meal._id), meal];
-      }));
 
       var piattiRimossi = [];
       var piattiNonInOfferta = [];
@@ -740,8 +714,7 @@
         });
         var nomePiatto = piatto ? getNomePiatto(piatto) : "Piatto selezionato";
 
-        if (offerteMap.has(mealId)) {
-          offerteMap.delete(mealId);
+        if (piatto && piatto.in_offerta) {
           mealIdsDaRimuovere.push(mealId);
           piattiRimossi.push(nomePiatto);
         } else {
@@ -749,14 +722,14 @@
         }
       });
 
-      try {
-        await aggiornaOfferteMeals(mealIdsDaRimuovere, false);
-      } catch (err) {
-        alert(err.message || "Errore durante la rimozione delle offerte dal database.");
-        return;
+      if (mealIdsDaRimuovere.length) {
+        try {
+          await aggiornaOfferteMeals(mealIdsDaRimuovere, false);
+        } catch (err) {
+          alert(err.message || "Errore durante la rimozione delle offerte dal database.");
+          return;
+        }
       }
-
-      localStorage.setItem("offerteBacheca", JSON.stringify(Array.from(offerteMap.values())));
 
       if (piattiRimossi.length && !piattiNonInOfferta.length) {
         alert(piattiRimossi.length === 1
@@ -780,7 +753,7 @@
 
       selectedMealIds.clear();
       updateDeleteButtonLabel();
-      renderizzaMenu();
+      await caricaMenu();
     }
 
     function eliminaPiattiSelezionati() {
