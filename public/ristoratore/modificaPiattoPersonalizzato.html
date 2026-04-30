@@ -295,7 +295,9 @@
           measures: (piatto.measures || []).map(function(m) { return m.toString().trim(); }),
           strMealThumb: piatto.strMealThumb || "",
           strInstructions: piatto.strInstructions || "",
-          in_offerta: Boolean(piatto.in_offerta)
+          in_offerta: Boolean(piatto.in_offerta),
+          sconto_percentuale: Number(piatto.sconto_percentuale || 0),
+          prezzo_scontato: piatto.prezzo_scontato != null ? Number(piatto.prezzo_scontato) : null
         };
         popolaForm(piatto);
         renderCards();
@@ -352,17 +354,24 @@
         return;
       }
 
+      var prezzoBase = parseFloat(document.getElementById("prezzo").value);
+      var inOfferta = document.getElementById("in_offerta").checked;
+      var scontoPercentuale = inOfferta ? Math.floor(Math.random() * 41) + 10 : 0;
+      var prezzoScontato = inOfferta ? Number((prezzoBase * (1 - scontoPercentuale / 100)).toFixed(2)) : null;
+
       var payload = {
         strMeal: document.getElementById("strMeal").value.trim(),
         strCategory: document.getElementById("strCategory").value.trim(),
         strArea: document.getElementById("strArea").value.trim(),
-        prezzo: parseFloat(document.getElementById("prezzo").value),
+        prezzo: prezzoBase,
         tempo_preparazione: parseInt(document.getElementById("tempo_preparazione").value, 10),
         ingredients: document.getElementById("ingredients").value.split(",").map(function(i) { return i.trim(); }).filter(Boolean),
         measures: document.getElementById("measures").value.split(",").map(function(m) { return m.trim(); }).filter(Boolean),
         strMealThumb: document.getElementById("strMealThumb").value.trim(),
         strInstructions: document.getElementById("strInstructions").value.trim(),
-        in_offerta: document.getElementById("in_offerta").checked
+        in_offerta: inOfferta,
+        sconto_percentuale: scontoPercentuale,
+        prezzo_scontato: prezzoScontato
       };
 
       if (payload.ingredients.length !== payload.measures.length) {
@@ -380,7 +389,9 @@
         JSON.stringify(payload.measures) === JSON.stringify(piattoOriginale.measures || []) &&
         (payload.strMealThumb || "") === (piattoOriginale.strMealThumb || "") &&
         (payload.strInstructions || "") === (piattoOriginale.strInstructions || "") &&
-        Boolean(payload.in_offerta) === Boolean(piattoOriginale.in_offerta);
+        Boolean(payload.in_offerta) === Boolean(piattoOriginale.in_offerta) &&
+        Number(payload.sconto_percentuale || 0) === Number(piattoOriginale.sconto_percentuale || 0) &&
+        (payload.prezzo_scontato == null ? null : Number(payload.prezzo_scontato)) === (piattoOriginale.prezzo_scontato == null ? null : Number(piattoOriginale.prezzo_scontato));
 
       if (nessunaModifica) {
         alert("Nessuna modifica salvata: i dati inseriti sono identici a quelli già presenti nel profilo.");

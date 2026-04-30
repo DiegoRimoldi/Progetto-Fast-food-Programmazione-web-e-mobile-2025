@@ -207,17 +207,24 @@
     return;
   }
 
+  var prezzoBase = parseFloat(document.getElementById("prezzo").value);
+  var inOfferta = document.getElementById("in_offerta").checked;
+  var scontoPercentuale = inOfferta ? Math.floor(Math.random() * 41) + 10 : 0;
+  var prezzoScontato = inOfferta ? Number((prezzoBase * (1 - scontoPercentuale / 100)).toFixed(2)) : null;
+
   var payload = {
         strMeal: document.getElementById("strMeal").value.trim(),
         strCategory: document.getElementById("strCategory").value.trim(),
         strArea: document.getElementById("strArea").value.trim(),
-        prezzo: parseFloat(document.getElementById("prezzo").value),
+        prezzo: prezzoBase,
         tempo_preparazione: parseInt(document.getElementById("tempo_preparazione").value),
         ingredients: document.getElementById("ingredients").value.split(",").map(i => i.trim()).filter(Boolean),
         measures: document.getElementById("measures").value.split(",").map(m => m.trim()).filter(Boolean),
         strMealThumb: document.getElementById("strMealThumb").value.trim(),
         strInstructions: document.getElementById("strInstructions").value.trim(),
-        in_offerta: document.getElementById("in_offerta").checked
+        in_offerta: inOfferta,
+        sconto_percentuale: scontoPercentuale,
+        prezzo_scontato: prezzoScontato
     };
 
 

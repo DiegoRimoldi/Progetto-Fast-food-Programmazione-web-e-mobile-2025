@@ -566,6 +566,10 @@
 
       var bachecaEsistente = JSON.parse(localStorage.getItem("gestioneBachecaMealIds") || "[]");
       var bachecaSet = new Set(bachecaEsistente);
+      var offerteEsistenti = JSON.parse(localStorage.getItem("offerteBacheca") || "[]");
+      var offerteMap = new Map(offerteEsistenti.map(function(meal) {
+        return [getIdAsString(meal._id), meal];
+      }));
       var nomiAggiunti = [];
 
       piattiSelezionati.forEach(function(piatto) {
@@ -574,9 +578,24 @@
           bachecaSet.add(mealId);
           nomiAggiunti.push(piatto.strMeal || "Piatto senza nome");
         }
+
+        if (piatto.in_offerta) {
+          var scontoPercentuale = Number(piatto.sconto_percentuale || 0);
+          var prezzoBase = Number(piatto.prezzo || 0);
+          var prezzoScontato = piatto.prezzo_scontato != null
+            ? Number(piatto.prezzo_scontato)
+            : Number((prezzoBase * (1 - scontoPercentuale / 100)).toFixed(2));
+
+          offerteMap.set(mealId, Object.assign({}, piatto, {
+            in_offerta: true,
+            sconto_percentuale: scontoPercentuale,
+            prezzo_scontato: prezzoScontato
+          }));
+        }
       });
 
       localStorage.setItem("gestioneBachecaMealIds", JSON.stringify(Array.from(bachecaSet)));
+      localStorage.setItem("offerteBacheca", JSON.stringify(Array.from(offerteMap.values())));
 
       if (!nomiAggiunti.length) {
         alert("I piatti selezionati sono già presenti in bacheca.");
