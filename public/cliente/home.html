@@ -88,30 +88,6 @@
       font-size: 1rem;
       flex: 1;
     }
-    .bacheca-offerte {
-      background: #fff;
-      border: 1px solid #dde7f8;
-      border-radius: 1rem;
-      box-shadow: 0 8px 20px rgba(13, 110, 253, 0.08);
-      padding: 1.1rem 1.2rem;
-      margin-bottom: 1.25rem;
-    }
-    .bacheca-offerte h3 {
-      color: #0d6efd;
-      font-size: 1.1rem;
-      margin: 0 0 0.6rem 0;
-      font-weight: 700;
-    }
-    .offerta-item {
-      border: 1px solid #e8eef9;
-      border-radius: 0.8rem;
-      padding: 0.8rem;
-      height: 100%;
-      background: #fcfdff;
-    }
-    .offerta-item .badge {
-      font-size: 0.72rem;
-    }
 
     .ristorante-card {
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -204,12 +180,6 @@
 
   <div class="main-content">
     <h2>Ristoranti Disponibili</h2>
-    <section class="bacheca-offerte">
-      <h3>Bacheca offerte per te</h3>
-      <div id="offerteContainer" class="row g-3">
-        <p class="text-muted mb-0">Caricamento offerte personalizzate...</p>
-      </div>
-    </section>
     <div class="search-bar">
       <input type="text" id="searchByName" class="form-control" placeholder="Cerca per nome ristorante..." />
       <input type="text" id="searchByAddress" class="form-control" placeholder="Cerca per indirizzo..." />
@@ -221,8 +191,6 @@
   <script>
     var apiBase = "http://localhost:3000";
     var defaultRestaurantImage = "../assets/restaurant-placeholder.svg";
-    var userPreferences = [];
-    var restaurantsById = {};
 
     async function fetchConControlloToken(url, options = {}) {
       var token = localStorage.getItem("token");
@@ -254,80 +222,6 @@
         mostraRistoranti(data.restaurants);
       } catch (err) {
         console.error("Errore nella ricerca:", err);
-      }
-    }
-    function mostraOffertePersonalizzate(piatti) {
-      var container = document.getElementById("offerteContainer");
-      container.innerHTML = "";
-
-      if (!userPreferences.length) {
-        container.innerHTML = '<p class="text-muted mb-0">Aggiungi le tue preferenze nel profilo per vedere offerte personalizzate.</p>';
-        return;
-      }
-
-      if (!piatti.length) {
-        container.innerHTML = '<p class="text-muted mb-0">Al momento non ci sono offerte nelle categorie che hai selezionato.</p>';
-        return;
-      }
-
-      piatti.forEach(function(piatto) {
-        var col = document.createElement("div");
-        var restaurant = restaurantsById[piatto.ristorante_id] || {};
-        col.className = "col-12 col-md-6 col-xl-4";
-        col.innerHTML = '<div class="offerta-item">' +
-          '<div class="d-flex justify-content-between align-items-start gap-2 mb-2">' +
-            '<strong>' + (piatto.strMeal || "Piatto") + '</strong>' +
-            '<span class="badge text-bg-primary">' + (piatto.strCategory || "Offerta") + '</span>' +
-          '</div>' +
-          '<p class="mb-1 small text-secondary">' + (restaurant.name || "Ristorante") + '</p>' +
-          '<p class="mb-2"><strong>€ ' + Number(piatto.prezzo || 0).toFixed(2) + '</strong></p>' +
-          '<a class="btn btn-sm btn-outline-primary" href="menu.html?id=' + (piatto.ristorante_id || "") + '">Vai al menù</a>' +
-        '</div>';
-        container.appendChild(col);
-      });
-    }
-
-    async function caricaBachecaOfferte() {
-      try {
-        var userResponse = await fetchConControlloToken(apiBase + "/users/me");
-        if (!userResponse || !userResponse.ok) throw new Error("Impossibile recuperare il profilo utente.");
-        var user = await userResponse.json();
-        userPreferences = Array.isArray(user.preferenze) ? user.preferenze.filter(Boolean) : [];
-
-        var restaurantsResponse = await fetchConControlloToken(apiBase + "/restaurants");
-        if (restaurantsResponse && restaurantsResponse.ok) {
-          var restaurantsData = await restaurantsResponse.json();
-          var listaRistoranti = Array.isArray(restaurantsData) ? restaurantsData : [];
-          listaRistoranti.forEach(function(r) {
-            if (r && r._id) {
-              restaurantsById[r._id] = r;
-            }
-          });
-        }
-
-        if (!userPreferences.length) {
-          mostraOffertePersonalizzate([]);
-          return;
-        }
-
-        var offersResponse = await fetchConControlloToken(apiBase + "/meals");
-        if (!offersResponse || !offersResponse.ok) throw new Error("Impossibile recuperare le offerte.");
-        var offers = await offersResponse.json();
-
-        var offerteUniche = [];
-        var visti = new Set();
-        (Array.isArray(offers) ? offers : []).forEach(function(p) {
-          if (!p || !p._id || visti.has(p._id)) return;
-          if (!p.in_offerta || !p.strCategory || userPreferences.indexOf(p.strCategory) === -1) return;
-          visti.add(p._id);
-          offerteUniche.push(p);
-        });
-
-        mostraOffertePersonalizzate(offerteUniche.slice(0, 6));
-      } catch (err) {
-        console.error("Errore nel caricamento bacheca offerte:", err);
-        var container = document.getElementById("offerteContainer");
-        container.innerHTML = '<p class="text-danger mb-0">Non è stato possibile caricare le offerte personalizzate.</p>';
       }
     }
 
@@ -363,7 +257,6 @@
       ricercaRistoranti(document.getElementById("searchByName").value.trim(), this.value.trim());
     });
 
-    caricaBachecaOfferte();
     ricercaRistoranti("", "");
   </script>
 </body>
