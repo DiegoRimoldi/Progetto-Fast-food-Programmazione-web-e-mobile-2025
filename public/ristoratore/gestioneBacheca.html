@@ -486,11 +486,8 @@
         return piattiMenuCache.some(function (meal) { return getIdAsString(meal._id) === mealId; });
       }));
 
-      if (!activeMealId && piattiMenuCache.length > 0) {
-        activeMealId = getIdAsString(piattiMenuCache[0]._id);
-      }
       if (activeMealId && !piattiMenuCache.some(function(meal) { return getIdAsString(meal._id) === activeMealId; })) {
-        activeMealId = piattiMenuCache.length ? getIdAsString(piattiMenuCache[0]._id) : null;
+        activeMealId = null;
       }
 
       if (piattiMenuCache.length === 0) {
