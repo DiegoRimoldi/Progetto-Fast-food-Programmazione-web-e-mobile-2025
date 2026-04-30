@@ -437,10 +437,14 @@
         selectedMealIds.clear();
         displayGenericMealsPage(currentPage);
 
-        var messaggioConferma = "Aggiunti " + piattiDaAggiungere.length + " piatti al menù con successo!";
+        var messaggioConferma = piattiDaAggiungere.length === 1
+          ? "Aggiunto 1 piatto al menù con successo!"
+          : "Aggiunti " + piattiDaAggiungere.length + " piatti al menù con successo!";
+
         if (piattiGiaPresenti.length > 0) {
           messaggioConferma += " " + piattiGiaPresenti.length + " erano già presenti.";
         }
+
         alert(messaggioConferma);
       } catch (err) {
         console.error("Errore:", err);
