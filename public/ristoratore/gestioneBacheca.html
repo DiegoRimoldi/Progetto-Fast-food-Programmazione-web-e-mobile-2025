@@ -144,6 +144,45 @@
       padding: 0.32rem 0.62rem;
     }
 
+    .offer-badge {
+      position: absolute;
+      top: 0.9rem;
+      left: 0.9rem;
+      background: linear-gradient(120deg, #198754 0%, #20c997 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.78rem;
+      border-radius: 999px;
+      padding: 0.35rem 0.75rem;
+      box-shadow: 0 8px 20px rgba(25, 135, 84, 0.35);
+      z-index: 2;
+      letter-spacing: 0.02em;
+    }
+
+    .menu-card.in-offerta {
+      background: linear-gradient(160deg, #ffffff 0%, #f2fff8 100%);
+      outline-color: rgba(25, 135, 84, 0.4);
+    }
+
+    .offer-price-row {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+    }
+
+    .offer-old-price {
+      text-decoration: line-through;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    .offer-new-price {
+      color: #146c43;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
     .empty-state {
       text-align: center;
       padding: 2rem;
@@ -225,6 +264,7 @@
     var piattiMenuCache = [];
     var selectedMealIds = new Set();
     var activeMealId = null;
+    var offerteBachecaMap = new Map();
 
     function getIdAsString(idValue) {
       if (!idValue) return "";
@@ -288,10 +328,17 @@
       var isSelected = selectedMealIds.has(mealId);
       var activeClass = activeMealId === mealId ? "is-active" : "";
       var selectedClass = isSelected ? "is-selected" : "";
+      var offerta = offerteBachecaMap.get(mealId);
+      var hasOfferta = Boolean(offerta && offerta.in_offerta);
+      var prezzoBase = Number(piatto.prezzo || 0);
+      var prezzoEffettivo = hasOfferta ? Number(offerta.prezzo_scontato || 0) : prezzoBase;
+      var scontoApplicato = hasOfferta ? Number(offerta.sconto_percentuale || 0) : 0;
+      var offerClass = hasOfferta ? "in-offerta" : "";
 
       cardWrapper.innerHTML =
-        '<article class="card menu-card h-100 ' + activeClass + " " + selectedClass + '" data-meal-id="' + mealId + '">' +
+        '<article class="card menu-card h-100 ' + activeClass + " " + selectedClass + " " + offerClass + '" data-meal-id="' + mealId + '">' +
           '<div class="menu-card-cover">' +
+            (hasOfferta ? '<span class="offer-badge">-' + scontoApplicato + '% OFF</span>' : "") +
             '<img src="' + (piatto.strMealThumb || "../assets/logo.png") + '" class="card-img-top" alt="' + (piatto.strMeal || "Piatto") + '">' +
           '</div>' +
           '<div class="card-body d-flex flex-column gap-2">' +
@@ -304,7 +351,9 @@
               '<span class="type-badge ' + badgeClass + '">' + badgeLabel + '</span>' +
             '</div>' +
             '<p class="card-text text-muted mb-0"><strong>Categoria:</strong> ' + (piatto.strCategory || "-") + '</p>' +
-            '<p class="card-text text-muted mb-0"><strong>Prezzo:</strong> € ' + prezzo + '</p>' +
+            (hasOfferta
+              ? '<p class="card-text mb-0"><strong>Prezzo:</strong> <span class="offer-price-row"><span class="offer-old-price">€ ' + prezzo + '</span><span class="offer-new-price">€ ' + prezzoEffettivo.toFixed(2) + '</span></span></p>'
+              : '<p class="card-text text-muted mb-0"><strong>Prezzo:</strong> € ' + prezzo + '</p>') +
             '<p class="card-text small text-secondary mb-0"><strong>Ingredienti:</strong> ' + (ingredienti || "Non specificati") + '</p>' +
           '</div>' +
         '</article>';
@@ -358,6 +407,13 @@
       var misureDettaglio = Array.isArray(piatto.measures) && piatto.measures.length
         ? piatto.measures.join(", ")
         : "Non specificate";
+      var offerta = offerteBachecaMap.get(mealId);
+      var hasOfferta = Boolean(offerta && offerta.in_offerta);
+      var prezzoNormale = Number(piatto.prezzo || 0).toFixed(2);
+      var prezzoScontato = hasOfferta ? Number(offerta.prezzo_scontato || 0).toFixed(2) : prezzoNormale;
+      var prezzoDettaglio = hasOfferta
+        ? '€ ' + prezzoScontato + ' <span class="text-muted text-decoration-line-through ms-2">€ ' + prezzoNormale + '</span> <span class="badge rounded-pill text-bg-success ms-2">-' + Number(offerta.sconto_percentuale || 0) + '%</span>'
+        : '€ ' + prezzoNormale;
 
       detailsContent.innerHTML =
         '<div class="d-flex justify-content-between align-items-start gap-3 mb-3">' +
@@ -369,7 +425,7 @@
         '</div>' +
         '<p class="mb-2"><strong>Categoria:</strong> ' + (piatto.strCategory || "-") + '</p>' +
         '<p class="mb-2"><strong>Area:</strong> ' + (piatto.strArea || "-") + '</p>' +
-        '<p class="mb-2"><strong>Prezzo:</strong> € ' + Number(piatto.prezzo || 0).toFixed(2) + '</p>' +
+        '<p class="mb-2"><strong>Prezzo:</strong> ' + prezzoDettaglio + '</p>' +
         '<p class="mb-2"><strong>Tempo preparazione:</strong> ' + (piatto.tempo_preparazione || "-") + ' minuti</p>' +
         '<p class="mb-2"><strong>Ingredienti:</strong> ' + ingredientiDettaglio + '</p>' +
         '<p class="mb-2"><strong>Quantità:</strong> ' + misureDettaglio + '</p>' +
@@ -447,6 +503,10 @@
 
       var restaurantId = getIdAsString(mioRistorante._id);
       var personalizzatiCount = 0;
+      var offerteSalvate = JSON.parse(localStorage.getItem("offerteBacheca") || "[]");
+      offerteBachecaMap = new Map(offerteSalvate.map(function(meal) {
+        return [getIdAsString(meal._id), meal];
+      }));
 
       piattiMenuCache.forEach(function (meal) {
         if (getIdAsString(meal.ristorante_id) === restaurantId) {
@@ -501,9 +561,7 @@
     }
 
     function calcolaOffertaPiatto(piatto) {
-      var percentualiDisponibili = [15, 20, 25, 30];
-      var randomIndex = Math.floor(Math.random() * percentualiDisponibili.length);
-      var sconto = percentualiDisponibili[randomIndex];
+      var sconto = Math.floor(Math.random() * 41) + 10;
       var prezzoBase = Number(piatto.prezzo || 0);
       var prezzoScontato = Number((prezzoBase * (1 - sconto / 100)).toFixed(2));
 
