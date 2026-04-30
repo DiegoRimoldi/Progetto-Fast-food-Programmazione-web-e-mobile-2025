@@ -311,7 +311,7 @@
       }
 
       if (mioRistorante.menu && mioRistorante.menu.includes(idMeal)) {
-        alert("Questo piatto è già presente nel menu.");
+        alert("Questo piatto è già presente nel menù.");
         return;
       }
 
@@ -338,7 +338,7 @@
         }
 
         mioRistorante.menu = nuovoMenu;
-        alert("Piatto aggiunto al menu con successo!");
+        alert("Piatto aggiunto al menù con successo!");
       } catch (err) {
         console.error("Errore:", err);
         alert(err.message);
@@ -398,7 +398,7 @@
       }
 
       if (selectedMealIds.size === 0) {
-        alert("Seleziona almeno un piatto prima di aggiungerlo al menu.");
+        alert("Seleziona almeno un piatto prima di aggiungerlo al menù.");
         return;
       }
 
@@ -408,7 +408,7 @@
       var piattiDaAggiungere = selectedArray.filter(id => !menuCorrente.includes(id));
 
       if (piattiDaAggiungere.length === 0) {
-        alert("I piatti selezionati sono già presenti nel menu.");
+        alert("I piatti selezionati sono già presenti nel menù.");
         return;
       }
 
@@ -437,7 +437,7 @@
         selectedMealIds.clear();
         displayGenericMealsPage(currentPage);
 
-        var messaggioConferma = "Aggiunti " + piattiDaAggiungere.length + " piatti al menu con successo!";
+        var messaggioConferma = "Aggiunti " + piattiDaAggiungere.length + " piatti al menù con successo!";
         if (piattiGiaPresenti.length > 0) {
           messaggioConferma += " " + piattiGiaPresenti.length + " erano già presenti.";
         }
