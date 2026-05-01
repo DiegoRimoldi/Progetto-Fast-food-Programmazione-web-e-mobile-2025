@@ -238,9 +238,14 @@ mealsRouter.post("/", authenticateUser, authorizeRistoratore, async (req, res) =
 
     const result = await db.collection("meals").insertOne(newMeal);
 
+    const restaurantUpdate = { $push: { menu: result.insertedId } };
+    if (isInOfferta) {
+      restaurantUpdate.$addToSet = { bacheca: result.insertedId.toString() };
+    }
+
     await db.collection("restaurants").updateOne(
       { _id: restaurant._id },
-      { $push: { menu: result.insertedId } }
+      restaurantUpdate
     );
 
     res.status(201).json({ ...newMeal, _id: result.insertedId });
@@ -334,6 +339,13 @@ mealsRouter.put("/:id", authenticateUser, authorizeRistoratore, async (req, res)
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: "Piatto non trovato" });
+    }
+
+    if (updateFields.in_offerta === true) {
+      await db.collection("restaurants").updateOne(
+        { _id: restaurant._id },
+        { $addToSet: { bacheca: id } }
+      );
     }
 
     res.json(await db.collection("meals").findOne({ _id: new ObjectId(id) }));

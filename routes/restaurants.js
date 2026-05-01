@@ -232,7 +232,7 @@ router.get("/:restaurantId", async (req, res) => {
 router.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
   const db = req.app.locals.db;
   const user = req.user;
-  const { name, address, numero_di_telefono, piva, menu, description, image } = req.body;
+  const { name, address, numero_di_telefono, piva, menu, bacheca = [], description, image } = req.body;
   if (!name || !address || !numero_di_telefono) {
     return res.status(400).json({ error: "Nome, indirizzo e numero di telefono sono obbligatori" });
   }
@@ -264,6 +264,7 @@ router.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
       description,
       image,
       menu,
+      bacheca: Array.isArray(bacheca) ? bacheca : [],
       ristoratore_id: new ObjectId(user._id)
     };
 
@@ -280,9 +281,13 @@ router.put("/:restaurantId", authenticateUser, authorizeRistoratore, async (req,
   const db = req.app.locals.db;
   const user = req.user;
   const restaurantId = req.params.restaurantId;
-  const { name, address, numero_di_telefono, piva, menu, description, image } = req.body;
+  const { name, address, numero_di_telefono, piva, menu, bacheca, description, image } = req.body;
   if (!ObjectId.isValid(restaurantId)) {
     return res.status(400).json({ error: "ID ristorante non valido" });
+  }
+
+  if (bacheca !== undefined && !Array.isArray(bacheca)) {
+    return res.status(400).json({ error: "bacheca deve essere un array" });
   }
 
   try {
@@ -302,6 +307,7 @@ router.put("/:restaurantId", authenticateUser, authorizeRistoratore, async (req,
     if (numero_di_telefono) updateDoc.numero_di_telefono = numero_di_telefono;
     if (piva) updateDoc.piva = piva;
     if (menu) updateDoc.menu = menu;
+    if (Array.isArray(bacheca)) updateDoc.bacheca = bacheca;
     if (description) updateDoc.description = description;
     if (image) updateDoc.image = image;
 

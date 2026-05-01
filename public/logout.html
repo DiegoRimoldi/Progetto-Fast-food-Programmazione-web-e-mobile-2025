@@ -10,8 +10,20 @@
 </head>
 <body>
   <script>
-   localStorage.clear()
-   window.location.href = "login.html";
+   [
+     "token",
+     "role",
+     "userId",
+     "token_cliente",
+     "token_ristoratore",
+     "userId_cliente",
+     "userId_ristoratore"
+   ].forEach(function(key) {
+     localStorage.removeItem(key);
+   });
+
+   sessionStorage.removeItem("lastVisitedPath");
+   window.location.replace("login.html");
 </script>
 </body>
 </html>

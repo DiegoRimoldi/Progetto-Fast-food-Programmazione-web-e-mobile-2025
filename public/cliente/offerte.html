@@ -64,11 +64,27 @@
   </main>
 
   <script>
-    var apiBase = "http://localhost:3000";
+    var apiBase = window.location.origin || "http://localhost:3000";
     var params = new URLSearchParams(window.location.search);
     var restaurantId = params.get("id");
     var allOffers = [];
     var userPreferences = [];
+
+    function getIdAsString(idValue) {
+      if (!idValue) return "";
+      if (typeof idValue === "object" && idValue.$oid) return String(idValue.$oid);
+      return String(idValue);
+    }
+
+    function readArrayFromLocalStorage(key) {
+      try {
+        var value = JSON.parse(localStorage.getItem(key) || "[]");
+        return Array.isArray(value) ? value : [];
+      } catch (error) {
+        console.warn("Dati locali non validi per " + key + ":", error);
+        return [];
+      }
+    }
 
     function getMealIdAsString(meal) {
       if (!meal) return "";
@@ -93,8 +109,10 @@
       var sconto = Number(meal.sconto_percentuale || 0);
       var prezzoScontato = Number(meal.prezzo_scontato || prezzo * (1 - sconto / 100));
       var mealId = getMealIdAsString(meal);
+      var mealRestaurantId = getIdAsString(meal.ristorante_id) || restaurantId || "";
       return {
         _id: mealId,
+        offerKey: (mealRestaurantId ? mealRestaurantId + "-" : "") + mealId,
         strMeal: meal.strMeal || "Piatto senza nome",
         strCategory: meal.strCategory || "Altre categorie",
         strArea: meal.strArea || "-",
@@ -103,13 +121,17 @@
         prezzo: prezzo,
         sconto_percentuale: sconto,
         prezzo_scontato: prezzoScontato,
-        ristorante_id: meal.ristorante_id || restaurantId || ""
+        ristorante_id: mealRestaurantId,
+        restaurantName: meal.restaurantName || ""
       };
     }
 
     function isMealAllowedByPreference(meal) {
       if (!userPreferences.length) return true;
-      return userPreferences.includes(meal.strCategory);
+      var mealCategory = String(meal.strCategory || "").toLowerCase();
+      return userPreferences.some(function(preference) {
+        return String(preference || "").toLowerCase() === mealCategory;
+      });
     }
 
     function updateCategories(meals) {
@@ -124,7 +146,7 @@
     }
 
     async function addToCart(meal) {
-      var qtyInput = document.getElementById("qty-" + meal._id);
+      var qtyInput = document.getElementById("qty-" + (meal.offerKey || meal._id));
       var quantita = Math.max(1, parseInt(qtyInput.value, 10) || 1);
       qtyInput.value = quantita;
       var payload = { meal_id: meal._id, nome: meal.strMeal, quantita: quantita, prezzo_unitario: meal.prezzo_scontato, ristorante_id: meal.ristorante_id || restaurantId };
@@ -148,9 +170,11 @@
           var col = document.createElement("div"); col.className = "col-12 col-md-6 col-xl-4";
           col.innerHTML = '<article class="card menu-card in-offerta h-100">' +
             '<div class="menu-card-cover"><span class="offer-badge">-' + meal.sconto_percentuale + '% OFF</span><img src="' + meal.strMealThumb + '" class="card-img-top" alt="' + meal.strMeal + '"></div>' +
-            '<div class="card-body d-flex flex-column"><h5 class="card-title text-primary">' + meal.strMeal + '</h5><p class="mb-1"><b>Area:</b> ' + meal.strArea + '</p><p class="mb-2"><b>Ingredienti:</b> ' + meal.ingredients + '</p>' +
+            '<div class="card-body d-flex flex-column"><h5 class="card-title text-primary">' + meal.strMeal + '</h5>' +
+            (meal.restaurantName ? '<p class="mb-1"><b>Ristorante:</b> ' + meal.restaurantName + '</p>' : '') +
+            '<p class="mb-1"><b>Area:</b> ' + meal.strArea + '</p><p class="mb-2"><b>Ingredienti:</b> ' + meal.ingredients + '</p>' +
             '<p class="offer-old-price">€ ' + meal.prezzo.toFixed(2) + '</p><p class="offer-new-price">€ ' + meal.prezzo_scontato.toFixed(2) + '</p>' +
-            '<div class="input-group mt-auto"><input type="number" class="form-control" id="qty-' + meal._id + '" min="1" value="1"><button class="btn btn-outline-secondary" type="button" data-id="' + meal._id + '">Aggiungi</button></div></div></article>';
+            '<div class="input-group mt-auto"><input type="number" class="form-control" id="qty-' + (meal.offerKey || meal._id) + '" min="1" value="1"><button class="btn btn-outline-secondary" type="button" data-id="' + meal._id + '">Aggiungi</button></div></div></article>';
           col.querySelector("button").addEventListener("click", function() { addToCart(meal); });
           row.appendChild(col);
         });
@@ -190,25 +214,61 @@
       feedback.innerHTML = '<div class="alert alert-info">Caricamento offerte...</div>';
       try {
         await loadUserPreferences();
-        var localOffers = JSON.parse(localStorage.getItem("offerteBacheca") || "[]").filter(function(meal) { return meal && meal.in_offerta; });
+        var localOffers = readArrayFromLocalStorage("offerteBacheca").filter(function(meal) {
+          if (!meal || !meal.in_offerta) return false;
+          var offerRestaurantId = getIdAsString(meal.ristorante_id);
+          return restaurantId ? offerRestaurantId === restaurantId : Boolean(offerRestaurantId);
+        });
         var backendOffers = [];
         if (restaurantId) {
           var restaurantResponse = await fetchWithAuth(apiBase + "/restaurants/" + restaurantId);
           if (restaurantResponse && restaurantResponse.ok) {
             var restaurant = await restaurantResponse.json();
             if (restaurant && restaurant.name) document.getElementById("pageTitle").textContent = "Offerte di " + restaurant.name;
+            backendOffers = (Array.isArray(restaurant.meals) ? restaurant.meals : [])
+              .filter(function(meal) { return meal && meal.in_offerta; })
+              .map(function(meal) {
+                return Object.assign({}, meal, { ristorante_id: restaurantId });
+              });
           }
-          var mealsResponse = await fetchWithAuth(apiBase + "/meals?ristorante_id=" + restaurantId);
+        } else {
+          var mealsResponse = await fetchWithAuth(apiBase + "/meals?in_offerta=true");
           if (mealsResponse && mealsResponse.ok) {
             var meals = await mealsResponse.json();
-            backendOffers = (Array.isArray(meals) ? meals : []).filter(function(meal) { return meal && meal.in_offerta; });
+            var restaurantsResponse = await fetchWithAuth(apiBase + "/restaurants");
+            var restaurants = [];
+            if (restaurantsResponse && restaurantsResponse.ok) {
+              restaurants = await restaurantsResponse.json();
+              restaurants = Array.isArray(restaurants) ? restaurants : [];
+            }
+
+            backendOffers = (Array.isArray(meals) ? meals : [])
+              .filter(function(meal) { return meal && meal.in_offerta; })
+              .flatMap(function(meal) {
+                var mealRestaurantId = getIdAsString(meal.ristorante_id);
+                if (mealRestaurantId) return [meal];
+
+                var mealId = getMealIdAsString(meal);
+                var matchingRestaurants = restaurants.filter(function(restaurant) {
+                  return Array.isArray(restaurant.menu) && restaurant.menu.map(getIdAsString).includes(mealId);
+                });
+
+                if (!matchingRestaurants.length) return [];
+
+                return matchingRestaurants.map(function(restaurant) {
+                  return Object.assign({}, meal, {
+                    ristorante_id: getIdAsString(restaurant._id),
+                    restaurantName: restaurant.name || ""
+                  });
+                });
+              });
           }
         }
         var unique = new Map();
         backendOffers.concat(localOffers).forEach(function(meal, idx) {
           var normalized = normalizeMeal(meal);
           if (!isMealAllowedByPreference(normalized)) return;
-          var id = normalized._id || (normalized.strMeal + "-" + idx);
+          var id = normalized.offerKey || ((normalized.ristorante_id ? normalized.ristorante_id + "-" : "") + (normalized._id || (normalized.strMeal + "-" + idx)));
           unique.set(id, normalized);
         });
         allOffers = Array.from(unique.values());

@@ -291,6 +291,58 @@
       return String(idValue);
     }
 
+    function readArrayFromLocalStorage(key) {
+      try {
+        var value = JSON.parse(localStorage.getItem(key) || "[]");
+        return Array.isArray(value) ? value : [];
+      } catch (error) {
+        console.warn("Dati locali non validi per " + key + ":", error);
+        return [];
+      }
+    }
+
+    function getBachecaStorageKey() {
+      return "gestioneBachecaMealIds_" + getIdAsString((mioRistorante && mioRistorante._id) || userId);
+    }
+
+    function getBachecaIds() {
+      var bachecaDb = Array.isArray(mioRistorante && mioRistorante.bacheca)
+        ? mioRistorante.bacheca.map(getIdAsString).filter(Boolean)
+        : [];
+      var bachecaLocale = readArrayFromLocalStorage(getBachecaStorageKey()).map(getIdAsString).filter(Boolean);
+      var menuIds = Array.isArray(mioRistorante && mioRistorante.menu)
+        ? mioRistorante.menu.map(getIdAsString).filter(Boolean)
+        : [];
+      var bachecaLegacy = readArrayFromLocalStorage("gestioneBachecaMealIds").map(getIdAsString).filter(function(mealId) {
+        return menuIds.includes(mealId);
+      });
+      return bachecaDb.length ? bachecaDb : (bachecaLocale.length ? bachecaLocale : bachecaLegacy);
+    }
+
+    async function salvaBachecaRistorante(bachecaIds) {
+      var idsPuliti = Array.from(new Set((bachecaIds || []).map(getIdAsString).filter(Boolean)));
+      var updateRes = await fetchConControlloToken(apiBase + "/restaurants/" + getIdAsString(mioRistorante._id), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+          bacheca: idsPuliti,
+          updatedAt: new Date()
+        })
+      });
+
+      if (!updateRes || !updateRes.ok) {
+        var errorText = updateRes ? await updateRes.text() : "Nessuna risposta dal server";
+        throw new Error("Errore nel salvataggio della bacheca: " + errorText);
+      }
+
+      mioRistorante.bacheca = idsPuliti;
+      localStorage.setItem(getBachecaStorageKey(), JSON.stringify(idsPuliti));
+      return idsPuliti;
+    }
+
     async function fetchConControlloToken(url, options = {}) {
       var currentToken = localStorage.getItem("token");
       if (!currentToken) {
@@ -544,7 +596,7 @@
     async function caricaMenu() {
       var emptyState = document.getElementById("emptyState");
 
-      var bachecaIds = JSON.parse(localStorage.getItem("gestioneBachecaMealIds") || "[]");
+      var bachecaIds = getBachecaIds();
       if (!Array.isArray(bachecaIds) || bachecaIds.length === 0) {
         piattiMenuCache = [];
         selectedMealIds.clear();
@@ -552,6 +604,13 @@
         renderizzaMenu();
         emptyState.classList.remove("d-none");
         return;
+      }
+
+      var bachecaDb = Array.isArray(mioRistorante && mioRistorante.bacheca)
+        ? mioRistorante.bacheca.map(getIdAsString).filter(Boolean)
+        : [];
+      if (!bachecaDb.length && bachecaIds.length) {
+        await salvaBachecaRistorante(bachecaIds);
       }
 
       var responseMeals = await fetchConControlloToken(apiBase + "/meals");
@@ -578,6 +637,12 @@
         renderizzaMenu();
         return;
       }
+
+      localStorage.setItem("offerteBacheca", JSON.stringify(piattiMenuCache.filter(function(meal) {
+        return meal && meal.in_offerta;
+      }).map(function(meal) {
+        return Object.assign({}, meal, { ristorante_id: getIdAsString(mioRistorante._id) });
+      })));
 
       renderizzaMenu();
       mostraDettagliPiatto(activeMealId);
@@ -756,7 +821,7 @@
       await caricaMenu();
     }
 
-    function eliminaPiattiSelezionati() {
+    async function eliminaPiattiSelezionati() {
       if (!selectedMealIds.size) {
         alert("Seleziona almeno un piatto prima di eliminarlo dalla bacheca.");
         return;
@@ -769,12 +834,19 @@
       if (!conferma) return;
 
       var numeroSelezionati = selectedMealIds.size;
-      var bachecaCorrente = JSON.parse(localStorage.getItem("gestioneBachecaMealIds") || "[]");
+      var bachecaCorrente = getBachecaIds();
       var nuovaBacheca = bachecaCorrente.filter(function(mealId) {
         return !selectedMealIds.has(getIdAsString(mealId));
       });
 
-      localStorage.setItem("gestioneBachecaMealIds", JSON.stringify(nuovaBacheca));
+      try {
+        await salvaBachecaRistorante(nuovaBacheca);
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Errore durante il salvataggio della bacheca.");
+        return;
+      }
+
       selectedMealIds.clear();
       activeMealId = null;
       caricaMenu();
