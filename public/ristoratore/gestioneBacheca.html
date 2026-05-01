@@ -232,14 +232,14 @@
     </div>
 
     <a href="home.html" class="nav-link">Dashboard</a>
+  <a href="ordini.html" class="nav-link">Ordini</a>
     <a href="gestioneRistorante.html" class="nav-link">Gestisci Ristorante</a>
     <a href="gestioneMenù.html" class="nav-link">Gestione Menù</a>
     <a href="gestioneBacheca.html" class="nav-link active">Gestione Bacheca</a>
     <a href="piattiGenerici.html" class="nav-link">Aggiungi Piatto Generico</a>
     <a href="piattoPersonalizzato.html" class="nav-link">Aggiungi Piatto Personalizzato</a>
     <a href="modificaPiattoPersonalizzato.html" class="nav-link">Modifica Piatto Personalizzato</a>
-    <a href="ordini.html" class="nav-link">Ordini</a>
-    <a href="statistiche.html" class="nav-link">Statistiche</a>
+      <a href="statistiche.html" class="nav-link">Statistiche</a>
     <a href="../profilo.html" class="nav-link">Profilo</a>
     <a href="../logout.html" class="nav-link">Logout</a>
   </div>
@@ -256,6 +256,7 @@
     <div class="d-flex flex-wrap gap-2 mb-3">
       <button id="addToOffersBtn" class="btn btn-primary d-none" type="button">Aggiungi alle Offerte (0)</button>
       <button id="removeFromOffersBtn" class="btn btn-outline-offer d-none" type="button">Rimuovi dalle Offerte (0)</button>
+      <button id="selectAllBtn" class="btn btn-warning d-none" type="button">Seleziona Tutto (0)</button>
       <button id="deleteSelectedBtn" class="btn btn-outline-danger d-none" type="button">Elimina Selezionati (0)</button>
       <button id="restoreSelectedBtn" class="btn btn-primary d-none" type="button">Ripristina Selezionati (0)</button>
     </div>
@@ -543,18 +544,34 @@
       var removeFromOffersBtn = document.getElementById("removeFromOffersBtn");
       var deleteBtn = document.getElementById("deleteSelectedBtn");
       var restoreBtn = document.getElementById("restoreSelectedBtn");
-      if (!addToOffersBtn || !removeFromOffersBtn || !deleteBtn || !restoreBtn) return;
+      var selectAllBtn = document.getElementById("selectAllBtn");
+      if (!addToOffersBtn || !removeFromOffersBtn || !deleteBtn || !restoreBtn || !selectAllBtn) return;
 
       var hasSelections = selectedMealIds.size > 0;
       addToOffersBtn.textContent = "Aggiungi alle Offerte (" + selectedMealIds.size + ")";
       removeFromOffersBtn.textContent = "Rimuovi dalle Offerte (" + selectedMealIds.size + ")";
       deleteBtn.textContent = "Elimina selezionati (" + selectedMealIds.size + ")";
       restoreBtn.textContent = "Ripristina selezionati (" + selectedMealIds.size + ")";
+      selectAllBtn.textContent = "Seleziona Tutto (" + selectedMealIds.size + ")";
 
       addToOffersBtn.classList.toggle("d-none", !hasSelections);
       removeFromOffersBtn.classList.toggle("d-none", !hasSelections);
       deleteBtn.classList.toggle("d-none", !hasSelections);
       restoreBtn.classList.toggle("d-none", !hasSelections);
+      selectAllBtn.classList.toggle("d-none", piattiMenuCache.length === 0 || selectedMealIds.size === piattiMenuCache.length);
+    }
+
+    function selezionaTuttiIPiatti() {
+      if (!piattiMenuCache.length) {
+        return;
+      }
+
+      piattiMenuCache.forEach(function(meal) {
+        selectedMealIds.add(getIdAsString(meal._id));
+      });
+
+      updateDeleteButtonLabel();
+      renderizzaMenu();
     }
 
     function renderizzaMenu() {
@@ -861,6 +878,7 @@
         document.getElementById("addToOffersBtn").addEventListener("click", aggiungiPiattiAlleOfferte);
         document.getElementById("removeFromOffersBtn").addEventListener("click", rimuoviPiattiDalleOfferte);
         document.getElementById("deleteSelectedBtn").addEventListener("click", eliminaPiattiSelezionati);
+        document.getElementById("selectAllBtn").addEventListener("click", selezionaTuttiIPiatti);
         document.getElementById("restoreSelectedBtn").addEventListener("click", ripristinaPiattiSelezionati);
         document.addEventListener("click", function(event) {
           if (event.target.closest("button") || event.target.closest(".menu-card")) {
