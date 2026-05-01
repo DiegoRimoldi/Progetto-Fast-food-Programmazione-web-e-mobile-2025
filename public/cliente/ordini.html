@@ -154,6 +154,10 @@
     .meal-item {
       margin-bottom: 0.45rem;
     }
+    .order-price-row{display:inline-flex; align-items:center; gap:.45rem; flex-wrap:wrap;}
+    .order-old-price{text-decoration:line-through; color:#6c757d; font-size:.86rem;}
+    .order-new-price{color:#146c43; font-weight:700;}
+    .order-offer-badge{border-radius:999px; padding:.15rem .5rem; font-size:.72rem; font-weight:700; color:#fff; background:linear-gradient(120deg,#198754 0%, #20c997 100%);}
     .order-actions {
       margin-top: 0.75rem;
     }
@@ -242,13 +246,16 @@
       var righePasti = order.meals.map(meal => {
         var quantita = Number(meal.quantita || 0);
         var prezzoUnitario = Number(meal.prezzo_unitario || 0);
+        var prezzoOriginale = Number(meal.prezzo_originale || 0);
+        var inOfferta = Boolean(meal.in_offerta && prezzoOriginale > prezzoUnitario);
         var subtotale = quantita * prezzoUnitario;
+        var subtotaleOriginale = inOfferta ? quantita * prezzoOriginale : subtotale;
         var tempoPreparazione = meal.tempo_preparazione ? `${meal.tempo_preparazione} min` : "N/D";
 
         return `
           <li class="meal-item">
             <strong>${meal.nome || "Piatto non specificato"}</strong><br>
-            Quantità: ${quantita} • Prezzo unitario: ${formatEuro(prezzoUnitario)} • Subtotale: ${formatEuro(subtotale)}<br>
+            Quantità: ${quantita} • Prezzo unitario: ${inOfferta ? `<span class="order-price-row"><span class="order-old-price">${formatEuro(prezzoOriginale)}</span><span class="order-new-price">${formatEuro(prezzoUnitario)}</span><span class="order-offer-badge">-${Number(meal.sconto_percentuale || 0)}%</span></span>` : formatEuro(prezzoUnitario)} • Subtotale: ${inOfferta ? `<span class="order-price-row"><span class="order-old-price">${formatEuro(subtotaleOriginale)}</span><span class="order-new-price">${formatEuro(subtotale)}</span></span>` : formatEuro(subtotale)}<br>
             Tempo preparazione stimato: ${tempoPreparazione}
           </li>
         `;
