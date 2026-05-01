@@ -49,16 +49,6 @@
       <p id="preferenceInfo" class="text-muted mb-0"></p>
     </div></div>
 
-    <section class="card panel-card mb-4"><div class="card-body p-4">
-      <div class="row g-2">
-        <div class="col-md-4"><input type="text" id="filterName" class="form-control" placeholder="Cerca per nome" /></div>
-        <div class="col-md-3"><select id="filterCategory" class="form-select"><option value="">Tutte le categorie</option></select></div>
-        <div class="col-md-2"><input type="number" id="filterPriceMin" class="form-control" min="0" step="0.01" placeholder="Min €" /></div>
-        <div class="col-md-2"><input type="number" id="filterPriceMax" class="form-control" min="0" step="0.01" placeholder="Max €" /></div>
-        <div class="col-md-1"><button id="applyFilter" class="btn btn-primary w-100">Cerca</button></div>
-      </div>
-    </div></section>
-
     <div id="feedback"></div>
     <div id="offersByCategory"></div>
   </main>
@@ -134,17 +124,6 @@
       });
     }
 
-    function updateCategories(meals) {
-      var select = document.getElementById("filterCategory");
-      select.innerHTML = '<option value="">Tutte le categorie</option>';
-      Array.from(new Set(meals.map(function(m) { return m.strCategory; }))).sort().forEach(function(cat) {
-        var option = document.createElement("option");
-        option.value = cat;
-        option.textContent = cat;
-        select.appendChild(option);
-      });
-    }
-
     async function addToCart(meal) {
       var qtyInput = document.getElementById("qty-" + (meal.offerKey || meal._id));
       var quantita = Math.max(1, parseInt(qtyInput.value, 10) || 1);
@@ -160,7 +139,7 @@
     function renderGroupedOffers(meals) {
       var container = document.getElementById("offersByCategory");
       container.innerHTML = "";
-      if (meals.length === 0) { container.innerHTML = '<p class="text-muted">Nessuna offerta trovata con i filtri selezionati.</p>'; return; }
+      if (meals.length === 0) { container.innerHTML = '<div class="card panel-card"><div class="card-body p-4 text-muted">Nessuna offerta disponibile al momento.</div></div>'; return; }
       var grouped = meals.reduce(function(acc, meal) { (acc[meal.strCategory] ||= []).push(meal); return acc; }, {});
       Object.keys(grouped).sort().forEach(function(category) {
         var section = document.createElement("section"); section.className = "mb-4";
@@ -180,22 +159,6 @@
         });
         section.appendChild(row); container.appendChild(section);
       });
-    }
-
-    function applyFilters() {
-      var name = document.getElementById("filterName").value.trim().toLowerCase();
-      var category = document.getElementById("filterCategory").value;
-      var min = parseFloat(document.getElementById("filterPriceMin").value);
-      var max = parseFloat(document.getElementById("filterPriceMax").value);
-      var filtered = allOffers.filter(function(meal) {
-        var byName = !name || meal.strMeal.toLowerCase().includes(name);
-        var byCategory = !category || meal.strCategory === category;
-        var price = meal.prezzo_scontato;
-        var byMin = Number.isNaN(min) || price >= min;
-        var byMax = Number.isNaN(max) || price <= max;
-        return byName && byCategory && byMin && byMax;
-      });
-      renderGroupedOffers(filtered);
     }
 
     async function loadUserPreferences() {
@@ -272,7 +235,6 @@
           unique.set(id, normalized);
         });
         allOffers = Array.from(unique.values());
-        updateCategories(allOffers);
         renderGroupedOffers(allOffers);
         feedback.innerHTML = allOffers.length ? "" : '<div class="alert alert-warning">Nessuna offerta disponibile per le tue preferenze alimentari.</div>';
       } catch (error) {
@@ -281,7 +243,6 @@
       }
     }
 
-    document.getElementById("applyFilter").addEventListener("click", applyFilters);
     loadOffers();
   </script>
 </body>
