@@ -107,10 +107,10 @@
         </div>
         <div class="mb-3">
           <label class="form-label" for="preferenze">Preferenze Alimentari (facoltative)</label>
-          <select id="preferenze" class="form-select">
+          <select id="preferenze" class="form-select" multiple size="6">
             <option value="" selected>Tutte le categorie</option>
           </select>
-          <div class="form-text">Scegli una categoria: useremo questa preferenza per mostrarti offerte su misura.</div>
+          <div class="form-text">Puoi selezionare più categorie (Ctrl/Cmd + click). Useremo queste preferenze per mostrarti offerte su misura.</div>
         </div>
       </div>
 
@@ -151,7 +151,7 @@
         if (!res.ok) return;
         const meals = await res.json();
         const categorie = [...new Set((Array.isArray(meals) ? meals : []).map(m => m.strCategory).filter(Boolean))].sort();
-        document.getElementById('preferenze').innerHTML = '<option value="" selected>Tutte le categorie</option>' + categorie.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        document.getElementById('preferenze').innerHTML = categorie.map(cat => `<option value="${cat}">${cat}</option>`).join('');
       } catch (e) {
         console.error('Errore caricamento categorie preferenze', e);
       }

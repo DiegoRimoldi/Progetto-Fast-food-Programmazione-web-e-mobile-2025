@@ -140,6 +140,11 @@
     .meal-item {
       margin-bottom: 0.45rem;
     }
+    .order-price-row { display:inline-flex; align-items:center; gap:.35rem; flex-wrap:wrap; }
+    .order-old-price { text-decoration:line-through; color:#7b8088; }
+    .order-price-arrow { color:#6c757d; font-weight:700; }
+    .order-new-price { color:#146c43; font-weight:800; }
+    .order-offer-badge { background:rgba(25,135,84,.15); color:#157347; border-radius:999px; padding:.1rem .45rem; font-size:.75rem; font-weight:700; }
     .order-actions {
       margin-top: 0.75rem;
     }
@@ -216,6 +221,21 @@
     return "€" + Number(value || 0).toFixed(2);
   }
 
+  function renderPrezzoOrdine(meal, prezzoUnitario) {
+    var originale = Number(meal.prezzo_originale || 0);
+    var inOfferta = Boolean(meal.in_offerta && originale > prezzoUnitario);
+    if (!inOfferta) return formatEuro(prezzoUnitario);
+    return `<span class="order-price-row"><span class="order-old-price">${formatEuro(originale)}</span><span class="order-price-arrow">→</span><span class="order-new-price">${formatEuro(prezzoUnitario)}</span><span class="order-offer-badge">-${Number(meal.sconto_percentuale || 0)}%</span></span>`;
+  }
+
+  function renderSubtotaleOrdine(meal, quantita, subtotale) {
+    var originale = Number(meal.prezzo_originale || 0);
+    var inOfferta = Boolean(meal.in_offerta && originale > 0);
+    if (!inOfferta) return formatEuro(subtotale);
+    var subtotaleOriginale = quantita * originale;
+    return `<span class="order-price-row"><span class="order-old-price">${formatEuro(subtotaleOriginale)}</span><span class="order-price-arrow">→</span><span class="order-new-price">${formatEuro(subtotale)}</span></span>`;
+  }
+
   function normalizzaClasseStato(stato) {
     return String(stato || "")
       .toLowerCase()
@@ -239,7 +259,7 @@
           return `
             <li class="meal-item">
               <strong>${meal.nome || "Piatto non specificato"}</strong><br>
-              Quantità: ${quantita} • Prezzo unitario: ${formatEuro(prezzoUnitario)} • Subtotale: ${formatEuro(subtotale)}
+              Quantità: ${quantita} • Prezzo unitario: ${renderPrezzoOrdine(meal, prezzoUnitario)} • Subtotale: ${renderSubtotaleOrdine(meal, quantita, subtotale)}
             </li>
           `;
         }).join("")}
