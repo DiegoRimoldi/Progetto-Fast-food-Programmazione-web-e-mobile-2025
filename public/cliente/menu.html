@@ -103,6 +103,10 @@
     .meal-card .btn:hover {
       background-color: #0b5ed7;
     }
+    .offer-price-row { display:flex; align-items:center; gap:.55rem; flex-wrap:wrap; }
+    .offer-old-price { text-decoration: line-through; color:#6c757d; font-size:.9rem; }
+    .offer-new-price { color:#146c43; font-weight:700; font-size:1.05rem; }
+    .offer-badge-inline { display:inline-block; border-radius:999px; padding:.2rem .55rem; font-size:.72rem; font-weight:700; color:#fff; background:linear-gradient(120deg,#198754 0%, #20c997 100%); margin-left:.45rem; }
   </style>
     <link rel="icon" type="image/png" href="../assets/Favicon.png">
   <script src="../assets/auth.js"></script>
@@ -236,7 +240,7 @@
                             '<p class="card-text">' + "<b>Category: </b>" + (p.strCategory || "") + '</p>' +
                             '<p class="card-text">'+ "<b>Area: </b>" + (p.strArea || "") + '</p>' +
                             '<p class="card-text">'+ "<b>Ingredients: </b>"  + (p.ingredients || "") + '</p>' +
-                            '<p class="card-text"><strong>€ ' + p.prezzo.toFixed(2) + '</strong></p>' +
+                            (p.in_offerta ? '<p class=\"card-text offer-price-row\"><span class=\"offer-old-price\">€ ' + Number(p.prezzo || 0).toFixed(2) + '</span><span class=\"offer-new-price\">€ ' + Number(p.prezzo_scontato || p.prezzo).toFixed(2) + '</span><span class=\"offer-badge-inline\">-' + Number(p.sconto_percentuale || 0) + '%</span></p>' : '<p class=\"card-text\"><strong>€ ' + Number(p.prezzo || 0).toFixed(2) + '</strong></p>') +
                             '<div class="input-group mb-2">' +
                               '<input type="number" id="qty-' + p._id + '" class="form-control" value="1" min="1" />' +
                               '<button class="btn btn-outline-secondary" onclick=\'addToCart(' + JSON.stringify(p) + ')\'>Aggiungi</button>' +
@@ -255,7 +259,10 @@
         meal_id: piatto._id,
         nome: piatto.strMeal,
         quantita: quantita,
-        prezzo_unitario: piatto.prezzo,
+        prezzo_unitario: (piatto.in_offerta ? Number(piatto.prezzo_scontato || piatto.prezzo) : piatto.prezzo),
+        prezzo_originale: piatto.in_offerta ? Number(piatto.prezzo || 0) : null,
+        in_offerta: Boolean(piatto.in_offerta),
+        sconto_percentuale: Number(piatto.sconto_percentuale || 0),
         ristorante_id: piatto.ristorante_id || restaurantId
       };
 

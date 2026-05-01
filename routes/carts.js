@@ -33,7 +33,7 @@ cartsRouter.get("/me", authenticateUser, async (req, res) => {
   cartsRouter.put("/add", authenticateUser, async (req, res) => {
     try {
       const db = req.app.locals.db;
-      const { meal_id, quantita, prezzo_unitario, ristorante_id, nome } = req.body;
+      const { meal_id, quantita, prezzo_unitario, prezzo_originale, in_offerta, sconto_percentuale, ristorante_id, nome } = req.body;
   
       if (!meal_id || !ObjectId.isValid(meal_id)) {
         return res.status(400).json({ error: "_id del piatto non valido" });
@@ -53,12 +53,19 @@ cartsRouter.get("/me", authenticateUser, async (req, res) => {
   
       if (mealIndex !== -1) {
         cart.meals[mealIndex].quantita += quantita;
+        cart.meals[mealIndex].prezzo_unitario = prezzo_unitario;
+        cart.meals[mealIndex].prezzo_originale = prezzo_originale ?? null;
+        cart.meals[mealIndex].in_offerta = Boolean(in_offerta);
+        cart.meals[mealIndex].sconto_percentuale = Number(sconto_percentuale || 0);
       } else {
         cart.meals.push({
           _id: new ObjectId(meal_id),
           nome,
           quantita,
           prezzo_unitario,
+          prezzo_originale: prezzo_originale ?? null,
+          in_offerta: Boolean(in_offerta),
+          sconto_percentuale: Number(sconto_percentuale || 0),
           ristorante_id: new ObjectId(ristorante_id)
         });
       }

@@ -134,6 +134,9 @@ ordersRouter.post("/", authenticateUser, async (req, res) => {
         nome: m.nome,
         quantita: m.quantita,
         prezzo_unitario: m.prezzo_unitario,
+        prezzo_originale: m.prezzo_originale ?? null,
+        in_offerta: Boolean(m.in_offerta),
+        sconto_percentuale: Number(m.sconto_percentuale || 0),
         tempo_preparazione: m.tempo_preparazione || 10
       });
     }

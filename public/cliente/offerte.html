@@ -25,7 +25,11 @@
     .menu-card-cover img { height: 210px; object-fit: cover; }
     .offer-badge { position: absolute; top: .9rem; left: .9rem; background: linear-gradient(120deg, #198754 0%, #20c997 100%); color: #fff; font-weight: 700; font-size: .78rem; border-radius: 999px; padding: .35rem .75rem; }
     .offer-old-price { text-decoration: line-through; color: #6c757d; font-size: .9rem; margin-bottom: 0; }
-    .offer-new-price { color: #146c43; font-weight: 700; font-size: 1.05rem; margin-bottom: .75rem; }
+    .offer-new-price { color: #146c43; font-weight: 700; font-size: 1.05rem; margin-bottom: 0; }
+    .offer-price-row { display:flex; align-items:center; gap:.55rem; flex-wrap:wrap; margin-bottom: .75rem; }
+    .btn-outline-offer { --bs-btn-color: #198754; --bs-btn-border-color: #198754; --bs-btn-hover-color: #fff; --bs-btn-hover-bg: #198754; --bs-btn-hover-border-color: #198754; --bs-btn-focus-shadow-rgb: 25, 135, 84; --bs-btn-active-color: #fff; --bs-btn-active-bg: #157347; --bs-btn-active-border-color: #146c43; --bs-btn-disabled-color: #198754; --bs-btn-disabled-bg: transparent; --bs-btn-disabled-border-color: #198754; --bs-gradient: none; }
+    .category-title { display:inline-flex; align-items:center; padding:.35rem .8rem; border-radius:999px; background:linear-gradient(120deg,#e7f1ff 0%,#effaf4 100%); color:#0b5ed7; font-weight:700; letter-spacing:.02em; font-size:1rem; }
+    .category-tag { display:inline-flex; align-items:center; font-size:.74rem; border-radius:999px; padding:.32rem .62rem; background:#f0f7ff; color:#0d6efd; font-weight:600; margin-bottom:.55rem; }
   </style>
 </head>
 <body>
@@ -128,7 +132,7 @@
       var qtyInput = document.getElementById("qty-" + (meal.offerKey || meal._id));
       var quantita = Math.max(1, parseInt(qtyInput.value, 10) || 1);
       qtyInput.value = quantita;
-      var payload = { meal_id: meal._id, nome: meal.strMeal, quantita: quantita, prezzo_unitario: meal.prezzo_scontato, ristorante_id: meal.ristorante_id || restaurantId };
+      var payload = { meal_id: meal._id, nome: meal.strMeal, quantita: quantita, prezzo_unitario: meal.prezzo_scontato, prezzo_originale: meal.prezzo, in_offerta: true, sconto_percentuale: meal.sconto_percentuale, ristorante_id: meal.ristorante_id || restaurantId };
       try {
         var response = await fetchWithAuth(apiBase + "/carts/add", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         if (!response || !response.ok) throw new Error("Errore durante aggiunta al carrello");
@@ -143,17 +147,17 @@
       var grouped = meals.reduce(function(acc, meal) { (acc[meal.strCategory] ||= []).push(meal); return acc; }, {});
       Object.keys(grouped).sort().forEach(function(category) {
         var section = document.createElement("section"); section.className = "mb-4";
-        section.innerHTML = '<h4 class="text-primary mb-3">' + category + '</h4>';
+        section.innerHTML = '<h4 class="mb-3"><span class="category-title">' + category + '</span></h4>';
         var row = document.createElement("div"); row.className = "row g-4";
         grouped[category].forEach(function(meal) {
           var col = document.createElement("div"); col.className = "col-12 col-md-6 col-xl-4";
           col.innerHTML = '<article class="card menu-card in-offerta h-100">' +
             '<div class="menu-card-cover"><span class="offer-badge">-' + meal.sconto_percentuale + '% OFF</span><img src="' + meal.strMealThumb + '" class="card-img-top" alt="' + meal.strMeal + '"></div>' +
-            '<div class="card-body d-flex flex-column"><h5 class="card-title text-primary">' + meal.strMeal + '</h5>' +
+            '<div class="card-body d-flex flex-column"><span class="category-tag">' + meal.strCategory + '</span><h5 class="card-title text-primary">' + meal.strMeal + '</h5>' +
             (meal.restaurantName ? '<p class="mb-1"><b>Ristorante:</b> ' + meal.restaurantName + '</p>' : '') +
             '<p class="mb-1"><b>Area:</b> ' + meal.strArea + '</p><p class="mb-2"><b>Ingredienti:</b> ' + meal.ingredients + '</p>' +
-            '<p class="offer-old-price">€ ' + meal.prezzo.toFixed(2) + '</p><p class="offer-new-price">€ ' + meal.prezzo_scontato.toFixed(2) + '</p>' +
-            '<div class="input-group mt-auto"><input type="number" class="form-control" id="qty-' + (meal.offerKey || meal._id) + '" min="1" value="1"><button class="btn btn-outline-secondary" type="button" data-id="' + meal._id + '">Aggiungi</button></div></div></article>';
+            '<div class="offer-price-row"><span class="offer-old-price">€ ' + meal.prezzo.toFixed(2) + '</span><span class="offer-new-price">€ ' + meal.prezzo_scontato.toFixed(2) + '</span></div>' +
+            '<div class="input-group mt-auto"><input type="number" class="form-control" id="qty-' + (meal.offerKey || meal._id) + '" min="1" value="1"><button class="btn btn-outline-offer" type="button" data-id="' + meal._id + '">Aggiungi</button></div></div></article>';
           col.querySelector("button").addEventListener("click", function() { addToCart(meal); });
           row.appendChild(col);
         });
