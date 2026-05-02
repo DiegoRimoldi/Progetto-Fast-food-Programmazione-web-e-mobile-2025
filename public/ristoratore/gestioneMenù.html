@@ -481,6 +481,8 @@
       addToBachecaBtn.classList.toggle("d-none", !hasSelections);
       restoreBtn.classList.toggle("d-none", !hasSelections);
       selectAllBtn.classList.toggle("d-none", piattiMenuCache.length === 0 || selectedMealIds.size === piattiMenuCache.length);
+      selectAllBtn.classList.toggle("btn-primary", !hasSelections);
+      selectAllBtn.classList.toggle("btn-outline-warning", hasSelections);
     }
 
     function selezionaTuttiIPiatti() {
