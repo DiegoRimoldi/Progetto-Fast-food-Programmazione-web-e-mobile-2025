@@ -105,6 +105,37 @@
       padding: 0.55rem 0.95rem;
       margin-bottom: 0.95rem;
     }
+    .preferences-picker {
+      border: 1px solid #dbe7ff;
+      border-radius: 12px;
+      padding: 12px;
+      background: #f8fbff;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 56px;
+    }
+    .pref-chip {
+      border: 1px solid #b6d4fe;
+      color: #0d6efd;
+      background: #fff;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .pref-chip:hover {
+      background: #e7f1ff;
+    }
+    .pref-chip.active {
+      background: var(--profile-gradient);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 16px rgba(13, 110, 253, 0.25);
+    }
 
     @media (min-width: 768px) {
       .main-content {
@@ -182,10 +213,8 @@
 
               <div class="mb-3">
                 <label class="form-label" for="preferenze">Preferenze Alimentari (facoltative)</label>
-                <select id="preferenze" class="form-select" multiple size="7">
-                  <option value="" selected>Tutte le categorie</option>
-                </select>
-                <div class="form-text">Puoi selezionare più categorie (Ctrl/Cmd + click). Useremo queste preferenze per mostrarti offerte su misura.</div>
+                <div id="preferenze" class="preferences-picker" aria-label="Preferenze alimentari"></div>
+                <div class="form-text">Seleziona una o più categorie con un click. Useremo queste preferenze per mostrarti offerte su misura.</div>
               </div>
             </div>
 
@@ -327,6 +356,20 @@
     function validaPassword(password) {
       return /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(password);
     }
+    function renderPreferenze(categorie, preferenzeAttive) {
+      var attive = Array.isArray(preferenzeAttive) ? preferenzeAttive : [];
+      var container = document.getElementById("preferenze");
+      container.innerHTML = categorie.map(function(cat) {
+        var selected = attive.includes(cat);
+        return '<button type="button" class="pref-chip' + (selected ? ' active' : '') + '" data-value="' + cat + '" aria-pressed="' + (selected ? 'true' : 'false') + '">' + cat + "</button>";
+      }).join("");
+    }
+
+    function getPreferenzeSelezionate() {
+      return Array.from(document.querySelectorAll("#preferenze .pref-chip.active")).map(function(chip) {
+        return chip.dataset.value;
+      });
+    }
 
     async function caricaCategoriePreferenze() {
       try {
@@ -334,11 +377,10 @@
         if (!res.ok) return;
         var meals = await res.json();
         var categorie = [...new Set((Array.isArray(meals) ? meals : []).map(function (m) { return m.strCategory; }).filter(Boolean))].sort();
-        document.getElementById("preferenze").innerHTML = categorie.map(function (cat) {
-          return '<option value="' + cat + '">' + cat + "</option>";
-        }).join("");
+        return categorie;
       } catch (e) {
         console.error("Errore caricamento categorie preferenze", e);
+        return [];
       }
     }
 
@@ -394,10 +436,8 @@
           document.getElementById("metodo_pagamento").value = profile.metodo_pagamento || "";
           document.getElementById("campiCliente").style.display = "block";
           var preferenzeAttive = Array.isArray(profile.preferenze) ? profile.preferenze : [];
-          await caricaCategoriePreferenze();
-          Array.from(document.getElementById("preferenze").options).forEach(function(option) {
-            option.selected = preferenzeAttive.includes(option.value);
-          });
+          var categorie = await caricaCategoriePreferenze();
+          renderPreferenze(categorie, preferenzeAttive);
         }
 
         if (profile.role === "ristoratore") {
@@ -440,9 +480,7 @@
       if (campiClienteVisibili) {
         payload.indirizzo = document.getElementById("indirizzo").value.trim();
         payload.metodo_pagamento = document.getElementById("metodo_pagamento").value.trim();
-        payload.preferenze = Array.from(document.getElementById("preferenze").selectedOptions).map(function (option) {
-          return option.value;
-        }).filter(Boolean);
+        payload.preferenze = getPreferenzeSelezionate();
       }
 
       if (campiRistoratoreVisibili) {
@@ -591,6 +629,13 @@
       } catch (err) {
         mostraMessaggio("profileAlert", "Eliminazione non effettuata: errore di rete durante la richiesta.", "errore");
       }
+    });
+
+    document.getElementById("preferenze").addEventListener("click", function(event) {
+      var chip = event.target.closest(".pref-chip");
+      if (!chip) return;
+      chip.classList.toggle("active");
+      chip.setAttribute("aria-pressed", chip.classList.contains("active") ? "true" : "false");
     });
 
     caricaDatiProfilo();
