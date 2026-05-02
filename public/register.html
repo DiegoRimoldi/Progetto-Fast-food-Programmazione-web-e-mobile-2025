@@ -56,6 +56,37 @@
     .login-link:hover {
       text-decoration: underline;
     }
+    .preferences-picker {
+      border: 1px solid #dee2e6;
+      border-radius: 12px;
+      padding: 12px;
+      background: #f8fbff;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 56px;
+    }
+    .pref-chip {
+      border: 1px solid #cfe2ff;
+      color: #0d6efd;
+      background: white;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .pref-chip:hover {
+      background: #e7f1ff;
+    }
+    .pref-chip.active {
+      background: #0d6efd;
+      color: white;
+      border-color: #0d6efd;
+      box-shadow: 0 6px 14px rgba(13, 110, 253, 0.25);
+    }
   </style>
     <link rel="icon" type="image/png" href="assets/Favicon.png">
 </head>
@@ -107,10 +138,8 @@
         </div>
         <div class="mb-3">
           <label class="form-label" for="preferenze">Preferenze Alimentari (facoltative)</label>
-          <select id="preferenze" class="form-select" multiple size="6">
-            <option value="" selected>Tutte le categorie</option>
-          </select>
-          <div class="form-text">Puoi selezionare più categorie (Ctrl/Cmd + click). Useremo queste preferenze per mostrarti offerte su misura.</div>
+          <div id="preferenze" class="preferences-picker" aria-label="Preferenze alimentari"></div>
+          <div class="form-text">Seleziona una o più categorie con un click. Useremo queste preferenze per mostrarti offerte su misura.</div>
         </div>
       </div>
 
@@ -133,6 +162,7 @@
     const ristoratoreFields = document.getElementById('ristoratoreFields');
     const form = document.getElementById('registerForm');
     const alertDiv = document.getElementById('alert');
+    const preferenzeContainer = document.getElementById('preferenze');
 
     function updateFields() {
       if(roleSelect.value === 'cliente'){
@@ -144,6 +174,23 @@
       }
     }
 
+    function renderPreferenze(categorie) {
+      preferenzeContainer.innerHTML = categorie.map((cat) => (
+        `<button type="button" class="pref-chip" data-value="${cat}" aria-pressed="false">${cat}</button>`
+      )).join('');
+    }
+
+    function getPreferenzeSelezionate() {
+      return Array.from(preferenzeContainer.querySelectorAll('.pref-chip.active')).map((chip) => chip.dataset.value);
+    }
+
+    preferenzeContainer.addEventListener('click', (event) => {
+      const chip = event.target.closest('.pref-chip');
+      if (!chip) return;
+      chip.classList.toggle('active');
+      chip.setAttribute('aria-pressed', chip.classList.contains('active') ? 'true' : 'false');
+    });
+
 
     async function caricaCategoriePreferenze() {
       try {
@@ -151,7 +198,7 @@
         if (!res.ok) return;
         const meals = await res.json();
         const categorie = [...new Set((Array.isArray(meals) ? meals : []).map(m => m.strCategory).filter(Boolean))].sort();
-        document.getElementById('preferenze').innerHTML = categorie.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        renderPreferenze(categorie);
       } catch (e) {
         console.error('Errore caricamento categorie preferenze', e);
       }
@@ -172,7 +219,7 @@
       const indirizzo = role === 'cliente' ? document.getElementById('indirizzo').value.trim() : "";
       const metodo_pagamento = role === 'cliente' ? document.getElementById('metodo_pagamento').value.trim() : "";
       const preferenze = role === 'cliente'
-        ? Array.from(document.getElementById('preferenze').selectedOptions).map((option) => option.value).filter(Boolean)
+        ? getPreferenzeSelezionate()
         : [];
       const piva = role === 'ristoratore' ? document.getElementById('piva').value.trim() : "";
 
