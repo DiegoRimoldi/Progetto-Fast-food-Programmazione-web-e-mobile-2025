@@ -33,10 +33,9 @@
     .category-header { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.1rem; border-radius: 1rem; border: 1px solid rgba(13,110,253,.18); background: linear-gradient(120deg, #f8fbff 0%, #eef8ff 45%, #edfdf7 100%); box-shadow: 0 10px 26px rgba(13, 110, 253, 0.1); margin-bottom: 1.1rem; }
     .category-header::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(13,110,253,.12) 0%, rgba(13,110,253,0) 55%); pointer-events: none; }
     .category-header::after { content: ""; position: absolute; top: -38px; right: -40px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(32,201,151,.24) 0%, rgba(32,201,151,0) 72%); pointer-events: none; }
-    .category-main { position: relative; z-index: 1; display: flex; flex-direction: column; gap: .35rem; min-width: 0; }
-    .category-kicker { display: inline-flex; align-items: center; gap: .35rem; font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; color: #4d6b8d; }
-    .category-title { display:inline-flex; align-items:center; gap:.55rem; color:#0b5ed7; font-weight:800; letter-spacing:.01em; font-size:1.16rem; line-height: 1.2; }
-    .category-count { position: relative; z-index: 1; flex-shrink: 0; font-size:.8rem; font-weight:700; color:#0a58ca; background:#fff; border-radius:999px; padding:.34rem .74rem; border:1px solid rgba(13,110,253,.24); box-shadow: 0 4px 12px rgba(13,110,253,.12); }
+    .category-main { position: relative; z-index: 1; display: flex; min-width: 0; }
+    .category-title { display:inline-flex; align-items:center; gap:.58rem; color:#0b5ed7; font-weight:800; letter-spacing:.01em; font-size:1.32rem; line-height: 1.2; }
+    .category-count { position: relative; z-index: 1; flex-shrink: 0; font-size:.88rem; font-weight:700; color:#0a58ca; background:#fff; border-radius:999px; padding:.38rem .82rem; border:1px solid rgba(13,110,253,.24); box-shadow: 0 4px 12px rgba(13,110,253,.12); }
     .category-tag { display:inline-flex; align-items:center; font-size:.74rem; border-radius:999px; padding:.32rem .62rem; background:#f0f7ff; color:#0d6efd; font-weight:600; margin-bottom:.55rem; }
   </style>
 </head>
@@ -155,7 +154,7 @@
       var grouped = meals.reduce(function(acc, meal) { (acc[meal.strCategory] ||= []).push(meal); return acc; }, {});
       Object.keys(grouped).sort().forEach(function(category) {
         var section = document.createElement("section"); section.className = "mb-4";
-        section.innerHTML = '<div class="category-header"><div class="category-main"><span class="category-kicker">Categoria menu</span><h4 class="mb-0"><span class="category-title">🍽️ ' + category + '</span></h4></div><span class="category-count">' + grouped[category].length + ' piatti</span></div>';
+        section.innerHTML = '<div class="category-header"><div class="category-main"><h4 class="mb-0"><span class="category-title">🍽️ ' + category + '</span></h4></div><span class="category-count">' + grouped[category].length + ' piatti</span></div>';
         var row = document.createElement("div"); row.className = "row g-4";
         grouped[category].forEach(function(meal) {
           var col = document.createElement("div"); col.className = "col-12 col-md-6 col-xl-4";
