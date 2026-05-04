@@ -231,6 +231,7 @@
       const errorDiv = document.getElementById(errorId);
       if (!field || !errorDiv) return;
       field.classList.remove('is-invalid-custom');
+      field.setCustomValidity('');
       errorDiv.textContent = '';
       errorDiv.style.display = 'none';
     }
@@ -240,6 +241,13 @@
       if (!field) return;
       field.focus({ preventScroll: true });
       field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function showValidationBubble(fieldId, message) {
+      const field = document.getElementById(fieldId);
+      if (!field) return;
+      field.setCustomValidity(message || 'Compila questo campo.');
+      field.reportValidity();
     }
 
     function validateForm(values) {
@@ -328,7 +336,7 @@
       const errors = validateForm(payload);
       if (errors.length > 0) {
         errors.forEach(({ fieldId, errorId, message }) => showFieldError(fieldId, errorId, message));
-        alert('Compila questo campo');
+        showValidationBubble(errors[0].fieldId, errors[0].message);
         focusAndScrollToField(errors[0].fieldId);
         return;
       }
