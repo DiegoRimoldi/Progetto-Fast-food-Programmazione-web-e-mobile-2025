@@ -290,7 +290,7 @@
 
         renderGroupedOffers(allOffers, scenarioContent.cardMessage);
         if (hasOffers && hasPreferences && hasPreferenceMatches) {
-          document.getElementById("preferenceInfo").textContent = "Ottimo! Le offerte disponibili sono in linea con le tue preferenze alimentari.";
+          document.getElementById("preferenceInfo").textContent = "Le offerte attualmente disponibili risultano coerenti con le preferenze alimentari da te selezionate.";
         } else {
           document.getElementById("preferenceInfo").textContent = scenarioContent.subtitleMessage || document.getElementById("preferenceInfo").textContent;
         }
