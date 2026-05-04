@@ -78,7 +78,7 @@ usersRouter.post("/register", async (req, res) => {
       return res.status(400).json({ error: "role obbligatorio e deve essere 'cliente' o 'ristoratore'" });
     }
 
-    if(role=="cliente" && (!indirizzo || !metodo_pagamento)){
+    if (role === "cliente" && (!indirizzo || !metodo_pagamento)) {
       return res.status(400).json({ error: "Indirizzo e metodo di pagamento sono obbligatori" });
     }
 
@@ -91,7 +91,7 @@ usersRouter.post("/register", async (req, res) => {
       }
     }
 
-    if(role=="ristoratore" && !piva){
+    if (role === "ristoratore" && !piva) {
       return res.status(400).json({ error: "Partita IVA obbligatoria" });
     }
 
@@ -111,7 +111,7 @@ usersRouter.post("/register", async (req, res) => {
 
     let newUser={};
 
-    if(role=="ristoratore"){
+    if (role === "ristoratore") {
       newUser = {
         nome: nome.trim(),
         cognome: cognome.trim(),
@@ -122,7 +122,7 @@ usersRouter.post("/register", async (req, res) => {
         piva: piva,
         role
       };
-    }else{
+    } else {
       newUser = {
         nome: nome.trim(),
         cognome: cognome.trim(),
