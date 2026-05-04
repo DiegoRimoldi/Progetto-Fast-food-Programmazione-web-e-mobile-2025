@@ -257,24 +257,24 @@
     function validateForm(values) {
       const errors = [];
 
-      if (!values.nome) errors.push({ fieldId: 'nome', errorId: 'nomeError', message: 'Inserisci il nome.' });
-      if (!values.cognome) errors.push({ fieldId: 'cognome', errorId: 'cognomeError', message: 'Inserisci il cognome.' });
+      if (!values.nome) errors.push({ fieldId: 'nome', errorId: 'nomeError', message: 'Inserisci il Nome.' });
+      if (!values.cognome) errors.push({ fieldId: 'cognome', errorId: 'cognomeError', message: 'Inserisci il Cognome.' });
       if (!values.username) {
-        errors.push({ fieldId: 'username', errorId: 'usernameError', message: 'Inserisci lo username.' });
+        errors.push({ fieldId: 'username', errorId: 'usernameError', message: 'Inserisci lo Username.' });
       } else if (!validaUsername(values.username)) {
-        errors.push({ fieldId: 'username', errorId: 'usernameError', message: 'Lo username deve avere 3-20 caratteri (lettere, numeri o _).' });
+        errors.push({ fieldId: 'username', errorId: 'usernameError', message: 'Lo Username deve avere 3-20 caratteri (lettere, numeri o caratteri speciali).' });
       }
-      if (!values.email) errors.push({ fieldId: 'email', errorId: 'emailError', message: "Inserisci l'email." });
-      if (!values.password) errors.push({ fieldId: 'password', errorId: 'passwordError', message: 'Inserisci la password.' });
-      if (!values.numero_di_telefono) errors.push({ fieldId: 'numero_di_telefono', errorId: 'numeroDiTelefonoError', message: 'Inserisci il numero di telefono.' });
+      if (!values.email) errors.push({ fieldId: 'email', errorId: 'emailError', message: "Inserisci l'Email." });
+      if (!values.password) errors.push({ fieldId: 'password', errorId: 'passwordError', message: 'Inserisci la Password.' });
+      if (!values.numero_di_telefono) errors.push({ fieldId: 'numero_di_telefono', errorId: 'numeroDiTelefonoError', message: 'Inserisci il Numero di Telefono.' });
 
       if (values.role === 'cliente') {
-        if (!values.indirizzo) errors.push({ fieldId: 'indirizzo', errorId: 'indirizzoError', message: "Inserisci l'indirizzo di consegna." });
-        if (!values.metodo_pagamento) errors.push({ fieldId: 'metodo_pagamento', errorId: 'metodoPagamentoError', message: 'Inserisci il metodo di pagamento.' });
+        if (!values.indirizzo) errors.push({ fieldId: 'indirizzo', errorId: 'indirizzoError', message: "Inserisci l'Indirizzo di Consegna." });
+        if (!values.metodo_pagamento) errors.push({ fieldId: 'metodo_pagamento', errorId: 'metodoPagamentoError', message: 'Inserisci il Metodo di Pagamento.' });
       }
 
       if (values.role === 'ristoratore' && !values.piva) {
-        errors.push({ fieldId: 'piva', errorId: 'pivaError', message: 'Inserisci la partita IVA.' });
+        errors.push({ fieldId: 'piva', errorId: 'pivaError', message: 'Inserisci la Partita IVA.' });
       }
 
       return errors;
