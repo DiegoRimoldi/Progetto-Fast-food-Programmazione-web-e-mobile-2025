@@ -118,6 +118,7 @@
       <div class="mb-3">
         <label for="username" class="form-label">Username *</label>
         <input type="text" class="form-control" id="username" placeholder="es. mario.rossi"/>
+        <div class="field-error" id="usernameError"></div>
       </div>
       <div class="mb-3">
         <label for="email" class="form-label">Email *</label>
@@ -181,8 +182,6 @@
     const form = document.getElementById('registerForm');
     const alertDiv = document.getElementById('alert');
     const preferenzeContainer = document.getElementById('preferenze');
-    let lastInvalidFieldId = null;
-
     function updateFields() {
       if(roleSelect.value === 'cliente'){
         clienteFields.style.display = 'block';
@@ -226,6 +225,49 @@
       errorDiv.textContent = message;
       errorDiv.style.display = 'block';
     }
+
+    function clearFieldError(fieldId, errorId) {
+      const field = document.getElementById(fieldId);
+      const errorDiv = document.getElementById(errorId);
+      if (!field || !errorDiv) return;
+      field.classList.remove('is-invalid-custom');
+      errorDiv.textContent = '';
+      errorDiv.style.display = 'none';
+    }
+
+    function focusAndScrollToField(fieldId) {
+      const field = document.getElementById(fieldId);
+      if (!field) return;
+      field.focus({ preventScroll: true });
+      field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function validateForm(values) {
+      const errors = [];
+
+      if (!values.nome) errors.push({ fieldId: 'nome', errorId: 'nomeError', message: 'Inserisci il nome.' });
+      if (!values.cognome) errors.push({ fieldId: 'cognome', errorId: 'cognomeError', message: 'Inserisci il cognome.' });
+      if (!values.username) {
+        errors.push({ fieldId: 'username', errorId: 'usernameError', message: 'Inserisci lo username.' });
+      } else if (!validaUsername(values.username)) {
+        errors.push({ fieldId: 'username', errorId: 'usernameError', message: 'Lo username deve avere 3-20 caratteri (lettere, numeri o _).' });
+      }
+      if (!values.email) errors.push({ fieldId: 'email', errorId: 'emailError', message: "Inserisci l'email." });
+      if (!values.password) errors.push({ fieldId: 'password', errorId: 'passwordError', message: 'Inserisci la password.' });
+      if (!values.numero_di_telefono) errors.push({ fieldId: 'numero_di_telefono', errorId: 'numeroDiTelefonoError', message: 'Inserisci il numero di telefono.' });
+
+      if (values.role === 'cliente') {
+        if (!values.indirizzo) errors.push({ fieldId: 'indirizzo', errorId: 'indirizzoError', message: "Inserisci l'indirizzo di consegna." });
+        if (!values.metodo_pagamento) errors.push({ fieldId: 'metodo_pagamento', errorId: 'metodoPagamentoError', message: 'Inserisci il metodo di pagamento.' });
+      }
+
+      if (values.role === 'ristoratore' && !values.piva) {
+        errors.push({ fieldId: 'piva', errorId: 'pivaError', message: 'Inserisci la partita IVA.' });
+      }
+
+      return errors;
+    }
+
 
     preferenzeContainer.addEventListener('click', (event) => {
       const chip = event.target.closest('.pref-chip');
@@ -276,14 +318,20 @@
       const role = roleSelect.value;
       const indirizzo = role === 'cliente' ? document.getElementById('indirizzo').value.trim() : "";
       const metodo_pagamento = role === 'cliente' ? document.getElementById('metodo_pagamento').value.trim() : "";
-      const preferenze = role === 'cliente'
-        ? getPreferenzeSelezionate()
-        : [];
+      const preferenze = role === 'cliente' ? getPreferenzeSelezionate() : [];
       const piva = role === 'ristoratore' ? document.getElementById('piva').value.trim() : "";
 
       const payload = { nome, cognome, username, email, password, numero_di_telefono, role, indirizzo, metodo_pagamento, preferenze, piva };
       alertDiv.innerHTML = "";
       resetErrors();
+
+      const errors = validateForm(payload);
+      if (errors.length > 0) {
+        errors.forEach(({ fieldId, errorId, message }) => showFieldError(fieldId, errorId, message));
+        alert('Compila questo campo');
+        focusAndScrollToField(errors[0].fieldId);
+        return;
+      }
 
       try {
         const res = await fetch("http://localhost:3000/users/register", {
@@ -295,24 +343,20 @@
         const data = await res.json();
 
         if (res.ok) {
-          alertDiv.innerHTML = `<div class="alert alert-success text-center">
-            Registrazione completata! Reindirizzamento...
-            </div>`;
-
-            form.reset();
-            updateFields();
-            caricaCategoriePreferenze();
-            setTimeout(() => {
-              window.location.href = "login.html";
-            }, 1000);
-          }
-          else {
-            alertDiv.innerHTML = `<div class="alert alert-danger text-center">${data.error || "Errore nella registrazione"}</div>`;
-          }
-        } catch (err) {
-            alertDiv.innerHTML = `<div class="alert alert-danger text-center">Errore di rete</div>`;
-          }
-        });
+          alertDiv.innerHTML = `<div class="alert alert-success text-center">Registrazione completata! Reindirizzamento...</div>`;
+          form.reset();
+          updateFields();
+          caricaCategoriePreferenze();
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 1000);
+        } else {
+          alertDiv.innerHTML = `<div class="alert alert-danger text-center">${data.error || "Errore nella registrazione"}</div>`;
+        }
+      } catch (err) {
+        alertDiv.innerHTML = `<div class="alert alert-danger text-center">Errore di rete</div>`;
+      }
+    });
 
         updateFields();
         caricaCategoriePreferenze();
