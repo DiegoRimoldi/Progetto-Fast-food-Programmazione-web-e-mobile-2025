@@ -135,6 +135,34 @@
       });
     }
 
+    function buildScenarioContent(hasOffers, hasPreferences, hasPreferenceMatches) {
+      if (!hasOffers && !hasPreferences) {
+        return {
+          cardMessage: "Nessuna offerta disponibile al momento. Questo ristorante non ha ancora attivato promozioni.",
+          subtitleMessage: ""
+        };
+      }
+      if (hasOffers && !hasPreferences) {
+        return {
+          cardMessage: "Nessuna offerta disponibile al momento in base a filtri alimentari, perché non hai ancora impostato preferenze: qui trovi tutte le promozioni attive del ristorante.",
+          subtitleMessage: ""
+        };
+      }
+      if (!hasOffers && hasPreferences) {
+        return {
+          cardMessage: "Nessuna offerta disponibile al momento. Le tue preferenze sono salvate, ma il ristorante non ha promozioni pubblicate in questo momento.",
+          subtitleMessage: ""
+        };
+      }
+      if (hasOffers && hasPreferences && !hasPreferenceMatches) {
+        return {
+          cardMessage: "",
+          subtitleMessage: "Le offerte attive non coincidono con le tue preferenze alimentari: puoi comunque consultarle tutte qui sotto."
+        };
+      }
+      return { cardMessage: "", subtitleMessage: "" };
+    }
+
     async function addToCart(meal) {
       var qtyInput = document.getElementById("qty-" + (meal.offerKey || meal._id));
       var quantita = Math.max(1, parseInt(qtyInput.value, 10) || 1);
@@ -147,10 +175,13 @@
       } catch (err) { console.error(err); alert("Impossibile aggiungere il prodotto al carrello."); }
     }
 
-    function renderGroupedOffers(meals) {
+    function renderGroupedOffers(meals, emptyMessage) {
       var container = document.getElementById("offersByCategory");
       container.innerHTML = "";
-      if (meals.length === 0) { container.innerHTML = '<div class="card panel-card"><div class="card-body p-4 text-muted">Nessuna offerta disponibile al momento.</div></div>'; return; }
+      if (meals.length === 0) {
+        container.innerHTML = '<div class="card panel-card"><div class="card-body p-4 text-muted">' + (emptyMessage || "Nessuna offerta disponibile al momento.") + '</div></div>';
+        return;
+      }
       var grouped = meals.reduce(function(acc, meal) { (acc[meal.strCategory] ||= []).push(meal); return acc; }, {});
       Object.keys(grouped).sort().forEach(function(category) {
         var section = document.createElement("section"); section.className = "mb-4";
@@ -179,7 +210,7 @@
       userPreferences = Array.isArray(user.preferenze) ? user.preferenze.filter(Boolean) : [];
       var info = document.getElementById("preferenceInfo");
       info.textContent = userPreferences.length
-        ? "Ti mostriamo solo le offerte delle categorie che hai impostato nelle tue preferenze alimentari."
+        ? "Se disponibili, ti mostriamo prima le offerte in linea con le categorie che hai impostato nelle tue preferenze alimentari."
         : "Non hai ancora preferenze alimentari: visualizzi tutte le offerte disponibili.";
     }
 
@@ -238,16 +269,34 @@
               });
           }
         }
-        var unique = new Map();
+        var uniqueAllOffers = new Map();
         backendOffers.concat(localOffers).forEach(function(meal, idx) {
           var normalized = normalizeMeal(meal);
-          if (!isMealAllowedByPreference(normalized)) return;
           var id = normalized.offerKey || ((normalized.ristorante_id ? normalized.ristorante_id + "-" : "") + (normalized._id || (normalized.strMeal + "-" + idx)));
-          unique.set(id, normalized);
+          uniqueAllOffers.set(id, normalized);
         });
-        allOffers = Array.from(unique.values());
-        renderGroupedOffers(allOffers);
-        feedback.innerHTML = allOffers.length ? "" : '<div class="alert alert-warning">Nessuna offerta disponibile per le tue preferenze alimentari.</div>';
+
+        var allAvailableOffers = Array.from(uniqueAllOffers.values());
+        var filteredByPreferences = allAvailableOffers.filter(isMealAllowedByPreference);
+        var hasOffers = allAvailableOffers.length > 0;
+        var hasPreferences = userPreferences.length > 0;
+        var hasPreferenceMatches = filteredByPreferences.length > 0;
+
+        var scenarioContent = buildScenarioContent(hasOffers, hasPreferences, hasPreferenceMatches);
+
+        allOffers = (hasPreferences && hasOffers && !hasPreferenceMatches)
+          ? allAvailableOffers
+          : (hasPreferences ? filteredByPreferences : allAvailableOffers);
+
+        renderGroupedOffers(allOffers, scenarioContent.cardMessage);
+        if (hasOffers && hasPreferences && hasPreferenceMatches) {
+          document.getElementById("preferenceInfo").textContent = "Le offerte attualmente disponibili risultano coerenti con le preferenze alimentari da te selezionate.";
+        } else {
+          document.getElementById("preferenceInfo").textContent = scenarioContent.subtitleMessage || document.getElementById("preferenceInfo").textContent;
+        }
+        feedback.innerHTML = scenarioContent.cardMessage && allOffers.length > 0
+          ? '<div class="card panel-card mb-4"><div class="card-body p-3 text-muted">' + scenarioContent.cardMessage + '</div></div>'
+          : "";
       } catch (error) {
         console.error(error);
         feedback.innerHTML = '<div class="alert alert-danger">Errore durante il caricamento delle offerte.</div>';
