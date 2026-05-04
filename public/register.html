@@ -105,7 +105,7 @@
       </div>
       <div class="mb-3">
         <label for="username" class="form-label">Username *</label>
-        <input type="text" class="form-control" id="username" placeholder="es. mario_rossi89 (3-20 caratteri: lettere, numeri, _)"/>
+        <input type="text" class="form-control" id="username" placeholder="es. mario.rossi"/>
       </div>
       <div class="mb-3">
         <label for="email" class="form-label">Email *</label>
@@ -230,12 +230,6 @@
 
       const payload = { nome, cognome, username, email, password, numero_di_telefono, role, indirizzo, metodo_pagamento, preferenze, piva };
       alertDiv.innerHTML = "";
-
-      if (!validaUsername(username)) {
-        alertDiv.innerHTML = `<div class="alert alert-danger text-center">Username non valido. Usa 3-20 caratteri tra lettere, numeri e underscore (_).</div>`;
-        return;
-      }
-
 
       try {
         const res = await fetch("http://localhost:3000/users/register", {
