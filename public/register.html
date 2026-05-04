@@ -42,7 +42,7 @@
       text-align: center;
       margin-bottom: 20px;
     }
-    #alert {
+     #statusMessage {
       margin-top: 20px;
     }
     .login-link {
@@ -96,6 +96,18 @@
     .is-invalid-custom {
       border-color: #dc3545 !important;
       box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.25) !important;
+    }
+
+    .status-message {
+      margin-top: 20px;
+      min-height: 1.5rem;
+      font-weight: 600;
+    }
+    .status-success {
+      color: #198754;
+    }
+    .status-error {
+      color: #dc3545;
     }
   </style>
     <link rel="icon" type="image/png" href="assets/Favicon.png">
@@ -171,7 +183,7 @@
 
       <button type="submit" class="btn btn-primary w-100">Registrati</button>
     </form>
-    <div id="alert"></div>
+    <div id="statusMessage" class="status-message" aria-live="polite"></div>
     <a href="login.html" class="login-link">Hai già un account? Accedi</a>
   </div>
 
@@ -180,7 +192,7 @@
     const clienteFields = document.getElementById('clienteFields');
     const ristoratoreFields = document.getElementById('ristoratoreFields');
     const form = document.getElementById('registerForm');
-    const alertDiv = document.getElementById('alert');
+    const statusMessageDiv = document.getElementById('statusMessage');
     const preferenzeContainer = document.getElementById('preferenze');
     function updateFields() {
       if(roleSelect.value === 'cliente'){
@@ -322,14 +334,14 @@
       const piva = role === 'ristoratore' ? document.getElementById('piva').value.trim() : "";
 
       const payload = { nome, cognome, username, email, password, numero_di_telefono, role, indirizzo, metodo_pagamento, preferenze, piva };
-      alertDiv.innerHTML = "";
+      statusMessageDiv.textContent = "";
+      statusMessageDiv.className = "status-message";
       resetErrors();
 
       const errors = validateForm(payload);
       if (errors.length > 0) {
         errors.forEach(({ fieldId, errorId, message }) => showFieldError(fieldId, errorId, message));
-        alert(`Correggi questo campo: ${errors[0].message}`);
-        focusAndScrollToField(errors[0].fieldId);
+                focusAndScrollToField(errors[0].fieldId);
         return;
       }
 
@@ -343,7 +355,8 @@
         const data = await res.json();
 
         if (res.ok) {
-          alertDiv.innerHTML = `<div class="alert alert-success text-center">Registrazione completata! Reindirizzamento...</div>`;
+          statusMessageDiv.textContent = "Registrazione completata! Reindirizzamento...";
+          statusMessageDiv.className = "status-message status-success text-center";
           form.reset();
           updateFields();
           caricaCategoriePreferenze();
@@ -351,10 +364,12 @@
             window.location.href = "login.html";
           }, 1000);
         } else {
-          alertDiv.innerHTML = `<div class="alert alert-danger text-center">${data.error || "Errore nella registrazione"}</div>`;
+          statusMessageDiv.textContent = data.error || "Errore nella registrazione";
+          statusMessageDiv.className = "status-message status-error text-center";
         }
       } catch (err) {
-        alertDiv.innerHTML = `<div class="alert alert-danger text-center">Errore di rete</div>`;
+        statusMessageDiv.textContent = "Errore di rete";
+        statusMessageDiv.className = "status-message status-error text-center";
       }
     });
 
