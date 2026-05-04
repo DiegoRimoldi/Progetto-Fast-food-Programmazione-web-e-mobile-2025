@@ -9,6 +9,8 @@ Per avviare l’applicazione, navigare nella root del repository ed installare i
 
 Successivamente, è possibile avviare il backend mediante il comando `npm run dev` (oppure `npm start`).
 
+Successivamente, è necessario configurare un file `.env` con almeno queste variabili: `MONGODB_URI`, `MONGODB_DB`, `JWT_SECRET`, `JWT_EXPIRES_IN`.
+
 La pagina iniziale è servita da Express in `public/` ed è raggiungibile avviando il backend e aprendo l'URL `http://localhost:3000`.
 
 # Struttura della directory
@@ -68,7 +70,7 @@ E’ stato utilizzato un DB MongoDB, memorizzato in cloud sulla piattaforma Atla
 
 ## Collections
 
-All’interno del DB “fastfood”, sono memorizzate 5 collections:
+All’interno del DB MongoDB indicato in `MONGODB_DB`, sono memorizzate 5 collections:
 
 ![READMEImages/collections.png](READMEImages/collections.png)
 
