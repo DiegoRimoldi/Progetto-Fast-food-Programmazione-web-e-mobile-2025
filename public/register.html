@@ -116,35 +116,35 @@
   <div class="register-container">
     <a href="index.html"><img src="assets/Favicon.png" alt="FastFood Logo" class="logo" /></a>
     <h2>Registrazione</h2>
-    <form id="registerForm" novalidate>
+    <form id="registerForm">
       <div class="mb-3">
         <label for="nome" class="form-label">Nome *</label>
-        <input type="text" class="form-control" id="nome" placeholder="es. Mario"/>
+        <input type="text" class="form-control" id="nome" placeholder="es. Mario" required/>
         <div class="field-error" id="nomeError"></div>
       </div>
       <div class="mb-3">
         <label for="cognome" class="form-label">Cognome *</label>
-        <input type="text" class="form-control" id="cognome" placeholder="es. Rossi"/>
+        <input type="text" class="form-control" id="cognome" placeholder="es. Rossi" required/>
         <div class="field-error" id="cognomeError"></div>
       </div>
       <div class="mb-3">
         <label for="username" class="form-label">Username *</label>
-        <input type="text" class="form-control" id="username" placeholder="es. mario.rossi"/>
+        <input type="text" class="form-control" id="username" placeholder="es. mario.rossi" required/>
         <div class="field-error" id="usernameError"></div>
       </div>
       <div class="mb-3">
         <label for="email" class="form-label">Email *</label>
-        <input type="email" class="form-control" id="email" placeholder="es. mario.rossi@email.com" />
+        <input type="email" class="form-control" id="email" placeholder="es. mario.rossi@email.com" required />
         <div class="field-error" id="emailError"></div>
       </div>
       <div class="mb-3">
         <label for="password" class="form-label">Password *</label>
-        <input type="password" class="form-control" id="password" placeholder="es. M1lano!2026"/>
+        <input type="password" class="form-control" id="password" placeholder="es. M1lano!2026" required/>
         <div class="field-error" id="passwordError"></div>
       </div>
       <div class="mb-3">
         <label for="numero_di_telefono" class="form-label">Numero di telefono *</label>
-        <input type="text" class="form-control" id="numero_di_telefono" placeholder="es. +39 333 123 4567"/>
+        <input type="text" class="form-control" id="numero_di_telefono" placeholder="es. +39 333 123 4567" required/>
         <div class="field-error" id="numeroDiTelefonoError"></div>
       </div>
       <div class="mb-3">
@@ -158,12 +158,12 @@
       <div id="clienteFields">
         <div class="mb-3">
           <label for="indirizzo" class="form-label">Indirizzo*</label>
-          <input type="text" placeholder="es. Via Legnano 20, 20121 Milano" class="form-control" id="indirizzo"/>
+          <input type="text" placeholder="es. Via Legnano 20, 20121 Milano" class="form-control" id="indirizzo" required/>
           <div class="field-error" id="indirizzoError"></div>
         </div>
         <div class="mb-3">
           <label for="metodo_pagamento" class="form-label">Metodo di pagamento*</label>
-          <input type="text" class="form-control" id="metodo_pagamento" placeholder="es. Carta di credito (Visa)"/>
+          <input type="text" class="form-control" id="metodo_pagamento" placeholder="es. Carta di credito (Visa)" required/>
           <div class="field-error" id="metodoPagamentoError"></div>
         </div>
         <div class="mb-3">
@@ -176,12 +176,12 @@
       <div id="ristoratoreFields">
         <div class="mb-3">
           <label for="piva" class="form-label">P.IVA*</label>
-          <input type="text" class="form-control" id="piva" placeholder="es. 12345678901"/>
+          <input type="text" class="form-control" id="piva" placeholder="es. 12345678901" required/>
           <div class="field-error" id="pivaError"></div>
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100">Registrati</button>
+      <button type="submit" id="registerSubmit" class="btn btn-primary w-100">Registrati</button>
     </form>
     <div id="statusMessage" class="status-message" aria-live="polite"></div>
     <a href="login.html" class="login-link">Hai già un account? Accedi</a>
@@ -194,13 +194,37 @@
     const form = document.getElementById('registerForm');
     const statusMessageDiv = document.getElementById('statusMessage');
     const preferenzeContainer = document.getElementById('preferenze');
+    const registerSubmit = document.getElementById('registerSubmit');
+    let hasTriedSubmit = false;
+
+    const requiredFieldMessages = {
+      nome: 'Inserisci il Nome.',
+      cognome: 'Inserisci il Cognome.',
+      username: 'Inserisci lo Username.',
+      email: "Inserisci l'Email.",
+      password: 'Inserisci la Password.',
+      numero_di_telefono: 'Inserisci il Numero di Telefono.',
+      indirizzo: "Inserisci l'Indirizzo di Consegna.",
+      metodo_pagamento: 'Inserisci il Metodo di Pagamento.',
+      piva: 'Inserisci la Partita IVA.'
+    };
     function updateFields() {
+      const indirizzoField = document.getElementById('indirizzo');
+      const metodoPagamentoField = document.getElementById('metodo_pagamento');
+      const pivaField = document.getElementById('piva');
+
       if(roleSelect.value === 'cliente'){
         clienteFields.style.display = 'block';
         ristoratoreFields.style.display = 'none';
+        indirizzoField.required = true;
+        metodoPagamentoField.required = true;
+        pivaField.required = false;
       } else {
         clienteFields.style.display = 'none';
         ristoratoreFields.style.display = 'block';
+        indirizzoField.required = false;
+        metodoPagamentoField.required = false;
+        pivaField.required = true;
       }
     }
 
@@ -302,6 +326,9 @@
     }
 
     roleSelect.addEventListener('change', updateFields);
+    registerSubmit.addEventListener('click', () => {
+      hasTriedSubmit = true;
+    });
     [
       ['nome', 'nomeError'],
       ['cognome', 'cognomeError'],
@@ -315,11 +342,47 @@
     ].forEach(([fieldId, errorId]) => {
       const field = document.getElementById(fieldId);
       if (!field) return;
-      field.addEventListener('input', () => clearFieldError(fieldId, errorId));
+
+      field.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          hasTriedSubmit = true;
+        }
+      });
+
+      field.addEventListener('invalid', () => {
+        if (field.validity.valueMissing) {
+          field.setCustomValidity('Compila questo campo.');
+          showFieldError(fieldId, errorId, requiredFieldMessages[fieldId]);
+        }
+      });
+
+      field.addEventListener('input', () => {
+        field.setCustomValidity('');
+        if (!field.value.trim()) {
+          if (hasTriedSubmit) {
+            showFieldError(fieldId, errorId, requiredFieldMessages[fieldId]);
+          } else {
+            clearFieldError(fieldId, errorId);
+          }
+          return;
+        }
+        clearFieldError(fieldId, errorId);
+      });
+
+      field.addEventListener('blur', () => {
+        if (hasTriedSubmit && field.required && !field.value.trim()) {
+          field.setCustomValidity('Compila questo campo.');
+          showFieldError(fieldId, errorId, requiredFieldMessages[fieldId]);
+          field.reportValidity();
+        } else {
+          field.setCustomValidity('');
+        }
+      });
     });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      hasTriedSubmit = true;
 
       const username = document.getElementById('username').value.trim();
       const nome = document.getElementById('nome').value.trim();
