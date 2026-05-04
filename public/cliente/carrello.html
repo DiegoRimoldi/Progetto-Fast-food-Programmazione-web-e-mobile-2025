@@ -330,8 +330,8 @@
 
     async function rimuoviDalCarrello(mealId) {
       try {
-        var response = await fetchConControlloToken(apiBase + "/carts/remove", {
-          method: "PUT",
+        var response = await fetchConControlloToken(apiBase + "/carts/me/items/" + encodeURIComponent(mealId), {
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + localStorage.getItem("token")

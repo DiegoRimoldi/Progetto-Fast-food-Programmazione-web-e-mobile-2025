@@ -243,8 +243,8 @@ ordersRouter.post("/", authenticateUser, async (req, res) => {
 });
 
 
-// PUT /orders/:id - Modifica stato ordine (Richiede autenticazione ristoratore)
-ordersRouter.put("/:id", authenticateUser, authorizeRistoratore, async (req, res) => {
+// PATCH /orders/:id/status - Modifica stato ordine (Richiede autenticazione ristoratore)
+const updateOrderStatus = async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -289,7 +289,10 @@ ordersRouter.put("/:id", authenticateUser, authorizeRistoratore, async (req, res
     console.error(err);
     res.status(500).json({ error: "Errore nell'aggiornamento ordine" });
   }
-});
+};
+
+ordersRouter.patch("/:id/status", authenticateUser, authorizeRistoratore, updateOrderStatus);
+ordersRouter.put("/:id", authenticateUser, authorizeRistoratore, updateOrderStatus);
 
 // GET /orders - Lista ordini (Cliente solo propri, Ristoratore solo quelli relativi al suo ristorante)
 ordersRouter.get("/", authenticateUser, async (req, res) => {
