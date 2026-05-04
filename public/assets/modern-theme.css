@@ -1,10 +1,3 @@
-/* SEZIONE STILI: Regole organizzate per tipografia, layout, componenti e responsive design. */
-/*
-  Foglio di stile principale del tema moderno.
-  Definisce palette, componenti UI e regole tipografiche
-  condivise tra le diverse pagine dell'interfaccia.
-*/
-
 :root {
   --brand-primary: #0d6efd;
   --brand-accent: #fecd4c;
