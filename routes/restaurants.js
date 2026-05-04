@@ -303,7 +303,15 @@ router.put("/:restaurantId", authenticateUser, authorizeRistoratore, async (req,
     const updateDoc={};
 
     if (name) updateDoc.name = name;
-    if (address) updateDoc.address = address;
+    if (address) {
+      const addressValidation = await validateAddressWithOpenStreetMap(address);
+      if (!addressValidation.valid) {
+        return res.status(400).json({
+          error: `Indirizzo ristorante non valido. ${addressValidation.reason}`
+        });
+      }
+      updateDoc.address = address;
+    }
     if (numero_di_telefono) updateDoc.numero_di_telefono = numero_di_telefono;
     if (piva) updateDoc.piva = piva;
     if (menu) updateDoc.menu = menu;
