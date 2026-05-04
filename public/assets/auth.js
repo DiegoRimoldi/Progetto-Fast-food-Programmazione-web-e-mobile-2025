@@ -9,8 +9,13 @@
     return window.location.pathname || '/';
   }
 
+  function normalizePathname(pathname) {
+    if (!pathname) return '/';
+    return pathname.split('?')[0].split('#')[0] || '/';
+  }
+
   function isAuthPage(pathname) {
-    return AUTH_PAGES.includes(pathname);
+    return AUTH_PAGES.includes(normalizePathname(pathname));
   }
 
   function saveLastVisitedPath(pathname) {
