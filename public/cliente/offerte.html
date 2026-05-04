@@ -135,20 +135,32 @@
       });
     }
 
-    function buildScenarioFeedback(hasOffers, hasPreferences, hasPreferenceMatches) {
+    function buildScenarioContent(hasOffers, hasPreferences, hasPreferenceMatches) {
       if (!hasOffers && !hasPreferences) {
-        return '<div class="alert alert-secondary mb-0">Al momento questo ristorante non ha piatti in offerta. Non ci sono offerte disponibili, indipendentemente dalle preferenze alimentari.</div>';
+        return {
+          cardMessage: "Nessuna offerta disponibile al momento. Questo ristorante non ha ancora attivato promozioni.",
+          subtitleMessage: ""
+        };
       }
       if (hasOffers && !hasPreferences) {
-        return '<div class="alert alert-info mb-0">Sono disponibili offerte attive. Non hai impostato preferenze alimentari, quindi visualizzi tutti i piatti in promozione.</div>';
+        return {
+          cardMessage: "Nessuna offerta disponibile al momento in base a filtri alimentari, perché non hai ancora impostato preferenze: qui trovi tutte le promozioni attive del ristorante.",
+          subtitleMessage: ""
+        };
       }
       if (!hasOffers && hasPreferences) {
-        return '<div class="alert alert-secondary mb-0">Hai selezionato preferenze alimentari, ma al momento il ristorante non ha piatti in offerta.</div>';
+        return {
+          cardMessage: "Nessuna offerta disponibile al momento. Le tue preferenze sono salvate, ma il ristorante non ha promozioni pubblicate in questo momento.",
+          subtitleMessage: ""
+        };
       }
       if (hasOffers && hasPreferences && !hasPreferenceMatches) {
-        return '<div class="alert alert-warning mb-0">Sono presenti offerte attive, ma non combaciano con le tue preferenze alimentari. Ti mostriamo comunque tutti i piatti in offerta.</div>';
+        return {
+          cardMessage: "",
+          subtitleMessage: "Le offerte attive non coincidono con le tue preferenze alimentari: puoi comunque consultarle tutte qui sotto."
+        };
       }
-      return "";
+      return { cardMessage: "", subtitleMessage: "" };
     }
 
     async function addToCart(meal) {
@@ -163,10 +175,13 @@
       } catch (err) { console.error(err); alert("Impossibile aggiungere il prodotto al carrello."); }
     }
 
-    function renderGroupedOffers(meals) {
+    function renderGroupedOffers(meals, emptyMessage) {
       var container = document.getElementById("offersByCategory");
       container.innerHTML = "";
-      if (meals.length === 0) { container.innerHTML = '<div class="card panel-card"><div class="card-body p-4 text-muted">Nessuna offerta disponibile al momento.</div></div>'; return; }
+      if (meals.length === 0) {
+        container.innerHTML = '<div class="card panel-card"><div class="card-body p-4 text-muted">' + (emptyMessage || "Nessuna offerta disponibile al momento.") + '</div></div>';
+        return;
+      }
       var grouped = meals.reduce(function(acc, meal) { (acc[meal.strCategory] ||= []).push(meal); return acc; }, {});
       Object.keys(grouped).sort().forEach(function(category) {
         var section = document.createElement("section"); section.className = "mb-4";
@@ -267,12 +282,17 @@
         var hasPreferences = userPreferences.length > 0;
         var hasPreferenceMatches = filteredByPreferences.length > 0;
 
+        var scenarioContent = buildScenarioContent(hasOffers, hasPreferences, hasPreferenceMatches);
+
         allOffers = (hasPreferences && hasOffers && !hasPreferenceMatches)
           ? allAvailableOffers
           : (hasPreferences ? filteredByPreferences : allAvailableOffers);
 
-        renderGroupedOffers(allOffers);
-        feedback.innerHTML = buildScenarioFeedback(hasOffers, hasPreferences, hasPreferenceMatches);
+        renderGroupedOffers(allOffers, scenarioContent.cardMessage);
+        document.getElementById("preferenceInfo").textContent = scenarioContent.subtitleMessage || document.getElementById("preferenceInfo").textContent;
+        feedback.innerHTML = scenarioContent.cardMessage && allOffers.length > 0
+          ? '<div class="card panel-card mb-4"><div class="card-body p-3 text-muted">' + scenarioContent.cardMessage + '</div></div>'
+          : "";
       } catch (error) {
         console.error(error);
         feedback.innerHTML = '<div class="alert alert-danger">Errore durante il caricamento delle offerte.</div>';
