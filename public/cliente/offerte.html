@@ -289,7 +289,11 @@
           : (hasPreferences ? filteredByPreferences : allAvailableOffers);
 
         renderGroupedOffers(allOffers, scenarioContent.cardMessage);
-        document.getElementById("preferenceInfo").textContent = scenarioContent.subtitleMessage || document.getElementById("preferenceInfo").textContent;
+        if (hasOffers && hasPreferences && hasPreferenceMatches) {
+          document.getElementById("preferenceInfo").textContent = "Ottimo! Le offerte disponibili sono in linea con le tue preferenze alimentari.";
+        } else {
+          document.getElementById("preferenceInfo").textContent = scenarioContent.subtitleMessage || document.getElementById("preferenceInfo").textContent;
+        }
         feedback.innerHTML = scenarioContent.cardMessage && allOffers.length > 0
           ? '<div class="card panel-card mb-4"><div class="card-body p-3 text-muted">' + scenarioContent.cardMessage + '</div></div>'
           : "";
