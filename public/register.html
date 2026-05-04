@@ -181,6 +181,7 @@
     const form = document.getElementById('registerForm');
     const alertDiv = document.getElementById('alert');
     const preferenzeContainer = document.getElementById('preferenze');
+    let lastInvalidFieldId = null;
 
     function updateFields() {
       if(roleSelect.value === 'cliente'){
@@ -247,6 +248,21 @@
     }
 
     roleSelect.addEventListener('change', updateFields);
+    [
+      ['nome', 'nomeError'],
+      ['cognome', 'cognomeError'],
+      ['username', 'usernameError'],
+      ['email', 'emailError'],
+      ['password', 'passwordError'],
+      ['numero_di_telefono', 'numeroDiTelefonoError'],
+      ['indirizzo', 'indirizzoError'],
+      ['metodo_pagamento', 'metodoPagamentoError'],
+      ['piva', 'pivaError']
+    ].forEach(([fieldId, errorId]) => {
+      const field = document.getElementById(fieldId);
+      if (!field) return;
+      field.addEventListener('input', () => clearFieldError(fieldId, errorId));
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -267,6 +283,7 @@
 
       const payload = { nome, cognome, username, email, password, numero_di_telefono, role, indirizzo, metodo_pagamento, preferenze, piva };
       alertDiv.innerHTML = "";
+      resetErrors();
 
       try {
         const res = await fetch("http://localhost:3000/users/register", {
