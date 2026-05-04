@@ -70,8 +70,12 @@ usersRouter.post("/register", async (req, res) => {
       role
     } = req.body;
 
-    if (!nome || !cognome || !username || !email || !password || !numero_di_telefono) {
-      return res.status(400).json({ error: "nome, cognome, username, email, password e numero di telefono sono obbligatori" });
+    if (role === "ristoratore" && (!nome || !cognome || !username || !email || !password || !numero_di_telefono || !piva)) {
+      return res.status(400).json({ error: "Nome, Cognome, Username, Email, Password, Numero di telefono e Partita IVA sono obbligatori" });
+    }
+
+    if (role === "cliente" && (!nome || !cognome || !username || !email || !password || !numero_di_telefono || !indirizzo || !metodo_pagamento)) {
+      return res.status(400).json({ error: "Nome, Cognome, Username, Email, Password, Numero di telefono, Indirizzo e Metodo di Pagamento sono obbligatori" });
     }
 
     if (!["cliente", "ristoratore"].includes(role)) {
@@ -79,7 +83,7 @@ usersRouter.post("/register", async (req, res) => {
     }
 
     if (role === "cliente" && (!indirizzo || !metodo_pagamento)) {
-      return res.status(400).json({ error: "Indirizzo e metodo di pagamento sono obbligatori" });
+      return res.status(400).json({ error: "Indirizzo e Metodo di Pagamento sono obbligatori" });
     }
 
     if (role === "cliente") {
@@ -100,7 +104,7 @@ usersRouter.post("/register", async (req, res) => {
     });
 
     if (userExists) {
-      return res.status(409).json({ error: "Username o email già in uso" });
+      return res.status(409).json({ error: "Username o Email già in uso" });
     }
 
     // Hash password
@@ -153,7 +157,7 @@ usersRouter.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ error: "username e password sono obbligatori" });
+      return res.status(400).json({ error: "Username e Password sono obbligatori" });
     }
 
     const user = await db.collection("users").findOne({ username });
@@ -218,8 +222,12 @@ usersRouter.put("/me", authenticateUser, async (req, res) => {
       piva = ""
     } = req.body;
 
-    if (!nome || !cognome || !username || !email || !numero_di_telefono) {
-      return res.status(400).json({ error: "nome, cognome, username, email e numero di telefono sono obbligatori" });
+    if (role === "ristoratore" && (!nome || !cognome || !username || !email || !numero_di_telefono || !piva)) {
+      return res.status(400).json({ error: "Nome, Cognome, Username, Email, Numero di telefono e Partita Iva sono obbligatori" });
+    }
+
+    if (role === "cliente" && (!nome || !cognome || !username || !email || !numero_di_telefono || !indirizzo || !metodo_pagamento)) {
+      return res.status(400).json({ error: "Nome, Cognome, Username, Email, Numero di telefono, Indirizzo e Metodo di Pagamento sono obbligatori" });
     }
 
     if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
@@ -235,7 +243,7 @@ usersRouter.put("/me", authenticateUser, async (req, res) => {
     }
 
     if (role === "cliente" && (!indirizzo || !metodo_pagamento)) {
-      return res.status(400).json({ error: "Indirizzo e metodo di pagamento sono obbligatori" });
+      return res.status(400).json({ error: "Indirizzo e Metodo di Pagamento sono obbligatori" });
     }
 
     if (role === "cliente") {
@@ -267,7 +275,7 @@ usersRouter.put("/me", authenticateUser, async (req, res) => {
       if (query.$or.length > 0) {
         const exists = await db.collection("users").findOne(query);
         if (exists) {
-          return res.status(409).json({ error: "Username o email già in uso" });
+          return res.status(409).json({ error: "Username o Email già in uso" });
         }
       }
     }
@@ -319,16 +327,16 @@ usersRouter.put("/me/password", authenticateUser, async (req, res) => {
     }
     
     if (newPassword === oldPassword) {
-      return res.status(400).json({ error: "La nuova password deve essere diversa dalla vecchia password" });
+      return res.status(400).json({ error: "La nuova Password deve essere diversa dalla vecchia Password" });
     }
 
     if (!/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(newPassword)) {
-      return res.status(400).json({ error: "Nuova password non valida: minimo 8 caratteri, almeno una lettera, un numero e un simbolo" });
+      return res.status(400).json({ error: "Nuova Password non valida: minimo 8 caratteri, almeno una lettera, un numero e un simbolo" });
     }
 
     const passwordMatch = await bcrypt.compare(oldPassword,user.password);
     if(!passwordMatch){
-      return res.status(400).json({ error: "La Vecchia password non corrisponde col valore indicato." });
+      return res.status(400).json({ error: "La Vecchia Password non corrisponde col valore indicato." });
 
     }
 

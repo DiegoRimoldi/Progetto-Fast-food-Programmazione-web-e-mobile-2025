@@ -234,7 +234,7 @@ router.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
   const user = req.user;
   const { name, address, numero_di_telefono, piva, menu, bacheca = [], description, image } = req.body;
   if (!name || !address || !numero_di_telefono) {
-    return res.status(400).json({ error: "Nome, indirizzo e numero di telefono sono obbligatori" });
+    return res.status(400).json({ error: "Nome, Indirizzo e Numero di Telefono sono obbligatori" });
   }
 
   const addressValidation = await validateAddressWithOpenStreetMap(address);
