@@ -1,9 +1,17 @@
+/*
+  Router dedicato ai ristoranti.
+  Definisce endpoint per creazione/aggiornamento ristorante, consultazione schede
+  e gestione delle informazioni operative mostrate ai clienti.
+*/
+
+// SEZIONE: Import dei moduli necessari al file.
 import express from "express";
 import { ObjectId } from "mongodb";
 import authenticateUser from "../middlewares/authenticateUser.js";
 import authorizeRistoratore from "../middlewares/authorizeRistoratore.js";
 import { validateAddressWithOpenStreetMap } from "../utils/addressValidation.js";
 
+// SEZIONE: Dichiarazione di costanti, middleware locali o oggetti di supporto.
 const router = express.Router();
 
 function parseOrderDateToDate(rawValue) {
@@ -36,7 +44,9 @@ function getYyyyMmDd(dateValue) {
  *  - q: stringa da cercare nel nome
  *  - address: stringa da cercare nell'indirizzo
  */
-router.get("/search", async (req, res) => {
+router
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.get("/search", async (req, res) => {
   const db = req.app.locals.db;
   const { q, address } = req.query;
 
@@ -70,7 +80,9 @@ router.get("/search", async (req, res) => {
  * Query params:
  *  - meal: stringa da cercare nel nome del piatto
  */
-router.get("/by-meal", async (req, res) => {
+router
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.get("/by-meal", async (req, res) => {
   const db = req.app.locals.db;
   const { meal } = req.query;
 
@@ -116,7 +128,9 @@ router.get("/by-meal", async (req, res) => {
 });
 
 //GET /restaurants - Lista ristoranti registrati
-router.get("/", async (req, res) => {
+router
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.get("/", async (req, res) => {
   const db = req.app.locals.db;
   try {
     const restaurants = await db.collection("restaurants").find({}).toArray();
@@ -129,7 +143,9 @@ router.get("/", async (req, res) => {
 
 
 // GET /restaurants/statistics - Statistiche ristorante (Richiede autenticazione ristoratore)
-router.get("/statistics", authenticateUser, authorizeRistoratore, async (req, res) => {
+router
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.get("/statistics", authenticateUser, authorizeRistoratore, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -201,7 +217,9 @@ router.get("/statistics", authenticateUser, authorizeRistoratore, async (req, re
 });
 
 //GET /restaurants/:restaurantID - Informazioni di uno specifico ristorante, menù incluso
-router.get("/:restaurantId", async (req, res) => {
+router
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.get("/:restaurantId", async (req, res) => {
   const db = req.app.locals.db;
   const restaurantId = req.params.restaurantId;
 
@@ -229,7 +247,9 @@ router.get("/:restaurantId", async (req, res) => {
 
 
 // POST /restaurants - Crea un nuovo ristorante (Richiede autenticazione ristoratore)
-router.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
+router
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
   const db = req.app.locals.db;
   const user = req.user;
   const { name, address, numero_di_telefono, piva, menu, bacheca = [], description, image } = req.body;
@@ -277,7 +297,9 @@ router.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
 });
 
 //PUT /restaurants/:restaurantId - Modifica dati ristorante (Richiede autenticazione ristoratore)
-router.put("/:restaurantId", authenticateUser, authorizeRistoratore, async (req, res) => {
+router
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.put("/:restaurantId", authenticateUser, authorizeRistoratore, async (req, res) => {
   const db = req.app.locals.db;
   const user = req.user;
   const restaurantId = req.params.restaurantId;
@@ -333,7 +355,9 @@ router.put("/:restaurantId", authenticateUser, authorizeRistoratore, async (req,
 });
 
 //DELETE /restaurants/:restaurantId - Elimina ristorante, tutti gli ordini e tutti i piatti personalizzati associati (Richiede autenticazione ristoratore)
-router.delete("/:restaurantId", authenticateUser, authorizeRistoratore, async (req, res) => {
+router
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.delete("/:restaurantId", authenticateUser, authorizeRistoratore, async (req, res) => {
   const db = req.app.locals.db;
   const user = req.user;
   const restaurantId = req.params.restaurantId;
@@ -364,4 +388,6 @@ router.delete("/:restaurantId", authenticateUser, authorizeRistoratore, async (r
 });
 
 
+
+// SEZIONE EXPORT: Esportiamo il modulo per renderlo riutilizzabile nel progetto.
 export default router;

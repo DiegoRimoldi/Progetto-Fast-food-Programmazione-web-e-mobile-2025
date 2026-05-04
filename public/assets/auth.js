@@ -1,3 +1,9 @@
+/*
+  Script frontend per autenticazione e sessione client.
+  Gestisce token/localStorage, protezione pagine e flusso login/logout
+  coordinando le chiamate API dal browser.
+*/
+
 (function () {
   var AUTH_PAGES = ['/login.html', '/register.html', '/logout.html', '/index.html', '/'];
   var ROLE_PATH_PREFIXES = {
