@@ -328,7 +328,7 @@
       const errors = validateForm(payload);
       if (errors.length > 0) {
         errors.forEach(({ fieldId, errorId, message }) => showFieldError(fieldId, errorId, message));
-        alert('Compila questo campo');
+        alert(`Correggi questo campo: ${errors[0].message}`);
         focusAndScrollToField(errors[0].fieldId);
         return;
       }
