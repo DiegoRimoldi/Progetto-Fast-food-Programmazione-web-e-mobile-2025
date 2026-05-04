@@ -181,7 +181,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100">Registrati</button>
+      <button type="submit" id="registerSubmit" class="btn btn-primary w-100">Registrati</button>
     </form>
     <div id="statusMessage" class="status-message" aria-live="polite"></div>
     <a href="login.html" class="login-link">Hai già un account? Accedi</a>
@@ -194,6 +194,20 @@
     const form = document.getElementById('registerForm');
     const statusMessageDiv = document.getElementById('statusMessage');
     const preferenzeContainer = document.getElementById('preferenze');
+    const registerSubmit = document.getElementById('registerSubmit');
+    let hasTriedSubmit = false;
+
+    const requiredFieldMessages = {
+      nome: 'Inserisci il Nome.',
+      cognome: 'Inserisci il Cognome.',
+      username: 'Inserisci lo Username.',
+      email: "Inserisci l'Email.",
+      password: 'Inserisci la Password.',
+      numero_di_telefono: 'Inserisci il Numero di Telefono.',
+      indirizzo: "Inserisci l'Indirizzo di Consegna.",
+      metodo_pagamento: 'Inserisci il Metodo di Pagamento.',
+      piva: 'Inserisci la Partita IVA.'
+    };
     function updateFields() {
       const indirizzoField = document.getElementById('indirizzo');
       const metodoPagamentoField = document.getElementById('metodo_pagamento');
@@ -312,6 +326,9 @@
     }
 
     roleSelect.addEventListener('change', updateFields);
+    registerSubmit.addEventListener('click', () => {
+      hasTriedSubmit = true;
+    });
     [
       ['nome', 'nomeError'],
       ['cognome', 'cognomeError'],
@@ -325,11 +342,47 @@
     ].forEach(([fieldId, errorId]) => {
       const field = document.getElementById(fieldId);
       if (!field) return;
-      field.addEventListener('input', () => clearFieldError(fieldId, errorId));
+
+      field.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          hasTriedSubmit = true;
+        }
+      });
+
+      field.addEventListener('invalid', () => {
+        if (field.validity.valueMissing) {
+          field.setCustomValidity('Compila questo campo.');
+          showFieldError(fieldId, errorId, requiredFieldMessages[fieldId]);
+        }
+      });
+
+      field.addEventListener('input', () => {
+        field.setCustomValidity('');
+        if (!field.value.trim()) {
+          if (hasTriedSubmit) {
+            showFieldError(fieldId, errorId, requiredFieldMessages[fieldId]);
+          } else {
+            clearFieldError(fieldId, errorId);
+          }
+          return;
+        }
+        clearFieldError(fieldId, errorId);
+      });
+
+      field.addEventListener('blur', () => {
+        if (hasTriedSubmit && field.required && !field.value.trim()) {
+          field.setCustomValidity('Compila questo campo.');
+          showFieldError(fieldId, errorId, requiredFieldMessages[fieldId]);
+          field.reportValidity();
+        } else {
+          field.setCustomValidity('');
+        }
+      });
     });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      hasTriedSubmit = true;
 
       const username = document.getElementById('username').value.trim();
       const nome = document.getElementById('nome').value.trim();
