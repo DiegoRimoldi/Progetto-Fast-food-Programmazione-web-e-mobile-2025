@@ -114,7 +114,17 @@
 
         localStorage.setItem("token", data.token);
 
-        const payload = JSON.parse(atob(data.token.split('.')[1])); //atob, decodifica stringa Base64
+        const tokenParts = (data.token || "").split('.');
+        if (tokenParts.length < 2) {
+          loginError.textContent = "Token non valido ricevuto dal server";
+          loginError.style.display = "block";
+          return;
+        }
+
+        const base64Url = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+        const padding = '='.repeat((4 - (base64Url.length % 4)) % 4);
+        const payload = JSON.parse(atob(base64Url + padding));
+
         localStorage.setItem("role", payload.role);
         localStorage.setItem("userId", payload.userId);
         localStorage.setItem(`token_${payload.role}`, data.token);
