@@ -13,14 +13,24 @@ const OSRM_TIMEOUT_MS = 7000;
 async function geocodeAddress(address) {
   const url = new URL("https://nominatim.openstreetmap.org/search");
   url.searchParams.set("q", address);
-  url.searchParams.set("format", "json");
+  url.searchParams.set("format", "jsonv2");
   url.searchParams.set("limit", "1");
 
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "FastFoodProject/1.0 (A.A.2025-2026)"
-    }
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OSRM_TIMEOUT_MS);
+
+  let response;
+  try {
+    response = await fetch(url, {
+      headers: {
+        "User-Agent": "FastFoodProject/1.0 (A.A.2025-2026)",
+        "Accept": "application/json"
+      },
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     throw new Error(`Errore geocoding OpenStreetMap: ${response.status}`);
