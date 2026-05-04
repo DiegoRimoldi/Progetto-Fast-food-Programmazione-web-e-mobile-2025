@@ -87,6 +87,16 @@
       border-color: #0d6efd;
       box-shadow: 0 6px 14px rgba(13, 110, 253, 0.25);
     }
+    .field-error {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 4px;
+      display: none;
+    }
+    .is-invalid-custom {
+      border-color: #dc3545 !important;
+      box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.25) !important;
+    }
   </style>
     <link rel="icon" type="image/png" href="assets/Favicon.png">
 </head>
@@ -98,26 +108,32 @@
       <div class="mb-3">
         <label for="nome" class="form-label">Nome *</label>
         <input type="text" class="form-control" id="nome" placeholder="es. Mario"/>
+        <div class="field-error" id="nomeError"></div>
       </div>
       <div class="mb-3">
         <label for="cognome" class="form-label">Cognome *</label>
         <input type="text" class="form-control" id="cognome" placeholder="es. Rossi"/>
+        <div class="field-error" id="cognomeError"></div>
       </div>
       <div class="mb-3">
         <label for="username" class="form-label">Username *</label>
         <input type="text" class="form-control" id="username" placeholder="es. mario_rossi89 (3-20 caratteri: lettere, numeri, _)"/>
+        <div class="field-error" id="usernameError"></div>
       </div>
       <div class="mb-3">
         <label for="email" class="form-label">Email *</label>
         <input type="email" class="form-control" id="email" placeholder="es. mario.rossi@email.com" />
+        <div class="field-error" id="emailError"></div>
       </div>
       <div class="mb-3">
         <label for="password" class="form-label">Password *</label>
         <input type="password" class="form-control" id="password" placeholder="es. M1lano!2026"/>
+        <div class="field-error" id="passwordError"></div>
       </div>
       <div class="mb-3">
         <label for="numero_di_telefono" class="form-label">Numero di telefono *</label>
         <input type="text" class="form-control" id="numero_di_telefono" placeholder="es. +39 333 123 4567"/>
+        <div class="field-error" id="numeroDiTelefonoError"></div>
       </div>
       <div class="mb-3">
         <label class="form-label">Ruolo *</label>
@@ -131,10 +147,12 @@
         <div class="mb-3">
           <label for="indirizzo" class="form-label">Indirizzo*</label>
           <input type="text" placeholder="es. Via Legnano 20, 20121 Milano" class="form-control" id="indirizzo"/>
+          <div class="field-error" id="indirizzoError"></div>
         </div>
         <div class="mb-3">
           <label for="metodo_pagamento" class="form-label">Metodo di pagamento*</label>
           <input type="text" class="form-control" id="metodo_pagamento" placeholder="es. Carta di credito (Visa)"/>
+          <div class="field-error" id="metodoPagamentoError"></div>
         </div>
         <div class="mb-3">
           <label class="form-label" for="preferenze">Preferenze Alimentari (facoltative)</label>
@@ -147,6 +165,7 @@
         <div class="mb-3">
           <label for="piva" class="form-label">P.IVA*</label>
           <input type="text" class="form-control" id="piva" placeholder="es. 12345678901"/>
+          <div class="field-error" id="pivaError"></div>
         </div>
       </div>
 
@@ -187,6 +206,25 @@
 
     function getPreferenzeSelezionate() {
       return Array.from(preferenzeContainer.querySelectorAll('.pref-chip.active')).map((chip) => chip.dataset.value);
+    }
+
+    function resetErrors() {
+      document.querySelectorAll('.field-error').forEach((errorDiv) => {
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+      });
+      document.querySelectorAll('.form-control').forEach((input) => {
+        input.classList.remove('is-invalid-custom');
+      });
+    }
+
+    function showFieldError(fieldId, errorId, message) {
+      const field = document.getElementById(fieldId);
+      const errorDiv = document.getElementById(errorId);
+      if (!field || !errorDiv) return;
+      field.classList.add('is-invalid-custom');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
     }
 
     preferenzeContainer.addEventListener('click', (event) => {
@@ -230,11 +268,60 @@
 
       const payload = { nome, cognome, username, email, password, numero_di_telefono, role, indirizzo, metodo_pagamento, preferenze, piva };
       alertDiv.innerHTML = "";
+      resetErrors();
 
-      if (!validaUsername(username)) {
-        alertDiv.innerHTML = `<div class="alert alert-danger text-center">Username non valido. Usa 3-20 caratteri tra lettere, numeri e underscore (_).</div>`;
+      const missingFields = [];
+
+      if (!nome) {
+        showFieldError('nome', 'nomeError', 'Inserisci il nome.');
+        missingFields.push({ fieldId: 'nome', label: 'nome' });
+      }
+      if (!cognome) {
+        showFieldError('cognome', 'cognomeError', 'Inserisci il cognome.');
+        missingFields.push({ fieldId: 'cognome', label: 'cognome' });
+      }
+      if (!username) {
+        showFieldError('username', 'usernameError', 'Inserisci lo username.');
+        missingFields.push({ fieldId: 'username', label: 'username' });
+      } else if (!validaUsername(username)) {
+        showFieldError('username', 'usernameError', 'Username non valido: usa 3-20 caratteri tra lettere, numeri e underscore (_).');
+        missingFields.push({ fieldId: 'username', label: 'username non valido' });
+      }
+      if (!email) {
+        showFieldError('email', 'emailError', 'Inserisci l\'email.');
+        missingFields.push({ fieldId: 'email', label: 'email' });
+      }
+      if (!password) {
+        showFieldError('password', 'passwordError', 'Inserisci la password.');
+        missingFields.push({ fieldId: 'password', label: 'password' });
+      }
+      if (!numero_di_telefono) {
+        showFieldError('numero_di_telefono', 'numeroDiTelefonoError', 'Inserisci il numero di telefono.');
+        missingFields.push({ fieldId: 'numero_di_telefono', label: 'numero di telefono' });
+      }
+      if (role === 'cliente' && !indirizzo) {
+        showFieldError('indirizzo', 'indirizzoError', 'Inserisci l\'indirizzo.');
+        missingFields.push({ fieldId: 'indirizzo', label: 'indirizzo' });
+      }
+      if (role === 'cliente' && !metodo_pagamento) {
+        showFieldError('metodo_pagamento', 'metodoPagamentoError', 'Inserisci il metodo di pagamento.');
+        missingFields.push({ fieldId: 'metodo_pagamento', label: 'metodo di pagamento' });
+      }
+      if (role === 'ristoratore' && !piva) {
+        showFieldError('piva', 'pivaError', 'Inserisci la P.IVA.');
+        missingFields.push({ fieldId: 'piva', label: 'P.IVA' });
+      }
+
+      if (missingFields.length > 0) {
+        alert('Compila questo campo');
+        const mancanti = missingFields.map((item) => item.label).join(', ');
+        alertDiv.innerHTML = `<div class="alert alert-danger text-center">Compila i campi richiesti: ${mancanti}.</div>`;
+        const firstField = document.getElementById(missingFields[0].fieldId);
+        firstField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstField.focus();
         return;
       }
+
 
 
       try {
