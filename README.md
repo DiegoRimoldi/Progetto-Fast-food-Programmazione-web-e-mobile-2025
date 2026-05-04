@@ -9,7 +9,9 @@ Per avviare l’applicazione, navigare nella root del repository ed installare i
 
 Successivamente, è possibile avviare il backend mediante il comando `npm run dev` (oppure `npm start`).
 
-Successivamente, è necessario configurare un file `.env` con almeno queste variabili: `MONGODB_URI`, `MONGODB_DB`, `JWT_SECRET`, `JWT_EXPIRES_IN`.
+Successivamente, è necessario configurare un file `.env` con almeno queste variabili: `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`.
+
+`MONGODB_DB` è consigliata: se omessa, il backend prova a ricavare automaticamente il nome del database dal path presente in `MONGODB_URI`.
 
 La pagina iniziale è servita da Express in `public/` ed è raggiungibile avviando il backend e aprendo l'URL `http://localhost:3000`.
 
