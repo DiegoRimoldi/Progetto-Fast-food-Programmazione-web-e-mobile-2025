@@ -267,8 +267,8 @@
       };
 
       try {
-        var response = await fetchConControlloToken(apiBase + "/carts/add", {
-          method: "PUT",
+        var response = await fetchConControlloToken(apiBase + "/carts/me/items", {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + localStorage.getItem("token")

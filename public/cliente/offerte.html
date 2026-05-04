@@ -169,7 +169,7 @@
       qtyInput.value = quantita;
       var payload = { meal_id: meal._id, nome: meal.strMeal, quantita: quantita, prezzo_unitario: meal.prezzo_scontato, prezzo_originale: meal.prezzo, in_offerta: true, sconto_percentuale: meal.sconto_percentuale, ristorante_id: meal.ristorante_id || restaurantId };
       try {
-        var response = await fetchWithAuth(apiBase + "/carts/add", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        var response = await fetchWithAuth(apiBase + "/carts/me/items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         if (!response || !response.ok) throw new Error("Errore durante aggiunta al carrello");
         alert('"' + meal.strMeal + '" aggiunto al carrello al prezzo scontato!');
       } catch (err) { console.error(err); alert("Impossibile aggiungere il prodotto al carrello."); }
