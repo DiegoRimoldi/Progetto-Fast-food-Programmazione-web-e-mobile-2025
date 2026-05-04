@@ -1,10 +1,3 @@
-/*
-  Modulo di configurazione applicativa.
-  Centralizza variabili d'ambiente e costanti runtime
-  per evitare valori hardcoded sparsi nei vari moduli.
-*/
-
-// SEZIONE: Import dei moduli necessari al file.
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -13,8 +6,7 @@ function extractDbNameFromMongoUri(uri) {
   if (!uri) return null;
 
   try {
-    // SEZIONE: Dichiarazione di costanti, middleware locali o oggetti di supporto.
-const parsed = new URL(uri);
+    const parsed = new URL(uri);
     const dbName = parsed.pathname?.replace(/^\//, "").split("/")[0];
     return dbName || null;
   } catch {
@@ -49,6 +41,4 @@ const config = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
 };
 
-
-// SEZIONE EXPORT: Esportiamo il modulo per renderlo riutilizzabile nel progetto.
 export default config;

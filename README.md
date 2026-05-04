@@ -35,7 +35,7 @@ La pagina iniziale è servita da Express in `public/` ed è raggiungibile avvian
 ┃ ┣ 📂cliente //Pagine d'accesso esclusivo a clienti
 ┃ ┃ ┣ 📜carrello.html
 ┃ ┃ ┣ 📜home.html
-┃ ┃ ┣ 📜menu.html
+┃ ┃ ┣ 📜menù.html
 ┃ ┃ ┗ 📜ordini.html
 ┃ ┣ 📂ristoratore //Pagine d'accesso esclusivo a ristoratori
 ┃ ┃ ┣ 📜creaRistorante.html

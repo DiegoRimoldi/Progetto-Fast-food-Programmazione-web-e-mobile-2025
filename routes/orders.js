@@ -1,17 +1,9 @@
-/*
-  Router per il ciclo di vita degli ordini.
-  Qui definiamo endpoint per creazione ordine, consultazione storico
-  e aggiornamenti di stato lato cliente/ristoratore con i relativi controlli.
-*/
-
-// SEZIONE: Import dei moduli necessari al file.
 import express from "express";
 import { ObjectId } from "mongodb";
 import authenticateUser from "../middlewares/authenticateUser.js";
 import authorizeRistoratore from "../middlewares/authorizeRistoratore.js";
 import { DateTime } from "luxon";
 
-// SEZIONE: Dichiarazione di costanti, middleware locali o oggetti di supporto.
 const ordersRouter = express.Router();
 const validStates = ["ordinato", "in preparazione", "in consegna", "consegnato"];
 const DELIVERY_COST_PER_KM = 0.7;
@@ -119,9 +111,7 @@ function calculateOrderPreparationMinutes(order) {
 }
 
 // POST /orders - Crea nuovo ordine per l'utente autenticato
-ordersRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.post("/", authenticateUser, async (req, res) => {
+ordersRouter.post("/", authenticateUser, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -301,17 +291,11 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-ordersRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.patch("/:id/status", authenticateUser, authorizeRistoratore, updateOrderStatus);
-ordersRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.put("/:id", authenticateUser, authorizeRistoratore, updateOrderStatus);
+ordersRouter.patch("/:id/status", authenticateUser, authorizeRistoratore, updateOrderStatus);
+ordersRouter.put("/:id", authenticateUser, authorizeRistoratore, updateOrderStatus);
 
 // GET /orders - Lista ordini (Cliente solo propri, Ristoratore solo quelli relativi al suo ristorante)
-ordersRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.get("/", authenticateUser, async (req, res) => {
+ordersRouter.get("/", authenticateUser, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -356,9 +340,7 @@ ordersRouter
 });
 
 // PUT /orders/notifiche-consegna/ack - Segna come lette le notifiche consegna a domicilio per il ristoratore
-ordersRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.put("/notifiche-consegna/ack", authenticateUser, authorizeRistoratore, async (req, res) => {
+ordersRouter.put("/notifiche-consegna/ack", authenticateUser, authorizeRistoratore, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -388,9 +370,7 @@ ordersRouter
 
 
 // GET /orders/:id - Dettagli singolo ordine (Cliente solo propri, Ristoratore solo quelli relativi al suo ristorante)
-ordersRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.get("/:id", authenticateUser, async (req, res) => {
+ordersRouter.get("/:id", authenticateUser, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -432,9 +412,7 @@ ordersRouter
 
 
 // PUT /orders/:id/consegna - Conferma consegna da parte del cliente (per ordini con consegna a domicilio)
-ordersRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.put("/:id/consegna", authenticateUser, async (req, res) => {
+ordersRouter.put("/:id/consegna", authenticateUser, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -473,6 +451,4 @@ ordersRouter
 });
 
 
-
-// SEZIONE EXPORT: Esportiamo il modulo per renderlo riutilizzabile nel progetto.
 export default ordersRouter;

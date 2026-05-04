@@ -1,10 +1,3 @@
-/*
-  File di bootstrap del backend Express.
-  Qui configuriamo middleware globali, connessione al database, esposizione delle route
-  e avvio del server HTTP che renderà disponibili API e risorse statiche.
-*/
-
-// SEZIONE: Import dei moduli necessari al file.
 import express from "express";
 import { MongoClient } from "mongodb";
 import config from "./utils/config.js";
@@ -20,7 +13,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { ObjectId } from "mongodb";
 
-// SEZIONE: Dichiarazione di costanti, middleware locali o oggetti di supporto.
 const swaggerDocument = JSON.parse(fs.readFileSync("./Documents/swagger.json", "utf-8"));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,9 +56,7 @@ async function startServer() {
     await app.locals.db.command({ ping: 1 });
     await bootstrapInitialMeals(app.locals.db);
 
-    app
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.get("/", (req, res) => {
+    app.get("/", (req, res) => {
       res.sendFile(path.join(__dirname, "public", "index.html"));
     });
 

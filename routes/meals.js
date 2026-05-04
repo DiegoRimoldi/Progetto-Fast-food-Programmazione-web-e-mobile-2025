@@ -1,16 +1,8 @@
-/*
-  Router per la gestione dei piatti (meals).
-  Espone endpoint di consultazione e manutenzione catalogo,
-  distinguendo operazioni pubbliche da quelle riservate ai ristoratori.
-*/
-
-// SEZIONE: Import dei moduli necessari al file.
 import express from "express";
 import { ObjectId } from "mongodb";
 import authenticateUser from "../middlewares/authenticateUser.js";
 import authorizeRistoratore from "../middlewares/authorizeRistoratore.js";
 
-// SEZIONE: Dichiarazione di costanti, middleware locali o oggetti di supporto.
 const mealsRouter = express.Router();
 
 function parseCsv(value) {
@@ -21,9 +13,7 @@ function parseCsv(value) {
 }
 
 // GET /meals - Restituisce tutti i piatti, con filtri opzionali
-mealsRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.get("/", async (req, res) => {
+mealsRouter.get("/", async (req, res) => {
   try {
     const db = req.app.locals.db;
     const {
@@ -99,9 +89,7 @@ mealsRouter
 
 
 // PUT /meals/offerte - Aggiorna stato offerta per una lista di piatti del menu del ristoratore
-mealsRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.put("/offerte", authenticateUser, authorizeRistoratore, async (req, res) => {
+mealsRouter.put("/offerte", authenticateUser, authorizeRistoratore, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -159,9 +147,7 @@ mealsRouter
 });
 
 // GET /meals/:id - Dettagli singolo piatto, identificato per _id
-mealsRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.get("/:id", async (req, res) => {
+mealsRouter.get("/:id", async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { id } = req.params;
@@ -184,9 +170,7 @@ mealsRouter
 
 
 // POST /meals - Aggiunta piatto personalizzato (Richiede autenticazione utente ristoratore)
-mealsRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
+mealsRouter.post("/", authenticateUser, authorizeRistoratore, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -273,9 +257,7 @@ mealsRouter
 
 
 // PUT /meals/:id - Modifica piatto personalizzato (Richiede autenticazione utente ristoratore)
-mealsRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.put("/:id", authenticateUser, authorizeRistoratore, async (req, res) => {
+mealsRouter.put("/:id", authenticateUser, authorizeRistoratore, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -374,9 +356,7 @@ mealsRouter
 
 
 // DELETE /meals/:id - Elimina piatto personalizzato (Richiede autenticazione utente ristoratore)
-mealsRouter
-// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
-.delete("/:id", authenticateUser, authorizeRistoratore, async (req, res) => {
+mealsRouter.delete("/:id", authenticateUser, authorizeRistoratore, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const user = req.user;
@@ -416,6 +396,4 @@ mealsRouter
   }
 });
 
-
-// SEZIONE EXPORT: Esportiamo il modulo per renderlo riutilizzabile nel progetto.
 export default mealsRouter;

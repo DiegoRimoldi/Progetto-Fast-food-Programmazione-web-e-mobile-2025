@@ -1,10 +1,3 @@
-/*
-  Utility di validazione indirizzi.
-  Contiene funzioni riusabili per controllare formato e coerenza dei dati di indirizzo
-  prima di salvarli a database o usarli in ordini/consegne.
-*/
-
-// SEZIONE: Dichiarazione di costanti, middleware locali o oggetti di supporto.
 const NOMINATIM_BASE_URL = "https://nominatim.openstreetmap.org/search";
 const NOMINATIM_TIMEOUT_MS = 7000;
 const USER_AGENT = "FastFoodProject/1.0 (A.A.2025-2026)";
