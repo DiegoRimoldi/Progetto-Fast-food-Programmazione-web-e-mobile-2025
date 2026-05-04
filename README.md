@@ -87,7 +87,9 @@ Ogni piatto è identificato da un indice. Inoltre, sono stati aggiunti i campi �
 
 # Swagger
 
-Una volta eseguito il codice, uno **swagger** opportunamente descritto è raggiungibile all’URL `http://localhost:3000/swagger`
+Una volta eseguito il codice, la documentazione **Swagger API** è raggiungibile all’URL `http://localhost:3000/swagger`.
+
+Per rigenerare la specifica OpenAPI in `Documents/swagger.json`, eseguire `npm run swagger`.
 
 # Scelte implementative
 
