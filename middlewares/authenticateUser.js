@@ -1,5 +1,13 @@
+/*
+  Middleware di autenticazione JWT.
+  Verifica presenza e validità del token, ricava l'utente autenticato
+  e arricchisce req con le informazioni necessarie alle route protette.
+*/
+
+// SEZIONE: Import dei moduli necessari al file.
 import jwt from "jsonwebtoken";
 
+// SEZIONE: Dichiarazione di costanti, middleware locali o oggetti di supporto.
 const authenticateUser = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -27,4 +35,6 @@ const authenticateUser = (req, res, next) => {
   }
 };
 
+
+// SEZIONE EXPORT: Esportiamo il modulo per renderlo riutilizzabile nel progetto.
 export default authenticateUser;

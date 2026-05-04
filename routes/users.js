@@ -1,3 +1,10 @@
+/*
+  Router per gestione utenti e autenticazione.
+  Contiene route di registrazione/login e operazioni profilo
+  con relativa validazione dati e gestione della sicurezza applicativa.
+*/
+
+// SEZIONE: Import dei moduli necessari al file.
 import express from "express";
 import { ObjectId } from "mongodb";
 import bcrypt from "bcryptjs";
@@ -5,6 +12,7 @@ import jwt from "jsonwebtoken";
 import authenticateUser from "../middlewares/authenticateUser.js";
 import { validateAddressWithOpenStreetMap } from "../utils/addressValidation.js";
 
+// SEZIONE: Dichiarazione di costanti, middleware locali o oggetti di supporto.
 const usersRouter = express.Router();
 
 function sanitizePreferenze(preferenze) {
@@ -23,7 +31,9 @@ function sanitizeMetodoPagamento(metodoPagamento) {
 }
 
 // GET /users - Lista utenti (filtrabile per ruolo), senza campi sensibili
-usersRouter.get("/", async (req, res) => {
+usersRouter
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.get("/", async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { role } = req.query;
@@ -53,7 +63,9 @@ usersRouter.get("/", async (req, res) => {
 });
 
 // POST /users/register - Registrazione utente (cliente o ristoratore)
-usersRouter.post("/register", async (req, res) => {
+usersRouter
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.post("/register", async (req, res) => {
   try {
     const db = req.app.locals.db;
     const {
@@ -147,7 +159,9 @@ usersRouter.post("/register", async (req, res) => {
 });
 
 // POST /users/login - login
-usersRouter.post("/login", async (req, res) => {
+usersRouter
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.post("/login", async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { username, password } = req.body;
@@ -181,7 +195,9 @@ usersRouter.post("/login", async (req, res) => {
 });
 
 // GET /users/me - Restituisce informazioni relative all'utente autenticato
-usersRouter.get("/me", authenticateUser, async (req, res) => {
+usersRouter
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.get("/me", authenticateUser, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const userId = req.user._id;
@@ -201,7 +217,9 @@ usersRouter.get("/me", authenticateUser, async (req, res) => {
 });
 
 // PUT /users/me - Modifica dati profilo utente autenticato (passsword esclusa)
-usersRouter.put("/me", authenticateUser, async (req, res) => {
+usersRouter
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.put("/me", authenticateUser, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const userId = req.user._id;
@@ -305,7 +323,9 @@ usersRouter.put("/me", authenticateUser, async (req, res) => {
 });
 
 // PUT /users/me/password - Modifica password utente autenticato
-usersRouter.put("/me/password", authenticateUser, async (req, res) => {
+usersRouter
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.put("/me/password", authenticateUser, async (req, res) => {
   try {
     const db = req.app.locals.db;
     const userId = req.user._id;
@@ -348,7 +368,9 @@ usersRouter.put("/me/password", authenticateUser, async (req, res) => {
 //DELETE /me - Elimina utente autenticato:
 //Se l'utente è un cliente, vengono eliminati anche il carrello e tutti gli ordini ancora attivi (quelli già consegnati, rimangono nel DB per statistiche ristorante)
 //Se l'utente è un ristoratore, vengono eliminati anche il suo ristorante, e tutti gli ordini di quel ristorante.
-usersRouter.delete("/me", authenticateUser, async (req, res) => {
+usersRouter
+// SEZIONE ROUTING: Gestione endpoint HTTP con relativa logica applicativa.
+.delete("/me", authenticateUser, async (req, res) => {
   const db = req.app.locals.db;
   const userId = req.user._id;
 
@@ -382,4 +404,6 @@ usersRouter.delete("/me", authenticateUser, async (req, res) => {
     res.status(500).json({ error: "Errore durante l'eliminazione dell'utente" });
   }
 });
+
+// SEZIONE EXPORT: Esportiamo il modulo per renderlo riutilizzabile nel progetto.
 export default usersRouter;
