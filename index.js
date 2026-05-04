@@ -52,7 +52,8 @@ async function startServer() {
   try {
     const client = new MongoClient(config.MONGODB_URI);
     await client.connect();
-    app.locals.db = client.db("Fast-Food");
+    app.locals.db = client.db(config.MONGODB_DB);
+    await app.locals.db.command({ ping: 1 });
     await bootstrapInitialMeals(app.locals.db);
 
     app.get("/", (req, res) => {
@@ -73,6 +74,7 @@ async function startServer() {
     const PORT = config.PORT;
     app.listen(PORT, () => {
       console.log(`Server avviato su http://localhost:${PORT}`);
+      console.log(`MongoDB connesso al database: ${config.MONGODB_DB}`);
     });
   } catch (err) {
     console.error("Errore durante la connessione a MongoDB:", err.message);

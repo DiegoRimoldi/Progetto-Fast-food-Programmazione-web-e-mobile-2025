@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 dotenv.config(); //estrae i valori dal file .env, e li carica nelle variabili d'ambiente process.env
 
-const requiredEnvVars = ["MONGODB_URI", "JWT_SECRET", "JWT_EXPIRES_IN"];
+const requiredEnvVars = ["MONGODB_URI", "MONGODB_DB", "JWT_SECRET", "JWT_EXPIRES_IN"];
 const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
 
 if (missingEnvVars.length > 0) {
@@ -17,6 +17,7 @@ if (missingEnvVars.length > 0) {
 const config = {
   PORT: process.env.PORT || 3000,
   MONGODB_URI: process.env.MONGODB_URI,
+  MONGODB_DB: process.env.MONGODB_DB,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
 };
