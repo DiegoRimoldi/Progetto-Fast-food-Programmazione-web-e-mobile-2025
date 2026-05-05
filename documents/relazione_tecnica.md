@@ -244,3 +244,61 @@ Opportunità:
 - Aggiungere schema validation centralizzata (es. Joi/Zod);
 - Aumentare copertura test e pipeline CI;
 - Standardizzare completamente risposta errori (error envelope unico).
+## 13. Annotazioni tecniche aggiuntive (stile “commento riga per riga”)
+
+Di seguito una lettura più granulare, pensata come se fossero note inline sui blocchi di codice più importanti.
+
+### 13.1 `index.js` (bootstrap e wiring)
+
+- `app.use(express.json())`: abilita il parsing JSON globale; tutte le route ricevono automaticamente `req.body` già deserializzato, evitando parsing manuale per endpoint POST/PUT/PATCH.
+- `app.use(cors())`: apre il backend a chiamate cross-origin; utile in sviluppo con frontend separato, ma in produzione andrebbe ristretto a origin specifiche.
+- `express.static(path.join(__dirname, "public"))`: serve il frontend statico senza controller dedicato; riduce boilerplate e mantiene backend+frontend nello stesso deploy.
+- `normalizeMealDocument(meal)`: protegge il seed da `_id` invalidi o in formati eterogenei (`{"$oid": ...}`), rendendo l’import robusto rispetto a export Mongo differenti.
+- `bootstrapInitialMeals(db)`: usa `estimatedDocumentCount()` e seed condizionale; comportamento idempotente che evita duplicazione dati ad ogni riavvio.
+- `app.locals.db = client.db(...)`: inietta il riferimento DB nel contesto Express; pattern semplice ma efficace per evitare singleton globali difficili da testare.
+- middleware errori finale `app.use((err, req, res, next) => ...)`: centralizza la serializzazione degli errori runtime in payload JSON uniforme (`{ error: ... }`).
+
+### 13.2 `utils/config.js` (config fail-fast)
+
+- `dotenv.config()`: carica `.env` prima di consumare variabili, evitando `undefined` silenziosi.
+- `extractDbNameFromMongoUri(uri)`: fallback intelligente che ricava il DB name dalla URI se `MONGODB_DB` non è impostata esplicitamente.
+- `requiredEnvVars` + `missingEnvVars`: pattern dichiarativo per validare prerequisiti di avvio; migliora manutenibilità rispetto a `if` sparsi.
+- `throw new Error(...)` in fase bootstrap: approccio fail-fast corretto; il processo fallisce subito con messaggio esplicativo anziché generare errori tardivi durante le request.
+
+### 13.3 `utils/addressValidation.js` (qualità indirizzi e integrazione OSM)
+
+- `normalizeValue(...)`: rimuove accenti/rumore testuale; riduce i falsi negativi nel matching tra input utente e risposta Nominatim.
+- `extractAddressParts(rawAddress)`: separa CAP, città, via, presenza civico; la funzione costituisce un “mini parser” semantico dell’indirizzo.
+- regex `\b\d{5}\b`: vincola CAP a formato italiano a 5 cifre, coerente con `expectedCountryCode = "it"`.
+- `addressMatches(...)`: usa matching bidirezionale (`includes` in entrambi i sensi) per tollerare differenze come abbreviazioni o token extra restituiti dal provider.
+- normalizzazione dei tipi strada (`via`, `viale`, `piazza`, ...): ottima scelta per confrontare la sostanza toponomastica e non il prefisso.
+- timeout con `AbortController`: evita request pendenti a provider esterni e impedisce saturazione del loop in caso di disservizi.
+- validazioni progressive in `validateAddressWithOpenStreetMap(...)`: messaggi d’errore guidati e specifici migliorano UX e debuggabilità.
+
+### 13.4 `routes/users.js` (IAM applicativo)
+
+- `sanitizePreferenze(...)`: deduplica e pulisce array preferenze; evita persistenza di valori vuoti/duplicati già al bordo API.
+- controllo `role` esplicito (`cliente|ristoratore`): valida il dominio e previene creazione utenti in stati non previsti.
+- doppio controllo di obbligatorietà campi per ruolo: rende chiarissima la business rule lato codice, anche se alcuni check sono ridondanti e consolidabili.
+- validazione indirizzo in registrazione/modifica cliente: ottimo gate di qualità dei dati prima della persistenza.
+- hash password `bcrypt.hash(password, 10)`: costo 10 ragionevole per contesto didattico/full-stack general purpose.
+- login con `jwt.sign({ userId, role }, ...)`: payload minimale ma sufficiente per autenticazione stateless + autorizzazione role-based.
+- projection `{ password: 0 }` in `/users` e `/users/me`: evita data leakage di hash password nelle risposte pubbliche/autenticate.
+
+### 13.5 `routes/orders.js` (core delivery)
+
+- `validStates`: enum locale utile per governare transizioni di stato ed evitare valori arbitrari.
+- `geocodeAddress(...)` + `getDrivingRouteMetrics(...)`: separazione pulita tra geocoding e routing, con responsabilità ben distinte.
+- fallback `haversineKm(...)` quando OSRM fallisce: scelta robusta che mantiene operativo il checkout anche con provider parzialmente indisponibile.
+- raggruppamento `ordiniPerRistoranti`: normalizza un carrello multi-ristorante in ordini separati, allineando il dominio operativo reale.
+- stato iniziale dinamico (`in preparazione` se coda vuota): introduce una regola di scheduling semplice ma realistica.
+- `calculateOrderPreparationMinutes(...)`: stima il backlog del ristorante sommando tempi preparazione * quantità; base solida per ETA percepita lato cliente.
+- calcolo `costoConsegna = base + (km * coefficiente)`: trasparente e facilmente parametrizzabile tramite costanti.
+- `DateTime.now().setZone("Europe/Rome")`: timestamp allineato al contesto locale applicativo, evitando inconsistenze di sola timezone server.
+
+### 13.6 Note trasversali suggerite per evoluzione
+
+- Estrarre validazioni input in layer dedicato (es. schema validator centralizzato) per ridurre duplicazioni tra route.
+- Introdurre service layer per logiche lunghe (es. creazione ordini) e rendere più snelli i router.
+- Uniformare completamente gli error payload con un envelope standard (`code`, `message`, `details`, `traceId`).
+- Aggiungere test automatici su casi edge dei parser indirizzo e fallback routing.
