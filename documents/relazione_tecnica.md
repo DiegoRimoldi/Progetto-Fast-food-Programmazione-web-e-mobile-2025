@@ -1,135 +1,246 @@
-Relazione tecnica e documentazione della repository
-Progetto Fast Food - Programmazione Web e Mobile 2025/2026
+# Relazione Tecnica / Documentazione del Codice:
+## Progetto "Fast Food" — Programmazione Web e Mobile 2025/2026
 
-1) Architettura generale
-Il progetto implementa una web app full-stack con backend Node.js + Express, database MongoDB, frontend statico HTML/CSS/JavaScript, API REST documentate con Swagger, autenticazione JWT e integrazione OpenStreetMap (Nominatim + OSRM).
+## 1. Obiettivo del progetto:
 
-2) Tipologie di file
-- index.js: entry point server, middleware globali, connessione DB, bootstrap dati, mount router.
-- routes/*.js: controller REST per domini users, meals, restaurants, orders, carts.
-- middlewares/*.js: cross-cutting concern per auth e autorizzazione ruolo.
-- utils/*.js: utility pure (config/env e validazione indirizzi).
-- public/*.html: viste client-side separate per ruoli cliente/ristoratore.
-- public/assets/*.css: tema grafico, responsive e stile UI.
-- public/assets/auth.js: gestione sessione lato browser, token storage e controllo accessi pagine.
-- documents/swagger.json + swagger.js: specifica OpenAPI e generazione automatica.
-- documents/meals.json: seed dati iniziali piatti.
+L’applicazione realizza una piattaforma **food delivery full-stack** con separazione dei ruoli principali:
+- **Cliente**: Registrazione/Login, Consultazione catalogo, Gestione carrello, Invio ordini e storico.
+- **Ristoratore**: Gestione ristorante, Menù, Offerte, Monitoraggio ordini.
 
-3) Backend Node.js/Express
-3.1 index.js
-Funzioni:
-- normalizeMealDocument(meal): normalizza _id da export Mongo (formato $oid) in ObjectId nativo; evita inserimenti con id malformato.
-- bootstrapInitialMeals(db): inizializzazione idempotente collezione meals se vuota.
-- startServer(): connessione MongoDB, ping, bootstrap seed, registrazione route e error handler.
-Scelte: separazione startup/business routes, uso app.locals.db per dependency injection semplice in ogni handler.
+Il sistema integra:
+- Backend REST in **Node.js + Express**;
+- Persistenza su **MongoDB**;
+- Frontend multi-pagina in **HTML5/CSS3/JavaScript**;
+- Autenticazione stateless con **JWT**;
+- Validazione e supporto logistico tramite servizi OpenStreetMap (**Nominatim** per geocoding e **OSRM** per routing);
+- Documentazione API con **Swagger/OpenAPI**.
 
-3.2 Middleware
-- authenticateUser(req,res,next): estrae Bearer token, verifica JWT, popola req.user.
-- authorizeRistoratore(req,res,next): gate autorizzativo basato su role.
-Scelta: composizione middleware per mantenere controller focalizzati sul dominio.
 
-3.3 utils/config.js
-- extractDbNameFromMongoUri(uri): fallback robusto per derivare nome DB.
-- validazione variabili ambiente obbligatorie a startup (fail-fast).
+## 2. Struttura della repository:
 
-3.4 utils/addressValidation.js (OpenStreetMap)
-Funzioni principali:
-- normalizeValue: normalizzazione testuale (lowercase, rimozione accenti/spazi).
-- extractAddressParts: parsing indirizzo, CAP, città, numero civico.
-- addressMatches: matching semantico tra input utente e addressdetails Nominatim.
-- validateAddressWithOpenStreetMap: orchestrazione validazione, timeout, filtro paese, esito con motivazione.
-Scelta: controllo qualità input + verifica remota per ridurre ordini con indirizzi errati.
+### 2.1 File e directory principali:
 
-4) API REST per dominio
-4.1 users.js
-- sanitizePreferenze / sanitizeMetodoPagamento: igiene input.
-- GET /users: lista utenti (projection senza password).
-- POST /users/register: regole diverse per cliente/ristoratore, hash bcrypt, controllo univocità, validazione indirizzo OSM.
-- POST /users/login: verifica credenziali e JWT.
-- GET/PUT /users/me: profilo autenticato.
-- PUT /users/me/password: cambio password con hash.
-- DELETE /users/me: rimozione account.
-Paradigma REST: risorse users con metodi HTTP coerenti; 401/403/404/409/500 gestiti esplicitamente.
+- `index.js`: entrypoint del server, bootstrap applicativo e wiring globale.
+- `routes/`: endpoint REST suddivisi per dominio (`users`, `meals`, `restaurants`, `carts`, `orders`).
+- `middlewares/`: middleware trasversali per autenticazione e autorizzazione.
+- `utils/`: utility per configurazione e validazione indirizzi.
+- `public/`: pagine e script client-side.
+- `documents/`: documentazione tecnica, seed JSON, file Swagger e PDF progettuale.
+- `README.md` + `READMEImages/`: descrizione del progetto e risorse grafiche.
 
-4.2 meals.js
-- parseCsv: parsing parametri multipli querystring.
-- GET /meals con filtri (categoria, area, prezzo, ingredienti, allergeni, offerte, ristorante).
-- PUT /meals/offerte: abilita/disabilita offerte con scontistica random 10-50% solo sul menu del ristoratore proprietario.
-- GET /meals/:id: dettaglio piatto.
-- POST /meals: creazione piatto personalizzato.
-- PUT /meals/:id: modifica piatto con ownership check.
-- DELETE /meals/:id: eliminazione piatto e sincronizzazione menu ristorante.
-Scelta: ownership a livello applicativo usando relazione meal<->ristorante<->ristoratore.
+### 2.2 Dipendenze e stack (package):
 
-4.3 restaurants.js
-Espone CRUD ristorante e gestione menu/bacheca/statistiche legate al ristoratore autenticato.
-Scelta: risorsa separata da users per disaccoppiare identità utente e anagrafica attività.
+Da `package.json` emergono librerie coerenti con lo stack:
+- Server/middleware: `express`, `cors`;
+- Database: `mongodb`, `mongoose`;
+- Sicurezza/auth: `bcryptjs`, `jsonwebtoken`;
+- Documentazione API: `swagger-ui-express`, `swagger-jsdoc`, `swagger-autogen`;
+- Utilità sviluppo: `nodemon`.
 
-4.4 carts.js
-- GET /carts/me
-- POST /carts/me/items
-- DELETE /carts/me/items/:mealId
-- DELETE /carts/me
-+ endpoint legacy PUT /add e PUT /remove per retrocompatibilità.
-Scelta: documento carrello embedded per utente => letture/scritture rapide.
 
-4.5 orders.js
-Funzioni infrastrutturali:
-- geocodeAddress: geocoding indirizzi con Nominatim.
-- haversineKm: distanza geodetica fallback.
-- OSRM route lookup (con timeout): stima distanza/tempi consegna.
-Endpoint: creazione ordine, storico cliente, ordini ristoratore, avanzamento stato ordine con macchina a stati (ordinato -> in preparazione -> in consegna -> consegnato).
-Scelta: stato ordine esplicito per garantire coerenza del workflow.
+## 3. Architettura applicativa:
 
-5) Database MongoDB
-Collezioni principali:
-- users: credenziali (password hash), ruolo, dati profilo.
-- restaurants: dati ristorante, menu (array ObjectId meals), offerte/bacheca.
-- meals: catalogo piatti base + personalizzati.
-- carts: carrello per user_id con array meals embedded.
-- orders: snapshot ordine (righe, prezzi, stato, distanze/tempi).
-Scelte modello:
-- embedding su carts/orders per performance di lettura del checkout.
-- referencing users/restaurants/meals con ObjectId per integrità logica.
+### 3.1 Visione logica:
 
-6) Frontend HTML5/CSS3/JavaScript
-- HTML5: pagine semantiche separate per flussi cliente e ristoratore.
-- CSS3: modern-theme.css + responsive.css per UI coerente e adattiva.
-- JavaScript: fetch verso API REST, rendering dinamico menu/carrello/ordini, validazioni base.
-- auth.js: gestione token JWT in localStorage/sessionStorage, role-based navigation guard, ripristino ultima pagina visitata.
-Bootstrap:
-- Uso classi/componenti Bootstrap nelle pagine pubblic per griglie responsive, form, navbar, card e pulsanti con utility classes.
-Motivazione: ridurre CSS custom ripetitivo e aumentare consistenza UI.
+L’architettura segue un modello a livelli semplificato:
+1. **Presentation layer** (frontend statico): pagine HTML che consumano API via `fetch`.
+2. **API layer** (Express routes): orchestrazione delle operazioni di dominio.
+3. **Service/utility layer** (utils + funzioni locali): validazione, parsing, logica condivisa.
+4. **Data layer** (MongoDB): collezioni e documenti JSON/BSON.
 
-7) JSON e Swagger/OpenAPI
-- JSON usato come formato canonico payload API e documenti MongoDB.
-- swagger.js genera swagger.json dagli input route principali.
-- /swagger espone UI interattiva per test endpoint e contratti.
-Benefici: allineamento backend-frontend, onboarding rapido, test manuale semplice.
+### 3.2 Pattern adottati:
 
-8) Corretto uso del paradigma REST
-Punti di conformità:
-- URI orientati a risorse (/users, /meals, /orders, /carts).
-- Metodi HTTP appropriati (GET/POST/PUT/DELETE).
-- Status code semanticamente corretti.
-- Assenza di sessione server stateful: autenticazione stateless con JWT.
-Punti migliorabili:
-- endpoint legacy /carts/add e /carts/remove non pienamente REST (già marcati legacy).
+- **Router per bounded context**: ogni file in `routes/` isola un’area funzionale.
+- **Middleware chain**: autenticazione/autorizzazione riusabili e composte per endpoint.
+- **Dependency access tramite `app.locals.db`**: evita import incrociati e semplifica testing/inizializzazione.
+- **Error handling centralizzato** (più gestione locale dove utile): garantisce risposte uniformi.
 
-9) Sicurezza, robustezza e qualità
-- Password hashing con bcrypt.
-- JWT con scadenza configurabile.
-- Validazione ObjectId e payload in molte route.
-- Timeout chiamate esterne OSM/OSRM.
-- Error handling centralizzato + error handling locale per endpoint.
-- Configurazione fail-fast tramite variabili ambiente obbligatorie.
 
-10) Motivazioni progettuali sintetiche
-- Node.js/Express: rapidità sviluppo API asincrone e middleware ecosystem.
-- MongoDB: schema flessibile adatto a dominio food delivery iterativo.
-- OSM: servizi open per geocoding/routing senza lock-in proprietario.
-- Swagger: documentazione viva e verificabile.
-- Frontend multi-pagina: separazione netta dei ruoli e curva di apprendimento contenuta.
+## 4. Backend (Analisi Dettagliata):
 
-11) Conclusione
-La repository implementa in modo coerente una piattaforma food-delivery didattica completa: autenticazione, gestione catalogo, carrello, ordini, ristoranti, validazione indirizzi geografica e documentazione API. L'architettura rispetta i principi REST, con alcune eccezioni legacy mantenute per compatibilità.
+### 4.1 `index.js` (Bootstrap Server):
+
+Responsabilità principali:
+- Caricamento config/ambiente;
+- Connessione a MongoDB e verifica disponibilità;
+- Seed idempotente della collezione pasti (`bootstrapInitialMeals`);
+- Mount dei router;
+- Esposizione Swagger UI;
+- Gestione globale degli errori e avvio listener HTTP.
+
+Funzioni di rilievo:
+- `normalizeMealDocument(meal)`: converte/normalizza `_id` provenienti da JSON export (es. formato `$oid`), prevenendo inconsistenze all’inserimento;
+- `bootstrapInitialMeals(db)`: popola `meals` solo se vuota, evitando duplicazioni.
+
+### 4.2 Middleware di sicurezza:
+
+- `middlewares/authenticateUser.js`: legge `Authorization: Bearer <token>`, verifica JWT, espone payload in `req.user`.
+- `middlewares/authorizeRistoratore.js`: applica policy RBAC basilare (`role === "ristoratore"`).
+
+Vantaggi:
+- Controller più puliti;
+- Enforcement consistente delle regole di accesso;
+- Riduzione duplicazione codice di controllo.
+
+### 4.3 Utility di configurazione:
+
+`utils/config.js` implementa:
+- Validazione delle variabili ambiente critiche con approccio **fail-fast**;
+- Estrazione robusta del nome DB dalla URI (`extractDbNameFromMongoUri`).
+
+### 4.4 Utility geografiche e address quality:
+
+`utils/addressValidation.js` è un modulo chiave per qualità dati:
+- Normalizzazione stringhe (accenti, case, spazi);
+- Parsing semantico indirizzo (`extractAddressParts`);
+- Matching input ↔ `addressdetails` Nominatim (`addressMatches`);
+- Orchestrazione richiesta remota con timeout e filtro geografico (`validateAddressWithOpenStreetMap`).
+
+
+## 5. API REST per dominio:
+
+## 5.1 `routes/users.js`:
+
+Funzionalità tipiche IAM (Identity & Access Management):
+- Registrazione con validazioni differenziate per ruolo;
+- Login con emissione token;
+- Gestione profilo autenticato (`/users/me`);
+- Cambio password con hashing bcrypt;
+- Cancellazione account.
+
+Aspetti qualitativi:
+- Sanificazione campi sensibili e preferenze;
+- Controllo univocità su dati identificativi;
+- Esclusione password nelle projection di risposta.
+
+## 5.2 `routes/meals.js`:
+
+Gestione catalogo e ownership:
+- Listing con filtri compositi (categoria, prezzo, ingredienti, allergeni, area, offerte);
+- Dettaglio pasto;
+- CRUD piatti da ristoratore proprietario;
+- Gestione offerte con regole specifiche (abilitazione/disabilitazione e scontistica).
+
+## 5.3 `routes/restaurants.js`:
+
+Area ristoratore:
+- Creazione/aggiornamento profilo attività;
+- Gestione menu e contenuti correlati;
+- Endpoint per monitoraggio operativo (in base alle implementazioni presenti).
+
+## 5.4 `routes/carts.js`:
+
+Carrello personale con endpoint dedicati:
+- Recupero carrello utente autenticato;
+- Aggiunta/rimozione item;
+- Svuotamento completo.
+
+## 5.5 `routes/orders.js`:
+
+Core del flusso delivery:
+- Creazione ordine da carrello/snapshot righe;
+- Storico cliente e vista ristoratore;
+- Gestione stato ordine con transizioni controllate;
+- Stima distanza/tempo via geocoding + routing (con fallback geodetico/haversine).
+
+
+## 6. Modello dati MongoDB:
+
+### 6.1 Collezioni principali:
+
+- `users`: credenziali hashate, ruolo, anagrafica e preferenze.
+- `restaurants`: metadati attività, legame al ristoratore, menu (ObjectId pasti), eventuali offerte.
+- `meals`: catalogo base + piatti custom.
+- `carts`: documento per utente con items embedded.
+- `orders`: snapshot ordine (items, totali, stato, metriche consegna).
+
+### 6.2 Scelte modeling:
+
+- **Embedding** su `carts` e porzioni di `orders`: letture rapide lato checkout/storico.
+- **Referencing** tra entità master (`users`, `restaurants`, `meals`): normalizzazione logica e riuso.
+
+
+## 7. Frontend web:
+
+### 7.1 Pagine e UX:
+
+In `public/` sono presenti pagine dedicate (es. home, login, register, profilo, logout), con separazione dei flussi per ruolo e sessione.
+
+### 7.2 Script client-side:
+
+- Chiamate `fetch` verso backend;
+- Rendering dinamico di menu/carrello/ordini;
+- Validazioni base lato client;
+- Gestione autenticazione in `public/assets/auth.js` (token storage e guard di navigazione role-based).
+
+### 7.3 Stile e responsive:
+
+La UI usa CSS dedicati (`modern-theme.css`, `responsive.css`) e componenti Bootstrap dove opportuno, con obiettivo di coerenza visuale e minore duplicazione stilistica.
+
+
+## 8. Documentazione API e artefatti:
+
+- `documents/swagger.json`: contratto OpenAPI serializzato.
+- `documents/swagger.js`: generazione/aggiornamento documentazione.
+- endpoint `/swagger`: interfaccia test/manual exploration API.
+- `documents/meals.json`: dataset seed iniziale.
+- `documents/PWM__project_25_26.pdf`: documento progettuale correlato.
+
+
+## 9. Sicurezza, Resilienza e Robustezza:
+
+Misure implementate:
+- Hashing password con bcrypt;
+- JWT con scadenza configurabile;
+- Validazioni input e controllo ObjectId in più endpoint;
+- Enforcement ruoli a middleware;
+- Timeout su servizi terzi OSM/OSRM;
+- Gestione esplicita codici HTTP (`400/401/403/404/409/500`);
+- Avvio fail-fast su config mancante/invalida.
+
+Aree migliorabili (roadmap):
+- Rate limiting su auth e endpoint sensibili;
+- Logging strutturato e correlazione request-id;
+- Hardening header HTTP (helmet), CORS più restrittivo in produzione;
+- Test automatici unit/integration end-to-end.
+
+
+## 10. Correttezza REST (Valutazione Critica):
+
+Conformità alta su:
+- Naming risorse (`/users`, `/meals`, `/orders`, `/carts`);
+- Semantica metodi HTTP;
+- Stateless auth via token;
+- Uso coerente di status code.
+
+Eccezioni note:
+- Endpoint carrello legacy non perfettamente resource-oriented (mantenuti per compatibilità).
+
+
+## 11. Flussi end-to-end principali:
+
+1. **Onboarding cliente**
+   Registrazione → validazione indirizzo OSM → login → token JWT.
+2. **Scoperta e scelta pasti**
+   Ricerca con filtri → dettaglio pasto → aggiunta carrello.
+3. **Checkout e ordine**
+   Creazione ordine → calcolo distanza/tempo → stato iniziale `ordinato`.
+4. **Gestione operativa ristoratore**
+   Presa in carico ordine → avanzamento stati (`in preparazione`, `in consegna`, `consegnato`).
+5. **Post-vendita**
+   Storico ordini, aggiornamento profilo, gestione menu/offerte.
+
+
+## 12. Qualità del codice e Manutenibilità:
+
+Punti positivi:
+- Separazione funzionale chiara per directory;
+- Naming semantico dei moduli;
+- Utilità condivise per ridurre duplicazione;
+- Presenza di documentazione tecnica e API.
+
+Opportunità:
+- Introdurre layer service esplicito per business logic più complessa;
+- Aggiungere schema validation centralizzata (es. Joi/Zod);
+- Aumentare copertura test e pipeline CI;
+- Standardizzare completamente risposta errori (error envelope unico).
