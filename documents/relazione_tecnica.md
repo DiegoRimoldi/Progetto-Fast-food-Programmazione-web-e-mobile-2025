@@ -1,254 +1,691 @@
-# Relazione Tecnica / Documentazione del Codice:
-## Progetto "Fast Food" — Programmazione Web e Mobile 2025/2026
+# Relazione Tecnica Completa (`documents` + `middlewares` + `node_modules` + `public/assets`)
+## Progetto “Fast Food” — Programmazione Web e Mobile 2025/2026
 
-## 1. Obiettivo del progetto:
+> Documento aggiornato con le stesse indicazioni richieste: analisi partire da `documents` e ampliamento a `middlewares`, `node_modules` rilevanti e `public/assets`.
 
-L’applicazione realizza una piattaforma **food delivery full-stack** con separazione dei ruoli principali:
-- **Cliente**: Registrazione/Login, Consultazione catalogo, Gestione carrello, Invio ordini e storico.
-- **Ristoratore**: Gestione ristorante, Menù, Offerte, Monitoraggio ordini.
+---
 
-Il sistema integra:
-- Backend REST in **Node.js + Express**;
-- Persistenza su **MongoDB**;
-- Frontend multi-pagina in **HTML5/CSS3/JavaScript**;
-- Autenticazione stateless con **JWT**;
-- Validazione e supporto logistico tramite servizi OpenStreetMap (**Nominatim** per geocoding e **OSRM** per routing);
-- Documentazione API con **Swagger/OpenAPI**.
+## 1) Ambito analizzato
 
+### Cartella `documents`
+1. `documents/swagger.js`
+2. `documents/swagger.json`
+3. `documents/meals.json`
+4. `documents/PWM__project_25_26.pdf`
 
-## 2. Struttura della repository:
+### Cartella `middlewares`
+5. `middlewares/authenticateUser.js`
+6. `middlewares/authorizeRistoratore.js`
 
-### 2.1 File e directory principali:
+### Cartella `node_modules` (perimetro funzionale rilevante)
+7. `node_modules/swagger-autogen/swagger-autogen.js`
+8. `node_modules/swagger-autogen/package.json`
+9. `node_modules/jsonwebtoken/verify.js`
+10. `node_modules/jsonwebtoken/package.json`
 
-- `index.js`: entrypoint del server, bootstrap applicativo e wiring globale.
-- `routes/`: endpoint REST suddivisi per dominio (`users`, `meals`, `restaurants`, `carts`, `orders`).
-- `middlewares/`: middleware trasversali per autenticazione e autorizzazione.
-- `utils/`: utility per configurazione e validazione indirizzi.
-- `public/`: pagine e script client-side.
-- `documents/`: documentazione tecnica, seed JSON, file Swagger e PDF progettuale.
-- `README.md` + `READMEImages/`: descrizione del progetto e risorse grafiche.
+### Cartella `public/assets`
+11. `public/assets/auth.js`
+12. `public/assets/modern-theme.css`
+13. `public/assets/responsive.css`
+14. `public/assets/logo.png`
+15. `public/assets/Favicon.png`
 
-### 2.2 Dipendenze e stack (package):
+### Cartella `public/cliente`
+16. `public/cliente/home.html`
+17. `public/cliente/menù.html`
+18. `public/cliente/offerte.html`
+19. `public/cliente/carrello.html`
+20. `public/cliente/ordini.html`
 
-Da `package.json` emergono librerie coerenti con lo stack:
-- Server/middleware: `express`, `cors`;
-- Database: `mongodb`, `mongoose`;
-- Sicurezza/auth: `bcryptjs`, `jsonwebtoken`;
-- Documentazione API: `swagger-ui-express`, `swagger-jsdoc`, `swagger-autogen`;
-- Utilità sviluppo: `nodemon`.
+### Cartella `public/ristoratore`
+21. `public/ristoratore/home.html`
+22. `public/ristoratore/creaRistorante.html`
+23. `public/ristoratore/gestioneRistorante.html`
+24. `public/ristoratore/gestioneMenù.html`
+25. `public/ristoratore/gestioneBacheca.html`
+26. `public/ristoratore/piattiGenerici.html`
+27. `public/ristoratore/piattoPersonalizzato.html`
+28. `public/ristoratore/modificaPiattoPersonalizzato.html`
+29. `public/ristoratore/ordini.html`
+30. `public/ristoratore/statistiche.html`
 
 
-## 3. Architettura applicativa:
+### Cartella `public` (root)
+31. `public/index.html`
+32. `public/login.html`
+33. `public/register.html`
+34. `public/logout.html`
+35. `public/profilo.html`
 
-### 3.1 Visione logica:
 
-L’architettura segue un modello a livelli semplificato:
-1. **Presentation layer** (frontend statico): pagine HTML che consumano API via `fetch`.
-2. **API layer** (Express routes): orchestrazione delle operazioni di dominio.
-3. **Service/utility layer** (utils + funzioni locali): validazione, parsing, logica condivisa.
-4. **Data layer** (MongoDB): collezioni e documenti JSON/BSON.
+### Cartella `routes`
+36. `routes/users.js`
+37. `routes/meals.js`
+38. `routes/restaurants.js`
+39. `routes/orders.js`
+40. `routes/carts.js`
 
-### 3.2 Pattern adottati:
 
-- **Router per bounded context**: ogni file in `routes/` isola un’area funzionale.
-- **Middleware chain**: autenticazione/autorizzazione riusabili e composte per endpoint.
-- **Dependency access tramite `app.locals.db`**: evita import incrociati e semplifica testing/inizializzazione.
-- **Error handling centralizzato** (più gestione locale dove utile): garantisce risposte uniformi.
+### Cartella `utils`
+41. `utils/config.js`
+42. `utils/addressValidation.js`
 
 
-## 4. Backend (Analisi Dettagliata):
+### Root repository `Progetto-Fast-food-Programmazione-web-e-mobile-2025`
+43. `index.js`
+44. `package.json`
+45. `package-lock.json`
+46. `README.md`
+47. `.gitignore`
+48. `.gitattributes`
 
-### 4.1 `index.js` (Bootstrap Server):
+> Nota: come per `node_modules`, l’analisi funzione-per-funzione è applicata ai file di codice eseguibile (`.js`). I file CSS e immagini sono trattati come asset statici.
 
-Responsabilità principali:
-- Caricamento config/ambiente;
-- Connessione a MongoDB e verifica disponibilità;
-- Seed idempotente della collezione pasti (`bootstrapInitialMeals`);
-- Mount dei router;
-- Esposizione Swagger UI;
-- Gestione globale degli errori e avvio listener HTTP.
+---
 
-Funzioni di rilievo:
-- `normalizeMealDocument(meal)`: converte/normalizza `_id` provenienti da JSON export (es. formato `$oid`), prevenendo inconsistenze all’inserimento;
-- `bootstrapInitialMeals(db)`: popola `meals` solo se vuota, evitando duplicazioni.
+## 2) Analisi tecnica dettagliata per file
 
-### 4.2 Middleware di sicurezza:
+## 2.1 `documents/swagger.js`
 
-- `middlewares/authenticateUser.js`: legge `Authorization: Bearer <token>`, verifica JWT, espone payload in `req.user`.
-- `middlewares/authorizeRistoratore.js`: applica policy RBAC basilare (`role === "ristoratore"`).
+### Ruolo
+Script locale che avvia la generazione Swagger/OpenAPI.
 
-Vantaggi:
-- Controller più puliti;
-- Enforcement consistente delle regole di accesso;
-- Riduzione duplicazione codice di controllo.
+### Funzione chiamata: `swaggerAutogen(outputFile, inputFiles, doc)`
+- Genera/aggiorna `documents/swagger.json` in base ai file route indicati.
 
-### 4.3 Utility di configurazione:
+---
 
-`utils/config.js` implementa:
-- Validazione delle variabili ambiente critiche con approccio **fail-fast**;
-- Estrazione robusta del nome DB dalla URI (`extractDbNameFromMongoUri`).
+## 2.2 `documents/swagger.json`
 
-### 4.4 Utility geografiche e address quality:
+### Ruolo
+Contratto OpenAPI serializzato.
 
-`utils/addressValidation.js` è un modulo chiave per qualità dati:
-- Normalizzazione stringhe (accenti, case, spazi);
-- Parsing semantico indirizzo (`extractAddressParts`);
-- Matching input ↔ `addressdetails` Nominatim (`addressMatches`);
-- Orchestrazione richiesta remota con timeout e filtro geografico (`validateAddressWithOpenStreetMap`).
+### Nota
+- File dati, nessuna funzione eseguibile.
 
+---
 
-## 5. API REST per dominio:
+## 2.3 `documents/meals.json`
 
-## 5.1 `routes/users.js`:
+### Ruolo
+Seed dati iniziale pasti.
 
-Funzionalità tipiche IAM (Identity & Access Management):
-- Registrazione con validazioni differenziate per ruolo;
-- Login con emissione token;
-- Gestione profilo autenticato (`/users/me`);
-- Cambio password con hashing bcrypt;
-- Cancellazione account.
+### Nota
+- File dati, nessuna funzione eseguibile.
 
-Aspetti qualitativi:
-- Sanificazione campi sensibili e preferenze;
-- Controllo univocità su dati identificativi;
-- Esclusione password nelle projection di risposta.
+---
 
-## 5.2 `routes/meals.js`:
+## 2.4 `documents/PWM__project_25_26.pdf`
 
-Gestione catalogo e ownership:
-- Listing con filtri compositi (categoria, prezzo, ingredienti, allergeni, area, offerte);
-- Dettaglio pasto;
-- CRUD piatti da ristoratore proprietario;
-- Gestione offerte con regole specifiche (abilitazione/disabilitazione e scontistica).
+### Ruolo
+Documento progettuale.
 
-## 5.3 `routes/restaurants.js`:
+### Nota
+- Artefatto binario non commentabile funzione-per-funzione.
 
-Area ristoratore:
-- Creazione/aggiornamento profilo attività;
-- Gestione menu e contenuti correlati;
-- Endpoint per monitoraggio operativo (in base alle implementazioni presenti).
+---
 
-## 5.4 `routes/carts.js`:
+## 2.5 `middlewares/authenticateUser.js`
 
-Carrello personale con endpoint dedicati:
-- Recupero carrello utente autenticato;
-- Aggiunta/rimozione item;
-- Svuotamento completo.
+### Funzione: `authenticateUser(req, res, next)`
 
-## 5.5 `routes/orders.js`:
+**Scopo**
+- Validare JWT da header `Authorization` e popolare `req.user`.
 
-Core del flusso delivery:
-- Creazione ordine da carrello/snapshot righe;
-- Storico cliente e vista ristoratore;
-- Gestione stato ordine con transizioni controllate;
-- Stima distanza/tempo via geocoding + routing (con fallback geodetico/haversine).
+**Flusso**
+1. Controllo presenza/formato `Bearer`.
+2. Estrazione token.
+3. `jwt.verify(token, JWT_SECRET)`.
+4. Validazione `payload.userId` e `payload.role`.
+5. Assegnazione `req.user`.
+6. `next()` o `401` in errore.
 
+---
 
-## 6. Modello dati MongoDB:
+## 2.6 `middlewares/authorizeRistoratore.js`
 
-### 6.1 Collezioni principali:
+### Funzione: `authorizeRistoratore(req, res, next)`
 
-- `users`: credenziali hashate, ruolo, anagrafica e preferenze.
-- `restaurants`: metadati attività, legame al ristoratore, menu (ObjectId pasti), eventuali offerte.
-- `meals`: catalogo base + piatti custom.
-- `carts`: documento per utente con items embedded.
-- `orders`: snapshot ordine (items, totali, stato, metriche consegna).
+**Scopo**
+- Consentire accesso solo a ruolo `ristoratore`.
 
-### 6.2 Scelte modeling:
+**Flusso**
+1. Verifica `req.user.role`.
+2. Se diverso da `ristoratore` ritorna `403`.
+3. Altrimenti `next()`.
 
-- **Embedding** su `carts` e porzioni di `orders`: letture rapide lato checkout/storico.
-- **Referencing** tra entità master (`users`, `restaurants`, `meals`): normalizzazione logica e riuso.
+---
 
+## 2.7 `node_modules/swagger-autogen/package.json`
 
-## 7. Frontend web:
+### Ruolo
+Metadati pacchetto e identificazione entrypoint (`swagger-autogen.js`).
 
-### 7.1 Pagine e UX:
+---
 
-In `public/` sono presenti pagine dedicate (es. home, login, register, profilo, logout), con separazione dei flussi per ruolo e sessione.
+## 2.8 `node_modules/swagger-autogen/swagger-autogen.js`
 
-### 7.2 Script client-side:
+### Funzione esportata: `module.exports = function (args, endpointsFiles, data)`
 
-- Chiamate `fetch` verso backend;
-- Rendering dinamico di menu/carrello/ordini;
-- Validazioni base lato client;
-- Gestione autenticazione in `public/assets/auth.js` (token storage e guard di navigazione role-based).
+**Scopo**
+- Configurare opzioni autogenerazione Swagger e avviare `init(...)`.
 
-### 7.3 Stile e responsive:
+### Funzione interna: `init(outputFile, endpointsFiles, data)`
 
-La UI usa CSS dedicati (`modern-theme.css`, `responsive.css`) e componenti Bootstrap dove opportuno, con obiettivo di coerenza visuale e minore duplicazione stilistica.
+**Scopo**
+- Eseguire pipeline completa: risoluzione path, verifica file endpoint, merge path API, normalizzazione output, scrittura JSON.
 
+---
 
-## 8. Documentazione API e artefatti:
+## 2.9 `node_modules/jsonwebtoken/package.json`
 
-- `documents/swagger.json`: contratto OpenAPI serializzato.
-- `documents/swagger.js`: generazione/aggiornamento documentazione.
-- endpoint `/swagger`: interfaccia test/manual exploration API.
-- `documents/meals.json`: dataset seed iniziale.
-- `documents/PWM__project_25_26.pdf`: documento progettuale correlato.
+### Ruolo
+Metadati libreria JWT usata da `authenticateUser`.
 
+---
 
-## 11. Flussi end-to-end principali:
+## 2.10 `node_modules/jsonwebtoken/verify.js`
 
-1. **Onboarding cliente**
-   Registrazione → validazione indirizzo OSM → login → token JWT.
-2. **Scoperta e scelta pasti**
-   Ricerca con filtri → dettaglio pasto → aggiunta carrello.
-3. **Checkout e ordine**
-   Creazione ordine → calcolo distanza/tempo → stato iniziale `ordinato`.
-4. **Gestione operativa ristoratore**
-   Presa in carico ordine → avanzamento stati (`in preparazione`, `in consegna`, `consegnato`).
-5. **Post-vendita**
-   Storico ordini, aggiornamento profilo, gestione menu/offerte.
+### Funzione esportata: `module.exports = function (jwtString, secretOrPublicKey, options, callback)`
 
+**Scopo**
+- Verificare struttura, firma e claim del JWT.
 
-## 13. Annotazioni tecniche aggiuntive (stile “commento riga per riga”)
+**Flusso sintetico**
+1. Normalizza opzioni.
+2. Valida formato JWT (3 parti).
+3. Decodifica token.
+4. Recupera/valida chiave e algoritmo.
+5. Verifica firma crittografica.
+6. Verifica claim temporali (`nbf`, `exp`) e semantici (`aud`, `iss`, `sub`).
 
-Di seguito una lettura più granulare, pensata come se fossero note inline sui blocchi di codice più importanti.
+---
 
-### 13.1 `index.js` (bootstrap e wiring)
+## 2.11 `public/assets/auth.js`
 
-- `app.use(express.json())`: abilita il parsing JSON globale; tutte le route ricevono automaticamente `req.body` già deserializzato, evitando parsing manuale per endpoint POST/PUT/PATCH.
-- `app.use(cors())`: apre il backend a chiamate cross-origin; utile in sviluppo con frontend separato, ma in produzione andrebbe ristretto a origin specifiche.
-- `express.static(path.join(__dirname, "public"))`: serve il frontend statico senza controller dedicato; riduce boilerplate e mantiene backend+frontend nello stesso deploy.
-- `normalizeMealDocument(meal)`: protegge il seed da `_id` invalidi o in formati eterogenei (`{"$oid": ...}`), rendendo l’import robusto rispetto a export Mongo differenti.
-- `bootstrapInitialMeals(db)`: usa `estimatedDocumentCount()` e seed condizionale; comportamento idempotente che evita duplicazione dati ad ogni riavvio.
-- `app.locals.db = client.db(...)`: inietta il riferimento DB nel contesto Express; pattern semplice ma efficace per evitare singleton globali difficili da testare.
-- middleware errori finale `app.use((err, req, res, next) => ...)`: centralizza la serializzazione degli errori runtime in payload JSON uniforme (`{ error: ... }`).
+### Ruolo
+Modulo frontend auto-eseguito (IIFE) per gestione sessione client, validazione token lato browser e protezione pagine per ruolo.
 
-### 13.2 `utils/config.js` (config fail-fast)
+### Struttura generale
+- Tutto il file è incapsulato in una IIFE: `(function () { ... })();`
+- Evita inquinamento del global scope, esponendo solo API minime su `window`.
 
-- `dotenv.config()`: carica `.env` prima di consumare variabili, evitando `undefined` silenziosi.
-- `extractDbNameFromMongoUri(uri)`: fallback intelligente che ricava il DB name dalla URI se `MONGODB_DB` non è impostata esplicitamente.
-- `requiredEnvVars` + `missingEnvVars`: pattern dichiarativo per validare prerequisiti di avvio; migliora manutenibilità rispetto a `if` sparsi.
-- `throw new Error(...)` in fase bootstrap: approccio fail-fast corretto; il processo fallisce subito con messaggio esplicativo anziché generare errori tardivi durante le request.
+### Funzioni dettagliate
 
-### 13.3 `utils/addressValidation.js` (qualità indirizzi e integrazione OSM)
+#### 1) `getCurrentPath()`
+**Scopo:** ottenere `window.location.pathname` con fallback `/`.
 
-- `normalizeValue(...)`: rimuove accenti/rumore testuale; riduce i falsi negativi nel matching tra input utente e risposta Nominatim.
-- `extractAddressParts(rawAddress)`: separa CAP, città, via, presenza civico; la funzione costituisce un “mini parser” semantico dell’indirizzo.
-- regex `\b\d{5}\b`: vincola CAP a formato italiano a 5 cifre, coerente con `expectedCountryCode = "it"`.
-- `addressMatches(...)`: usa matching bidirezionale (`includes` in entrambi i sensi) per tollerare differenze come abbreviazioni o token extra restituiti dal provider.
-- normalizzazione dei tipi strada (`via`, `viale`, `piazza`, ...): ottima scelta per confrontare la sostanza toponomastica e non il prefisso.
-- timeout con `AbortController`: evita request pendenti a provider esterni e impedisce saturazione del loop in caso di disservizi.
-- validazioni progressive in `validateAddressWithOpenStreetMap(...)`: messaggi d’errore guidati e specifici migliorano UX e debuggabilità.
+#### 2) `normalizePathname(pathname)`
+**Scopo:** rimuovere query/hash dal path per confronti coerenti.
 
-### 13.4 `routes/users.js` (IAM applicativo)
+#### 3) `isAuthPage(pathname)`
+**Scopo:** verificare se il path è una pagina di autenticazione (`/login.html`, `/register.html`, ecc.).
 
-- `sanitizePreferenze(...)`: deduplica e pulisce array preferenze; evita persistenza di valori vuoti/duplicati già al bordo API.
-- controllo `role` esplicito (`cliente|ristoratore`): valida il dominio e previene creazione utenti in stati non previsti.
-- doppio controllo di obbligatorietà campi per ruolo: rende chiarissima la business rule lato codice, anche se alcuni check sono ridondanti e consolidabili.
-- validazione indirizzo in registrazione/modifica cliente: ottimo gate di qualità dei dati prima della persistenza.
-- hash password `bcrypt.hash(password, 10)`: costo 10 ragionevole per contesto didattico/full-stack general purpose.
-- login con `jwt.sign({ userId, role }, ...)`: payload minimale ma sufficiente per autenticazione stateless + autorizzazione role-based.
-- projection `{ password: 0 }` in `/users` e `/users/me`: evita data leakage di hash password nelle risposte pubbliche/autenticate.
+#### 4) `saveLastVisitedPath(pathname)`
+**Scopo:** salvare in `sessionStorage` l’ultima pagina non-auth visitata.
+**Gestione errori:** `try/catch` per gestire browser policy/storage non disponibile.
 
-### 13.5 `routes/orders.js` (core delivery)
+#### 5) `restoreLastVisitedPath(payload)`
+**Scopo:** dopo login, ripristinare la pagina precedente o usare fallback per ruolo (`/ristoratore/home.html` o `/cliente/home.html`).
 
-- `validStates`: enum locale utile per governare transizioni di stato ed evitare valori arbitrari.
-- `geocodeAddress(...)` + `getDrivingRouteMetrics(...)`: separazione pulita tra geocoding e routing, con responsabilità ben distinte.
-- fallback `haversineKm(...)` quando OSRM fallisce: scelta robusta che mantiene operativo il checkout anche con provider parzialmente indisponibile.
-- raggruppamento `ordiniPerRistoranti`: normalizza un carrello multi-ristorante in ordini separati, allineando il dominio operativo reale.
-- stato iniziale dinamico (`in preparazione` se coda vuota): introduce una regola di scheduling semplice ma realistica.
-- `calculateOrderPreparationMinutes(...)`: stima il backlog del ristorante sommando tempi preparazione * quantità; base solida per ETA percepita lato cliente.
-- calcolo `costoConsegna = base + (km * coefficiente)`: trasparente e facilmente parametrizzabile tramite costanti.
-- `DateTime.now().setZone("Europe/Rome")`: timestamp allineato al contesto locale applicativo, evitando inconsistenze di sola timezone server.
+#### 6) `decodeJwtPayload(token)`
+**Scopo:** decodificare payload JWT lato client senza verifica firma.
+**Passi:** split token, conversione base64url→base64, padding, `atob`, `JSON.parse`.
+**Nota:** utile per UX/navigation state; non sostituisce verifica server-side.
+
+#### 7) `showAuthIssue(message)`
+**Scopo:** uniformare logging warning auth e ritorno `false`.
+
+#### 8) `inferRoleFromPath(pathname)`
+**Scopo:** inferire ruolo (`ristoratore`/`cliente`) dal prefisso URL.
+
+#### 9) `getRoleScopedValue(baseKey, role)`
+**Scopo:** leggere da `localStorage` una chiave specifica per ruolo (`token_ristoratore`, ecc.).
+
+#### 10) `setRoleScopedValue(baseKey, role, value)`
+**Scopo:** scrivere in `localStorage` valori namespace per ruolo.
+
+#### 11) `validateSession(expectedRole)`
+**Scopo:** funzione centrale di validazione sessione client.
+**Flusso:**
+1. Determina ruolo attivo (atteso o inferito dal path).
+2. Recupera token role-scoped o fallback globale.
+3. Decodifica payload e verifica campi minimi (`role`, `userId`).
+4. Se mismatch ruolo, tenta fallback con token globale.
+5. Sincronizza storage globale e per ruolo (`token`, `role`, `userId`).
+6. Salva percorso corrente.
+7. Ritorna payload valido o `null`.
+
+#### 12) `bootstrapNavigationState()` (IIFE interna)
+**Scopo:** all’avvio pagina valida sessione e prova ripristino ultima pagina.
+
+### API esposte su `window`
+
+#### `window.handleAuthIssue(reason)`
+- Wrapper di `showAuthIssue`.
+
+#### `window.ensureAuthenticated()`
+- Ritorna `true` se sessione valida, altrimenti `false` + warning.
+
+#### `window.ensureAuthenticatedRole(expectedRole)`
+- Valida autenticazione + coerenza ruolo rispetto alla pagina.
+- Previene redirect involontari su refresh in caso mismatch.
+
+---
+
+## 2.12 `public/assets/modern-theme.css`
+
+### Ruolo
+Foglio stile principale tema UI moderno (tipografia, layout, componenti, colori).
+
+### Nota
+- Asset statico: nessuna funzione JS.
+
+---
+
+## 2.13 `public/assets/responsive.css`
+
+### Ruolo
+Regole responsive/adattive per viewport differenti.
+
+### Nota
+- Asset statico: nessuna funzione JS.
+
+---
+
+## 2.14 `public/assets/logo.png` e `public/assets/Favicon.png`
+
+### Ruolo
+Asset grafici branding/interfaccia.
+
+### Nota
+- Risorse binarie non eseguibili.
+
+---
+
+
+## 2.15 `public/cliente/*.html`
+
+### Ruolo generale
+Le pagine `public/cliente` implementano i flussi frontend del cliente (home, menu, offerte, carrello, ordini), riusando `../assets/auth.js` per i controlli di autenticazione/ruolo.
+
+### File inclusi
+- `public/cliente/home.html`
+- `public/cliente/menù.html`
+- `public/cliente/offerte.html`
+- `public/cliente/carrello.html`
+- `public/cliente/ordini.html`
+
+### Analisi funzione-per-funzione
+
+#### `public/cliente/home.html`
+- `fetchConControlloToken(url, options = {})`: wrapper fetch con header `Authorization` e controllo errori token.
+- `ricercaRistoranti(queryName, queryAddress)`: invoca endpoint ricerca ristoranti e applica filtri input utente.
+- `mostraRistoranti(lista)`: rendering DOM elenco ristoranti e stati vuoto/errore.
+
+#### `public/cliente/menù.html`
+- `fetchConControlloToken(url, options = {})`: fetch autenticato con gestione sessione invalida.
+- `caricaMenu()`: carica dati menu dal backend e prepara dataset UI.
+- `mostraPiatti(lista)`: rendering schede piatto.
+- `addToCart(piatto)`: chiamata API per aggiunta al carrello e feedback utente.
+- `generaCategorie(piatti)`: costruisce dinamicamente categorie filtro dal dataset.
+- `applicaFiltri()`: filtra lista piatti secondo categoria/ricerca/altri criteri UI.
+
+#### `public/cliente/offerte.html`
+- `getIdAsString(idValue)`: normalizzazione ID (ObjectId/string) per confronti coerenti.
+- `readArrayFromLocalStorage(key)`: lettura robusta array da localStorage con fallback.
+- `getMealIdAsString(meal)`: estrazione ID piatto normalizzato.
+- `fetchWithAuth(url, options)`: wrapper fetch autenticato.
+- `normalizeMeal(meal)`: normalizzazione shape dati pasto per rendering/filtri.
+- `isMealAllowedByPreference(meal)`: verifica compatibilità offerta con preferenze utente.
+- `buildScenarioContent(hasOffers, hasPreferences, hasPreferenceMatches)`: produce contenuto UI in base allo scenario.
+- `addToCart(meal)`: aggiunge offerta al carrello.
+- `renderGroupedOffers(meals, emptyMessage)`: rendering offerte raggruppate per ristorante/scenario.
+- `loadUserPreferences()`: recupero preferenze utente.
+- `loadOffers()`: recupero offerte e avvio pipeline rendering.
+
+#### `public/cliente/carrello.html`
+- `fetchConControlloToken(url, options = {})`: fetch autenticato con fallback su sessione non valida.
+- `recuperaCarrello()`: recupera stato carrello corrente.
+- `recuperaIndirizzoUtente()`: legge indirizzo utente necessario per consegna.
+- `mostraMessaggio(tipo, testo)`: mostra feedback UI (errore/successo/info).
+- `estraiComponentiIndirizzo(indirizzo)`: parsing indirizzo testuale in componenti utili.
+- `corrispondeValore(valoreUtente, possibiliValori)`: helper matching semantico valori indirizzo.
+- `validaIndirizzoReale(indirizzo)`: validazione indirizzo via servizio esterno/Nominatim.
+- `mostraCarrello()`: rendering completo carrello, grouping per ristorante e totali.
+- `rimuoviDalCarrello(mealId)`: rimozione item dal carrello.
+- handler click `orderBtn`: validazioni checkout, costruzione payload ordini e invio API.
+- `(async function init() { ... })()`: bootstrap iniziale pagina (load dati + rendering).
+
+#### `public/cliente/ordini.html`
+- `fetchConControlloToken(url, options = {})`: wrapper fetch autenticato.
+- `formatEuro(value)`: formattazione prezzo in valuta EUR.
+- `normalizzaClasseStato(stato)`: mapping stato ordine → classe CSS.
+- `creaDettagliPasti(order)`: genera markup dettagli pasti per ordine.
+- `creaCardOrdine(order)`: genera card HTML ordine completa.
+- `parseDataOrdine(dataOrdine)`: parsing robusto data ordine per sorting.
+- `caricaOrdiniCliente()`: fetch storico ordini, ordinamento e rendering.
+- `confermaConsegna(orderId, buttonElement)`: conferma ricezione ordine via API e aggiorna UI.
+
+---
+
+
+## 2.16 `public/ristoratore/*.html`
+
+### Ruolo generale
+Le pagine `public/ristoratore` implementano i flussi operativi del ristoratore: creazione/gestione ristorante, gestione menu e bacheca/offerte, CRUD piatti personalizzati, monitoraggio ordini e statistiche.
+
+### Analisi funzione-per-funzione (sintesi per pagina)
+
+#### `public/ristoratore/home.html`
+- `fetchConControlloToken(...)`: wrapper fetch autenticato.
+- `caricaDatiRistorante()`: recupera dati del ristorante del ristoratore loggato.
+- `caricaOrdini(ristoranteId)`: recupera e renderizza riepilogo ordini recenti.
+
+#### `public/ristoratore/creaRistorante.html`
+- `mostraFeedback(tipo, messaggio)`: feedback UX form.
+- `resetCampo(...)`, `evidenziaCampoErrore(...)`, `resetValidazione()`: utilità validazione UI.
+- `trovaCampoDaErrore(messaggio)`: mapping errore backend → campo form.
+- `validaForm()`: validazione completa client-side prima submit.
+- `fetchConControlloToken(...)`: invio autenticato payload creazione.
+
+#### `public/ristoratore/gestioneRistorante.html`
+- `fetchConControlloToken(...)`: wrapper auth.
+- `caricaDatiRistorante()`: load dati correnti e rendering form.
+- `confrontaValori(a,b)`: helper confronto robusto.
+- `nessunaModificaRistorante(payload, originale)`: evita update inutili se nessuna modifica.
+
+#### `public/ristoratore/gestioneMenù.html`
+- Funzioni storage/selezione: `getIdAsString`, `readArrayFromLocalStorage`, `getBachecaStorageKey`, `getBachecaIds`, `salvaBachecaRistorante`.
+- Funzioni dati/render: `fetchConControlloToken`, `caricaRistorante`, `caricaMenu`, `renderizzaMenu`, `creaCardPiatto`, `mostraDettagliPiatto`.
+- Funzioni azioni bulk: `toggleMealSelection`, `ripristinaPiattiSelezionati`, `selezionaTuttiIPiatti`, `updateDeleteButtonLabel`, `eliminaPiattiSelezionati`, `aggiungiPiattiInBacheca`.
+- Bootstrap: IIFE `init()`.
+
+#### `public/ristoratore/gestioneBacheca.html`
+- Include quasi la stessa base di `gestioneMenù` + logica offerte.
+- Funzioni offerte: `aggiornaOfferteMeals`, `aggiornaOffertaMeal`, `aggiungiPiattiAlleOfferte`, `rimuoviPiattiDalleOfferte`.
+- Funzione distruttiva: `eliminaPiattiSelezionati`.
+- Helper messaggi: `getNomePiatto`, `getMessaggioPiattiGiaInOfferta`, `getMessaggioPiattiAggiunti`.
+
+#### `public/ristoratore/piattiGenerici.html`
+- `caricaPiattiGenerici()`, `caricaCategorie()`: dataset catalogo generico.
+- `displayGenericMealsPage(page)`, `updatePaginationControls()`: paginazione lato client.
+- `bindMealSelectionEvents`, `toggleMealSelection`, `updateAddSelectedButtonLabel`: selezione multipla.
+- `aggiungiPiattoAlMenu(idMeal)`, `aggiungiPiattiSelezionatiAlMenu()`: inserimento in menu ristorante.
+- `applicaFiltri()`: filtri categoria/ricerca.
+
+#### `public/ristoratore/piattoPersonalizzato.html`
+- `fetchConControlloToken(...)`, `caricaRistorante()`: contesto auth/ristorante.
+- Handler submit form (`addEventListener('submit', ...)`): costruzione payload piatto custom e POST backend.
+- IIFE `init()` di bootstrap.
+
+#### `public/ristoratore/modificaPiattoPersonalizzato.html`
+- `renderCards()`: render elenco/edit action piatti custom.
+- `popolaForm(piatto)`: bind valori selezionati nel form modifica.
+- `caricaDettagliPiatto(idMeal)`: fetch dettaglio singolo piatto.
+- `caricaRistorante()`: contesto owner e filtri.
+- IIFE `init()`.
+
+#### `public/ristoratore/ordini.html`
+- Formattazione/render: `estraiTimestampOrdine`, `formatEuro`, `renderPrezzoOrdine`, `renderSubtotaleOrdine`, `normalizzaClasseStato`, `creaDettagliPasti`, `creaCardOrdine`.
+- Dati e azioni: `fetchConControlloToken`, `caricaOrdiniRistoratore`, `cambiaStatoOrdine`, `confermaLetturaNotificheConsegna`.
+- Gestione separata ordini attivi/storico e transizioni stato.
+
+#### `public/ristoratore/statistiche.html`
+- `fetchConControlloToken(...)`: accesso endpoint statistiche.
+- `renderListItem(label, value, suffix)`: rendering righe KPI.
+- `formatDateLabel(dateString)`: formattazione etichette temporali.
+- `caricaStatistiche()`: orchestrazione fetch KPI e rendering dashboard.
+
+---
+
+
+## 2.17 `public/*.html` (root)
+
+### Ruolo generale
+Le pagine nel root di `public` coprono accesso, onboarding, uscita sessione, profilo utente e landing page applicativa.
+
+### Analisi funzione-per-funzione
+
+#### `public/index.html`
+- Landing page statica: non include funzioni JavaScript applicative.
+
+#### `public/login.html`
+- Handler submit (`loginForm.addEventListener("submit", ...)`): valida input base, invia credenziali al backend, salva token/ruolo in storage e gestisce redirect in base al ruolo.
+
+#### `public/register.html`
+- `updateFields()`: abilita/disabilita campi in base al ruolo scelto.
+- `renderPreferenze(categorie)`: rendering chip preferenze alimentari.
+- `validaUsername(username)`: validazione formato username.
+- `getPreferenzeSelezionate()`: estrazione preferenze attive dalla UI.
+- `resetErrors()`, `showFieldError(...)`, `clearFieldError(...)`, `focusAndScrollToField(...)`: gestione UX errori form.
+- `validateForm(values)`: validazione completa campi registrazione.
+- `caricaCategoriePreferenze()`: carica categorie da API pasti per popolare preferenze.
+- Handler eventi `click/input/blur/invalid/submit`: orchestrano validazione progressiva + invio registrazione.
+
+#### `public/logout.html`
+- Script inline di logout: rimozione token/dati sessione da storage e redirect a pagina di ingresso/login.
+
+#### `public/profilo.html`
+- `goBack()`: ritorno contestuale alla home di ruolo.
+- `fetchConControlloToken(...)`: wrapper fetch autenticato.
+- `mostraMessaggio(...)`, `pulisciMessaggio(...)`, `mostraEsitoAggiornamentoProfilo(...)`: gestione feedback UI.
+- Validator: `validaEmail`, `validaUsername`, `validaTelefono`, `validaPiva`, `validaPassword`.
+- Preferenze: `renderPreferenze(...)`, `getPreferenzeSelezionate()`, `caricaCategoriePreferenze()`.
+- `trovaDifferenze(payload)`: calcola modifiche reali prima dell’update.
+- `caricaDatiProfilo()`: fetch dati utente e popolamento form.
+- Handler submit/click:
+  - aggiornamento profilo,
+  - cambio password,
+  - cancellazione account.
+
+---
+
+
+## 2.18 `routes/*.js`
+
+### Ruolo generale
+La cartella `routes` contiene la logica API REST principale (controller Express), con middleware di autenticazione/autorizzazione e accesso a MongoDB tramite `req.app.locals.db`.
+
+### `routes/users.js`
+**Funzioni helper**
+- `sanitizePreferenze(preferenze)`: normalizza e deduplica preferenze alimentari.
+- `sanitizeMetodoPagamento(metodoPagamento)`: normalizza metodo di pagamento.
+
+**Endpoint principali**
+- `GET /users`: elenco utenti (projection senza password).
+- `POST /users/register`: registrazione con validazioni per ruolo e dati obbligatori.
+- `POST /users/login`: autenticazione + emissione JWT.
+- `GET /users/me`: profilo autenticato.
+- `PUT /users/me`: aggiornamento profilo con validazioni e controllo coerenza.
+- `PUT /users/me/password`: cambio password autenticato.
+- `DELETE /users/me`: cancellazione account e cleanup correlato.
+
+### `routes/meals.js`
+**Funzione helper**
+- `parseCsv(value)`: parser CSV robusto per query param (ingredienti/allergeni).
+
+**Endpoint principali**
+- `GET /meals`: listing con filtri avanzati (categoria, prezzo, ingredienti, allergeni, area, offerte).
+- `PUT /meals/offerte`: aggiornamento massivo flag/sconto offerte (ristoratore).
+- `GET /meals/:id`: dettaglio pasto.
+- `POST /meals`: creazione piatto (owner ristoratore).
+- `PUT /meals/:id`: modifica piatto con controlli owner.
+- `DELETE /meals/:id`: cancellazione piatto autorizzata.
+
+### `routes/restaurants.js`
+**Funzioni helper**
+- `parseOrderDateToDate(rawValue)`: parsing robusto data ordine.
+- `getYyyyMmDd(dateValue)`: normalizzazione data `YYYY-MM-DD`.
+
+**Endpoint principali**
+- `GET /restaurants/search`: ricerca per nome/indirizzo.
+- `GET /restaurants/by-meal`: lookup ristoranti a partire da meals.
+- `GET /restaurants`: elenco ristoranti.
+- `GET /restaurants/statistics`: KPI ristoratore (ordini, fatturato, top pasti, timeline).
+- `GET /restaurants/:restaurantId`: dettaglio ristorante + menu arricchito.
+- `POST /restaurants`: creazione ristorante autenticata.
+- `PUT /restaurants/:restaurantId`: aggiornamento ristorante owner-only.
+- `DELETE /restaurants/:restaurantId`: eliminazione ristorante owner-only.
+
+### `routes/orders.js`
+**Funzioni helper**
+- `geocodeAddress(address)`: geocoding indirizzo tramite provider esterno.
+- `haversineKm(coord1, coord2)`: fallback distanza geodetica.
+- `getDrivingRouteMetrics(coordFrom, coordTo)`: routing stradale (km/min) via OSRM.
+- `calculateOrderPreparationMinutes(order)`: stima tempi preparazione backlog.
+- `updateOrderStatus(req,res)`: logica condivisa transizione stato ordine.
+
+**Endpoint principali**
+- `POST /orders`: creazione ordini da carrello (anche multi-ristorante).
+- `GET /orders`: storico ordini (cliente/ristoratore in base al ruolo).
+- `PUT /orders/notifiche-consegna/ack`: ack notifiche consegna lato ristoratore.
+- `GET /orders/:id`: dettaglio ordine con controlli accesso.
+- `PUT /orders/:id/consegna`: conferma consegna lato cliente.
+- `PUT /orders/:id/stato` (tramite handler dedicato): avanzamento stato operativo.
+
+### `routes/carts.js`
+**Endpoint principali**
+- `GET /carts/me`: recupero carrello utente.
+- `POST /carts/me/items`: aggiunta item al carrello con merge quantità.
+- `DELETE /carts/me/items/:mealId`: rimozione item.
+- `DELETE /carts/me`: svuotamento carrello.
+- `PUT /carts/add`: incremento quantità item.
+- `PUT /carts/remove`: decremento/rimozione quantità item.
+
+---
+
+
+## 2.19 `utils/*.js`
+
+### Ruolo generale
+I file in `utils` contengono logica trasversale riusabile: configurazione applicativa fail-fast e validazione indirizzi con OpenStreetMap/Nominatim.
+
+### `utils/config.js`
+
+#### Funzione: `extractDbNameFromMongoUri(uri)`
+**Scopo**
+- Estrarre il nome DB dalla URI Mongo quando `MONGODB_DB` non è esplicitato.
+
+**Comportamento**
+- Se URI assente ritorna `null`.
+- Tenta parse con `new URL(uri)`.
+- Estrae pathname senza `/` iniziale e prende il primo segmento come nome DB.
+- In caso di URI invalida ritorna `null` (catch silenzioso).
+
+#### Altra logica rilevante del modulo
+- `dotenv.config()`: carica variabili `.env`.
+- Costruisce `requiredEnvVars` e `missingEnvVars`.
+- Se mancano variabili critiche (`MONGODB_URI`, `MONGODB_DB`, `JWT_SECRET`, `JWT_EXPIRES_IN`) lancia errore bloccante.
+- Esporta oggetto `config` tipizzato per bootstrap server (`PORT`, URI DB, segreti JWT).
+
+### `utils/addressValidation.js`
+
+#### Funzione: `normalizeValue(value = "")`
+**Scopo**
+- Normalizzare stringhe (trim/lowercase/rimozione accenti/spazi multipli) per confronti robusti.
+
+#### Funzione: `extractAddressParts(rawAddress = "")`
+**Scopo**
+- Fare parsing semantico dell’indirizzo utente.
+
+**Output**
+- `address`, `chunks`, `cap`, `streetChunk`, `cityChunk`, `hasStreetNumber`.
+
+#### Funzione: `addressMatches(parsedInput, nominatimAddress = {})`
+**Scopo**
+- Verificare coerenza fra indirizzo utente parsato e `addressdetails` restituiti da Nominatim.
+
+**Dettagli**
+- Normalizza tipi strada (via/viale/piazza/...).
+- Confronta strada, città e CAP con matching tollerante.
+- Ritorna `true` solo se tutti i campi chiave corrispondono.
+
+#### Funzione export: `validateAddressWithOpenStreetMap(rawAddress, options = {})`
+**Scopo**
+- Validare un indirizzo italiano (default `expectedCountryCode = "it"`) con controlli sintattici + verifica remota OSM.
+
+**Flusso**
+1. Parsing input con `extractAddressParts`.
+2. Validazioni preliminari (lunghezza minima, civico, CAP, città).
+3. Costruzione URL Nominatim (`jsonv2`, `addressdetails`, `limit`, `countrycodes`).
+4. Chiamata `fetch` con timeout (`AbortController`).
+5. Controllo response + parsing JSON risultati.
+6. Ricerca di un risultato coerente tramite `addressMatches`.
+7. Ritorno esito strutturato:
+   - `{ valid: true, normalizedAddress, coordinates }` oppure
+   - `{ valid: false, reason }`.
+8. Cleanup timeout in `finally`.
+
+**Criticità operative**
+- Dipende da disponibilità rete/provider esterno.
+- Richiede gestione rate-limit e policy User-Agent lato produzione.
+
+---
+
+
+## 2.20 Root repository (`Progetto-Fast-food-Programmazione-web-e-mobile-2025`)
+
+### Ruolo generale
+La root del progetto contiene entrypoint backend, metadata di dipendenze/build, documentazione generale e file di configurazione Git.
+
+### `index.js` (entrypoint server)
+
+#### Funzione: `normalizeMealDocument(meal)`
+**Scopo**
+- Normalizzare i record seed pasti convertendo `_id` in `ObjectId` valido quando presente in formato export (`$oid`).
+
+**Comportamento**
+- Copia il documento (`{ ...meal }`).
+- Se `_id.$oid` è valido crea `new ObjectId(...)`.
+- Altrimenti rimuove `_id` per lasciare che Mongo lo generi.
+
+#### Funzione: `bootstrapInitialMeals(db)`
+**Scopo**
+- Eseguire seed idempotente della collection `meals` da `documents/meals.json`.
+
+**Comportamento**
+1. Legge count documenti in `meals`.
+2. Se non vuota, esce subito.
+3. Carica JSON seed.
+4. Normalizza con `normalizeMealDocument`.
+5. Inserisce batch con `insertMany(..., { ordered: false })`.
+
+#### Funzione: `startServer()`
+**Scopo**
+- Avvio completo applicazione Express + connessione MongoDB + bootstrap route/middleware.
+
+**Flusso**
+1. Connessione Mongo tramite `MongoClient` usando `config.MONGODB_URI`.
+2. Bind DB in `app.locals.db` + `ping` di verifica.
+3. Esecuzione seed iniziale pasti.
+4. Registrazione route (`/users`, `/meals`, `/restaurants`, `/orders`, `/carts`).
+5. Setup error middleware globale.
+6. Avvio `app.listen(PORT)`.
+7. In caso errore bootstrap: log + `process.exit(1)`.
+
+### Altri file root
+- `package.json`: definisce script npm, dipendenze runtime/dev e metadata progetto.
+- `package-lock.json`: lockfile versioni dipendenze per build riproducibili.
+- `README.md`: documentazione utente/sviluppatore ad alto livello.
+- `.gitignore`: esclusione file/cartelle non versionabili (es. `node_modules`, env locali).
+- `.gitattributes`: attributi Git per normalizzazione/testi/binari.
+
+---
+
+## 3) Flusso integrato complessivo
+
+1. `documents/swagger.js` produce `documents/swagger.json` tramite `swagger-autogen`.
+2. Backend protegge le route via `authenticateUser` + `authorizeRistoratore`.
+3. Frontend (`public/assets/auth.js`) gestisce stato sessione client e controllo accesso pagina lato UX.
+4. `jsonwebtoken/verify.js` realizza la verifica token effettiva usata dal middleware server.
+5. `meals.json` e asset statici (`css`, `png`, `pdf`) completano bootstrap e presentazione.
+
+---
+
+## 4) Conclusioni
+
+Con questa revisione, la relazione include anche `public/assets`, `public/cliente`, `public/ristoratore`, `public` root, `routes`, `utils` e root repository mantenendo il criterio richiesto:
+- commento funzione-per-funzione su file eseguibili (`auth.js`),
+- classificazione tecnica dei file statici (CSS/immagini),
+- coerenza con i blocchi precedenti (`documents`, `middlewares`, `node_modules` rilevanti).
