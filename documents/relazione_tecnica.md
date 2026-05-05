@@ -187,36 +187,6 @@ La UI usa CSS dedicati (`modern-theme.css`, `responsive.css`) e componenti Boots
 - `documents/PWM__project_25_26.pdf`: documento progettuale correlato.
 
 
-## 9. Sicurezza, Resilienza e Robustezza:
-
-Misure implementate:
-- Hashing password con bcrypt;
-- JWT con scadenza configurabile;
-- Validazioni input e controllo ObjectId in più endpoint;
-- Enforcement ruoli a middleware;
-- Timeout su servizi terzi OSM/OSRM;
-- Gestione esplicita codici HTTP (`400/401/403/404/409/500`);
-- Avvio fail-fast su config mancante/invalida.
-
-Aree migliorabili (roadmap):
-- Rate limiting su auth e endpoint sensibili;
-- Logging strutturato e correlazione request-id;
-- Hardening header HTTP (helmet), CORS più restrittivo in produzione;
-- Test automatici unit/integration end-to-end.
-
-
-## 10. Correttezza REST (Valutazione Critica):
-
-Conformità alta su:
-- Naming risorse (`/users`, `/meals`, `/orders`, `/carts`);
-- Semantica metodi HTTP;
-- Stateless auth via token;
-- Uso coerente di status code.
-
-Eccezioni note:
-- Endpoint carrello legacy non perfettamente resource-oriented (mantenuti per compatibilità).
-
-
 ## 11. Flussi end-to-end principali:
 
 1. **Onboarding cliente**
@@ -231,19 +201,6 @@ Eccezioni note:
    Storico ordini, aggiornamento profilo, gestione menu/offerte.
 
 
-## 12. Qualità del codice e Manutenibilità:
-
-Punti positivi:
-- Separazione funzionale chiara per directory;
-- Naming semantico dei moduli;
-- Utilità condivise per ridurre duplicazione;
-- Presenza di documentazione tecnica e API.
-
-Opportunità:
-- Introdurre layer service esplicito per business logic più complessa;
-- Aggiungere schema validation centralizzata (es. Joi/Zod);
-- Aumentare copertura test e pipeline CI;
-- Standardizzare completamente risposta errori (error envelope unico).
 ## 13. Annotazioni tecniche aggiuntive (stile “commento riga per riga”)
 
 Di seguito una lettura più granulare, pensata come se fossero note inline sui blocchi di codice più importanti.
@@ -295,10 +252,3 @@ Di seguito una lettura più granulare, pensata come se fossero note inline sui b
 - `calculateOrderPreparationMinutes(...)`: stima il backlog del ristorante sommando tempi preparazione * quantità; base solida per ETA percepita lato cliente.
 - calcolo `costoConsegna = base + (km * coefficiente)`: trasparente e facilmente parametrizzabile tramite costanti.
 - `DateTime.now().setZone("Europe/Rome")`: timestamp allineato al contesto locale applicativo, evitando inconsistenze di sola timezone server.
-
-### 13.6 Note trasversali suggerite per evoluzione
-
-- Estrarre validazioni input in layer dedicato (es. schema validator centralizzato) per ridurre duplicazioni tra route.
-- Introdurre service layer per logiche lunghe (es. creazione ordini) e rendere più snelli i router.
-- Uniformare completamente gli error payload con un envelope standard (`code`, `message`, `details`, `traceId`).
-- Aggiungere test automatici su casi edge dei parser indirizzo e fallback routing.
