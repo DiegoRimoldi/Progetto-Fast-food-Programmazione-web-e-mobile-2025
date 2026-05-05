@@ -18,7 +18,7 @@ La pagina iniziale è servita da Express in `public/` ed è raggiungibile avvian
 # Struttura della directory
 
 ```
-┣ 📂Documents
+┣ 📂documents
 	//Traccia del progetto, swagger
 ┃ ┣ 📜meals.json
 ┃ ┣ 📜PWM__project_25_26.pdf
@@ -91,7 +91,7 @@ Ogni piatto è identificato da un indice. Inoltre, sono stati aggiunti i campi �
 
 Una volta eseguito il codice, la documentazione **Swagger API** è raggiungibile all’URL `http://localhost:3000/swagger`.
 
-Per rigenerare la specifica OpenAPI in `Documents/swagger.json`, eseguire `npm run swagger`.
+Per rigenerare la specifica OpenAPI in `documents/swagger.json`, eseguire `npm run swagger`.
 
 # Scelte implementative
 
