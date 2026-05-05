@@ -13,7 +13,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { ObjectId } from "mongodb";
 
-const swaggerDocument = JSON.parse(fs.readFileSync("./Documents/swagger.json", "utf-8"));
+const swaggerDocument = JSON.parse(fs.readFileSync("./documents/swagger.json", "utf-8"));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -40,12 +40,12 @@ async function bootstrapInitialMeals(db) {
   const mealsCount = await mealsCollection.estimatedDocumentCount();
   if (mealsCount > 0) return;
 
-  const rawMeals = JSON.parse(fs.readFileSync("./Documents/meals.json", "utf-8"));
+  const rawMeals = JSON.parse(fs.readFileSync("./documents/meals.json", "utf-8"));
   const normalizedMeals = Array.isArray(rawMeals) ? rawMeals.map(normalizeMealDocument) : [];
   if (normalizedMeals.length === 0) return;
 
   await mealsCollection.insertMany(normalizedMeals, { ordered: false });
-  console.log(`Bootstrap completato: caricati ${normalizedMeals.length} piatti iniziali da Documents/meals.json`);
+  console.log(`Bootstrap completato: caricati ${normalizedMeals.length} piatti iniziali da documents/meals.json`);
 }
 
 async function startServer() {
