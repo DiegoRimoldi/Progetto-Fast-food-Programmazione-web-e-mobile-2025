@@ -6,7 +6,7 @@
 
 ## Panoramica
 
-Applicazione web full-stack per la gestione di un sistema di ordinazioni fast food con due ruoli:
+Applicazione web full-stack per la gestione di un sistema di ordinazioni Fast Food con due ruoli:
 
 - **Cliente**: consultazione menù, gestione carrello, creazione ordini e monitoraggio stato.
 - **Ristoratore**: gestione ristorante, menù personalizzato e avanzamento stato ordini.
