@@ -1,200 +1,217 @@
 <img src="public/assets/logo.png" alt="LOGO" width="100"/>
-<h1>Progetto di Programmazione Web e Mobile "Fast Food"</h1>
-<p><strong>Autore:</strong> Rimoldi Diego</p>
+<h1>Progetto di Programmazione Web e Mobile "Fast Food" - Ingenito Emiddio</h1>
 
 ---
 
-## Panoramica
+# Getting Started
 
-Applicazione web full-stack per la gestione di un sistema di ordinazioni Fast Food con due ruoli:
+Per avviare l’applicazione, navigare nella directory `fastfood`, ed installare i `node_modules` necessari eseguendo il comando `npm install`
 
-- **Cliente**: consultazione menù, gestione carrello, creazione ordini e monitoraggio stato.
-- **Ristoratore**: gestione ristorante, menù personalizzato e avanzamento stato ordini.
+Successivamente, è possibile avviare il backend mediante il comando `npx nodemon index.js.`
 
-Il backend espone API REST con **Express + MongoDB**, autenticazione **JWT** e documentazione **Swagger**.
+E’ possibile raggiungere la pagina iniziale, aprendo il file `index.html`
 
----
+# Struttura della directory
 
-## Stack tecnologico
-
-- **Runtime:** Node.js (ES Modules)
-- **Backend:** Express
-- **Database:** MongoDB (Atlas o istanza locale)
-- **Autenticazione:** JSON Web Token (`jsonwebtoken`)
-- **Password hashing:** `bcryptjs`
-- **Documentazione API:** Swagger UI (`swagger-ui-express`) + generazione specifica (`swagger-autogen`)
-- **Utility:** `dotenv`, `cors`, `luxon`
-
----
-
-## Setup e avvio
-
-### 1) Installazione dipendenze
-
-```bash
-npm install
 ```
-
-### 2) Configurazione variabili ambiente
-
-Crea un file `.env` nella root del progetto con almeno:
-
-```env
-MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<db>?retryWrites=true&w=majority
-MONGODB_DB=fastfood
-JWT_SECRET=una_chiave_molto_sicura
-JWT_EXPIRES_IN=7d
-PORT=3000
-```
-
-> `MONGODB_DB` è fortemente consigliata: se assente, l'app tenta di dedurre il nome DB da `MONGODB_URI`.
-
-### 3) Avvio server
-
-- Modalità sviluppo:
-
-```bash
-npm run dev
-```
-
-- Modalità standard:
-
-```bash
-npm start
-```
-
-App disponibile su: `http://localhost:3000`
-
----
-
-## Bootstrap dati iniziali
-
-All'avvio, il backend controlla la collection `meals`:
-
-- se **vuota**, carica automaticamente i piatti da `documents/meals.json`;
-- se **già popolata**, non inserisce duplicati.
-
-Questo comportamento è implementato in `index.js`.
-
----
-
-## Documentazione API (Swagger)
-
-- UI Swagger: `http://localhost:3000/swagger`
-- Specifica OpenAPI: `documents/swagger.json`
-
-Rigenerazione specifica:
-
-```bash
-npm run swagger
-```
-
----
-
-## Struttura repository
-
-```text
-┣ 📂documents
+┣ 📂Documents
+	//Traccia del progetto, swagger
 ┃ ┣ 📜meals.json
 ┃ ┣ 📜PWM__project_25_26.pdf
-┃ ┣ 📜relazione_progettuale.md
-┃ ┣ 📜relazione_tecnica.md
 ┃ ┣ 📜swagger.js
 ┃ ┗ 📜swagger.json
 ┣ 📂middlewares
+	//Verifica validità token JWT e ruolo utente autenticato,
+	per la protezione delle APIs
 ┃ ┣ 📜authenticateUser.js
 ┃ ┗ 📜authorizeRistoratore.js
-┣ 📂public
-┃ ┣ 📂assets
+┣ 📂public //Frontend
+┃ ┣ 📂assets //Contenuto statico
 ┃ ┃ ┗ 📜logo.png
+┃ ┣ 📂cliente //Pagine d'accesso esclusivo a clienti
+┃ ┃ ┣ 📜carrello.html
+┃ ┃ ┣ 📜home.html
+┃ ┃ ┣ 📜menu.html
+┃ ┃ ┗ 📜ordini.html
+┃ ┣ 📂ristoratore //Pagine d'accesso esclusivo a ristoratori
+┃ ┃ ┣ 📜creaRistorante.html
+┃ ┃ ┣ 📜gestioneRistorante.html
+┃ ┃ ┣ 📜home.html
+┃ ┃ ┣ 📜modificaPiattoPersonalizzato.html
+┃ ┃ ┣ 📜ordini.html
+┃ ┃ ┣ 📜piattiGenerici.html
+┃ ┃ ┣ 📜piattoPersonalizzato.html
+┃ ┃ ┗ 📜statistiche.html
+	//Pagine d'accesso comune, sia per clienti che per ristoratori
 ┃ ┣ 📜index.html
 ┃ ┣ 📜login.html
 ┃ ┣ 📜logout.html
 ┃ ┣ 📜profilo.html
 ┃ ┗ 📜register.html
 ┣ 📂routes
+	//Backend, Diversi router, ognuno gestisce diversi endpoints, raggruppati per scenari
 ┃ ┣ 📜carts.js
 ┃ ┣ 📜meals.js
 ┃ ┣ 📜orders.js
 ┃ ┣ 📜restaurants.js
 ┃ ┗ 📜users.js
-┣ 📂utils
-┃ ┣ 📜addressValidation.js
+┣ 📂utils //Caricamento informazioni da file .env
 ┃ ┗ 📜config.js
-┣ 📜index.js
+┣ 📜.env 
+┣ 📜index.js //Server Express, utilizza i router per esporre una API REST
 ┗ 📜package.json
 ```
 
----
+# Struttura del Database
 
-## Architettura backend
+E’ stato utilizzato un DB MongoDB, memorizzato in cloud sulla piattaforma Atlas.
 
-### Entry point
+## Collections
 
-`index.js` si occupa di:
+All’interno del DB “fastfood”, sono memorizzate 5 collections:
 
-1. connessione MongoDB;
-2. registrazione middleware globali (`express.json`, `cors`, static files);
-3. bootstrap iniziale piatti;
-4. mounting dei router:
-   - `/users`
-   - `/meals`
-   - `/restaurants`
-   - `/orders`
-   - `/carts`
-5. gestione error handler centralizzata.
+![READMEImages/collections.png](READMEImages/collections.png)
 
-### Middleware di sicurezza
+- carts - Contiene per ogni utente, un “carrello” di piatti,  con associate le rispettive quantità e ristorante da cui si intende ordinarli.
+- meals - Al contenuto dell’allegato meals.json, sono stati rimossi alcuni attributi, e aggiunti degli altri:
+    
+![READMEImages/meals.png](READMEImages/meals.png)
+    
+Ogni piatto è identificato da un indice. Inoltre, sono stati aggiunti i campi “`prezzo`” (in euro), “`tempo_preparazione`” (in minuti), e `ristorante_id`, il cui valore è `null` per i piatti generici, e corrisponde all’`id` di un ristorante registrato, per i piatti personalizzati di uno specifico ristorante.
+    
+- orders - Ordini effettuati
+- restaurants - Ristoranti registrati
+- users - Utenti registrati (sia clienti che ristoratori, è presente un campo “role” per distinguerli)
 
-- `authenticateUser`: verifica presenza/validità JWT e popola `req.user`.
-- `authorizeRistoratore`: limita l'accesso agli endpoint riservati ai ristoratori.
+# Swagger
 
----
+Una volta eseguito il codice, uno **swagger** opportunamente descritto è raggiungibile all’URL `http://localhost:3000/swagger`
 
-## Modello dati (MongoDB)
+# Scelte implementative
 
-Collection principali:
+### Utilizzo di token JWT
 
-- `users`: utenti registrati (clienti e ristoratori, distinti dal campo ruolo)
-- `restaurants`: ristoranti creati dai ristoratori
-- `meals`: piatti generici + piatti personalizzati (con `ristorante_id`)
-- `carts`: carrelli utente persistenti
-- `orders`: ordini e relativo stato di avanzamento
+Per la gestione delle autorizzazioni d’accesso alle varie pagine ed endpoints dell’API, è stato utilizzato JWT.
 
----
+Un utente effettua il login mandando all'endpoint `/login` una richiesta POST con username e password. Se le credenziali corrispondono ad un utente regsitrato, il server genera un `JWT` e lo invia al client nella risposta
 
-## Flussi applicativi principali
+```
+// POST /users/login - login
+usersRouter.post("/login", async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { username, password } = req.body;
 
-- **Autenticazione**: login con credenziali, emissione JWT, uso token Bearer nelle API protette.
-- **Carrello persistente**: salvato su DB per mantenere i dati anche tra sessioni/dispositivi.
-- **Ordini multi-ristorante**: smistamento ordini per ristorante.
-- **Stati ordine**:
-  - ritiro: `ordinato -> in preparazione -> consegnato`
-  - consegna: `ordinato -> in preparazione -> in consegna -> consegnato`
+    if (!username || !password) {
+      return res.status(400).json({ error: "username e password sono obbligatori" });
+    }
 
----
+    const user = await db.collection("users").findOne({ username });
+    if (!user) {
+      return res.status(401).json({ error: "Credenziali non valide" });
+    }
 
-## Script npm disponibili
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Credenziali non valide" });
+    }
 
-```bash
-npm start      # Avvio server
-npm run dev    # Avvio con nodemon
-npm run swagger# Rigenera documents/swagger.json
+    // genera JWT con userId e role, codificato in base alla chiave memorizzata nel file .env
+    const token = jwt.sign(
+      { userId: user._id.toString(), role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Errore nel login" });
+  }
+});
+
 ```
 
----
+Questo token è memorizzato dal client nel `localstorage`, che potrà accedere alle API protette, allegando il token ad ogni richiesta.
 
-## Note utili
+### Hashing Password
 
-- In `package.json` lo script `test` è placeholder e al momento non esegue test automatici.
-- Assicurati che l'utente MongoDB abbia i permessi necessari sul database configurato.
+Le password sono memorizzate mediante hash, utilizzando la libreria `bcrypt`
 
----
+### Relazioni con entità ristorante e ristoratore
 
-## Possibili miglioramenti futuri
+Ad ogni utente ristoratore, può essere associato un solo ristorante.
 
-- Test automatici (unit/integration) per routes e middleware.
-- Validazione input più strutturata (es. schema validation centralizzata).
-- Logging applicativo strutturato e metriche.
-- Containerizzazione con Docker.
-- CI/CD con lint + test + deploy automatico.
+Ad ogni ristorante, è associato un solo menu, memorizzato al suo interno come un array di `id` a piatti contenuti nella collection `meals`.
+
+Per la ricerca dei piatti, prima scelgo il ristorante, poi dai suoi piatti scelgo cosa voglio mangiare.
+
+### Middlewares
+
+Uso di middlewares per la protezione delle API
+
+Gli endpoints che richiedono un’autenticazione da parte di un utente, sono protette grazie alla presenza di due middlewares, per la verifica di un token JWT valido, e il controllo del ruolo del cliente autenticato, per le API riservate ai soli ristoratori.
+
+```jsx
+import jwt from "jsonwebtoken";
+
+const authenticateUser = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Token mancante o formato non valido" });
+    }
+    const token = authHeader.split(" ")[1];
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    if (!payload.userId || !payload.role) {
+      return res.status(401).json({ error: "Token non valido: mancano dati utente" });
+    }
+
+    req.user = { _id: payload.userId, role: payload.role };
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Token non valido o scaduto" });
+  }
+};
+
+export default authenticateUser;
+
+```
+
+### Memorizzazione carrello nel DB
+
+Ho deciso di memorizzare il carrello dei singoli utenti nel DB in una collection dedicata, piuttosto che nel localstorage, per far si che esso non venga perso al logout o se si cambia dispositivo (stile ecommerce, il carrello è associato all’account).
+
+### Gestione piatti personalizzati
+
+I Piatti personalizzati sono memorizzati nella stessa collection che contiene i piatti “generici”, ciò che li distingue da essi, è la presenza di un valore in corrispondenza dell’attributo `ristorante_id`
+
+### Sistema di ordine
+
+All’interno della pagina “carrello”, l’utente troverà tutti i piatti aggiunti, divisi in base al ristorante da cui essi sono stati ordinati.
+
+Per ogni ristorante, è possibile se ritirare i prodotti in loco, oppure farseli consegnare a casa, all’indirizzo indicato durante la registrazione.
+
+Cliccando il pulsante “ordina”, gli ordini vengono correttamente smistati ai vari ristoranti.
+
+### Ritiro in ristorante
+
+Se l’ordine è indicato per il ritiro nel ristorante, segue il flusso di stato “`ordinato`”, “`in preparazione`”, “`consegnato`”.
+
+In questo caso, sarà il ristoratore, tramite la propria dashboard, ad indicare l’avanzamento dello stato dell’ordine.
+
+### Consegna a domicilio
+
+Il ristoratore, tramite la propria dashboard, può far avanzare lo stato dell’ordine fino a “in consegna”, seguendo il flusso   “`ordinato`”, “`in preparazione`”, “`in consegna`”.
+
+Dopo di che darà l’ordine ad un fattorino, e sarà il cliente dalla sua pagina “ordini” a confermare la ricezione dell’ordine, tramite bottone dedicato.
+
+Il flusso di stato dell’ordine è quindi “`ordinato`”, “`in preparazione`”, “`in consegna`”, “`consegnato`”
+
+Per entrambe le casistiche, l’ordine va automaticamente “`in preparazione`” se è il primo della coda del ristorante
+
+# Schermate e prove di funzionamento
+
+E’ disponibile un video dimostrazione del funzionamento del progetto, al link
+
+[https://www.youtube.com/watch?v=Rsd6FUjZxP4](https://www.youtube.com/watch?v=Rsd6FUjZxP4)
