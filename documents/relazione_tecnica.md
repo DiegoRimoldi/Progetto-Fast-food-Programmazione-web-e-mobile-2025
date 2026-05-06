@@ -246,9 +246,9 @@ Le pagine `public/ristoratore` implementano i flussi operativi del ristoratore: 
 
 #### `public/ristoratore/statistiche.html`:
 - `fetchConControlloToken(...)`: accesso endpoint statistiche.
-- `renderListItem(label, value, suffix)`: rendering righe KPI.
+- `renderListItem(label, value, suffix)`: rendering righe (KPI – Key Performance Indicators).
 - `formatDateLabel(dateString)`: formattazione etichette temporali.
-- `caricaStatistiche()`: organizzazione fetch KPI e rendering dashboard.
+- `caricaStatistiche()`: organizzazione fetch (KPI – Key Performance Indicators) e rendering dashboard.
 
 ## 1.9 `public/*.html`:
 
@@ -329,7 +329,7 @@ La cartella `routes` contiene la logica API REST principale (controller Express)
 - `GET /restaurants/search`: ricerca per nome/indirizzo.
 - `GET /restaurants/by-meal`: lookup ristoranti a partire da meals.
 - `GET /restaurants`: elenco ristoranti.
-- `GET /restaurants/statistics`: KPI ristoratore (ordini, fatturato, top pasti, timeline).
+- `GET /restaurants/statistics`: (KPI – Key Performance Indicators) ristoratore (ordini, fatturato, top pasti, timeline).
 - `GET /restaurants/:restaurantId`: dettaglio ristorante + menù popolato.
 - `POST /restaurants`: creazione del ristorante autenticata/registrata.
 - `PUT /restaurants/:restaurantId`: aggiornamento ristorante "owner-only".
