@@ -297,3 +297,61 @@ Scelta implementativa: estrarre la logica di validazione in utilità riusabile, 
 - `swagger.js` per esposizione/integrazione documentazione.
 
 Scelta implementativa: includere la documentazione nel progetto per allineare sviluppo backend e consumo frontend.
+
+## 6. Elementi del Progetto che superano le richieste base e aumentano il valore prodotto:
+
+Questa sezione evidenzia le funzionalità che, pur non essendo strettamente necessarie per il minimo richiesto dalla traccia, rendono il sistema più maturo, più utile al cliente finale e più efficace per il ristoratore.
+
+### 6.1 Esperienza multi-ruolo più evoluta (sessione robusta e navigazione intelligente):
+
+- Gestione avanzata della sessione lato client con controllo coerenza token/ruolo, supporto a token separati per ruolo e sincronizzazione stato (`public/assets/auth.js`).
+- Salvataggio e ripristino dell’ultima pagina visitata dopo autenticazione, con fallback differenziati per `cliente` e `ristoratore`.
+- Controlli preventivi per ridurre errori di navigazione tra aree con permessi diversi.
+
+**Valore aggiunto**: riduce attriti durante l’uso quotidiano, rende più stabile l’accesso alle aree riservate e migliora la UX percepita su refresh/re-login.
+
+### 6.2 Personalizzazione commerciale reale: offerte intelligenti e bacheca dinamica:
+
+- Area ristoratore con strumenti dedicati alla costruzione della **bacheca offerte**, con gestione selettiva dei piatti e aggiornamento incrementale.
+- Area cliente con consumo delle offerte e filtraggio in base alle preferenze utente, così da proporre contenuti più pertinenti.
+- Supporto a scenari multipli di comunicazione commerciale (offerte presenti, assenza preferenze, offerte non compatibili).
+
+**Valore aggiunto**: non è solo ordinazione, ma anche marketing operativo; il ristoratore ha un canale promozionale concreto e il cliente riceve suggerimenti più rilevanti.
+
+### 6.3 Funzioni di produttività per il ristoratore (gestione menù “massiva”):
+
+- Selezione multipla dei piatti, azioni in blocco e aggiornamento etichette dinamiche in gestione menù.
+- Inserimento in massa dal catalogo piatti generici con filtri e paginazione, per accelerare il setup del locale.
+- Gestione combinata tra catalogo standard e piatti personalizzati proprietari.
+
+**Valore aggiunto**: riduce il tempo operativo necessario al ristoratore per configurare/aggiornare il menù e aumenta la scalabilità gestionale.
+
+### 6.4 Qualità del checkout superiore al minimo (validazione indirizzo “reale”):
+
+- In checkout cliente è presente una validazione approfondita dell’indirizzo con logica di parsing e controlli semantici.
+- La validazione non si limita alla sola presenza del campo, ma verifica coerenza dei componenti utili alla consegna.
+
+**Valore aggiunto**: diminuisce errori logistici, ordini non consegnabili e frizioni post-acquisto.
+
+### 6.5 Gestione operativa ordini più completa (stati, conferme e notifiche):
+
+- Distinzione chiara tra ordini attivi e storico lato ristoratore.
+- Transizioni stato guidate in interfaccia, con gestione del ciclo fino alla consegna.
+- Conferma di ricezione da parte del cliente e meccanismi di lettura/gestione notifiche nel ciclo di consegna.
+
+**Valore aggiunto**: maggiore tracciabilità end-to-end e riduzione delle ambiguità tra “preparato”, “in consegna” e “consegnato”.
+
+### 6.6 Dashboard statistiche e orientamento decisionale:
+
+- Presenza di una vista dedicata alle statistiche ristoratore (`ristoratore/statistiche.html`) con KPI e aggregazioni.
+- Organizzazione dei dati in forma leggibile per monitoraggio andamento vendite/ordini.
+
+**Valore aggiunto**: il sistema non è solo transazionale, ma anche decisionale; supporta il ristoratore nell’ottimizzazione del business.
+
+### 6.7 Robustezza complessiva lato progetto (oltre il CRUD basilare):
+
+- Struttura backend modulare per domini + sicurezza a livelli (autenticazione, autorizzazione ruolo, validazione input).
+- Contratto API documentato (Swagger/OpenAPI), utile anche in ottica manutenzione, test e passaggio di consegne progettuale.
+- Coerenza UI cross-device con tema condiviso e regole responsive dedicate.
+
+**Valore aggiunto**: aumenta qualità ingegneristica, facilità di evoluzione futura e percezione professionale del prodotto presentato al cliente.
